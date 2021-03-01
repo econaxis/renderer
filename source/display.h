@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <iostream>
+#include <png++/png.hpp>
 
 class Image;
 
@@ -17,5 +18,18 @@ class ASCIIDisplay {
 
 public:
 	// Renders the image
+	void render(const Image& im);
+};
+
+class PNGDisplay {
+	png::image<png::rgb_pixel> pngimg;
+
+public:
+	PNGDisplay(int width = 1000, int height = 1000) : pngimg(width, height) {
+		for (long i = 0; i < width * height; i++) {
+			pngimg.set_pixel( i % width, (float) i / width, png::rgb_pixel(50, 50, 50));
+		}
+		pngimg.write("frame.png");
+	};
 	void render(const Image& im);
 };
