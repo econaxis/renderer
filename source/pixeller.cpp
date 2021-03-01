@@ -18,7 +18,22 @@
 
 
 #include <iomanip>
+
+#include <png++/png.hpp>
+#include <SFML/Window.hpp>
+
+
+
+/* Jobs:
+Separate input thread with std::mutex and std::thread and thread-safe queue
+User Input
+Camera movement
+Filling in triangles
+Model loading from file
+*/
+
 using namespace std::chrono_literals;
+
 
 
 template<typename DATA_TYPE, int ROWS, int COLS>
@@ -39,6 +54,20 @@ std::ostream& operator<<(std::ostream& os, const gmtl::Matrix<DATA_TYPE, ROWS, C
 
 int start(int argc, char* argv[])
 {
+	sf::Window window(sf::VideoMode(800, 600), "My window");
+
+	// run the program as long as the window is open
+	while (window.isOpen())
+	{
+		// check all the window's events that were triggered since the last iteration of the loop
+		sf::Event event;
+		while (window.pollEvent(event))
+		{
+			// "close requested" event: we close the window
+			if (event.type == sf::Event::Closed)
+				window.close();
+		}
+	}
 	Pixel::init();
 	std::unique_ptr<Image> image;
 	if (argc == 3)
@@ -104,26 +133,27 @@ int start(int argc, char* argv[])
 	//std::cout << persp * translate * cube_pts;
 	////return 0;
 
-	for (double angle = 0; angle < 2 * gmtl::Math::PI; angle += 0.05) {
+	for (double angle = 0; angle < 2.0 * gmtl::Math::PI; angle += 0.05) {
 		gmtl::Matrix44d rotate;
 		const double rot_data[] = { std::cos(angle), -std::sin(angle), 0, 0,
 			std::sin(angle), std::cos(angle), 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1 };
+
 		rotate.setTranspose(rot_data);
 		auto persp_pts = persp * translate * rotate * cube_pts;
 		for (int i = 0; i <= 23; i += 2) {
 			double w1 = persp_pts[3][i];
 			double w2 = persp_pts[3][i + 1];
-
-			auto pt1 = std::pair<float, float>{ persp_pts[0][i] / w1, persp_pts[1][i] / w1 };
-			auto pt2 = std::pair<float, float>{ persp_pts[0][i + 1] / w2, persp_pts[1][i + 1] / w2 };
+			 
+			auto pt1 = std::pair<float, float>{ (float) persp_pts[0][i] / w1, (float) persp_pts[1][i] / w1 };
+			auto pt2 = std::pair<float, float>{ (float) persp_pts[0][i + 1] / w2, (float) persp_pts[1][i + 1] / w2 };
 
 			std::cout << pt1.first << " " << pt1.second << "\n" << pt2.first << " " << pt2.second << "\n\n";
 			image->linef(pt1, pt2);
 		}
 		image->render();
-		std::this_thread::sleep_for(75ms);
+		std::this_thread::sleep_for(1000ms);
 
 	}
 

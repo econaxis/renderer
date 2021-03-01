@@ -10,7 +10,8 @@ class Image
 {
 private:
 	std::vector<Pixel> image;
-	ASCIIDisplay display;
+	ASCIIDisplay asciidisplay;
+	PNGDisplay display;
 
 public:
 	const int width, height;
@@ -18,7 +19,7 @@ public:
 	auto get_pixels() const -> const std::vector<Pixel>& {
 		return image;
 	}
-	Image(int width = 170, int height = 60) : width(width), height(height)
+	Image(int width = 1000, int height = 1000) : width(width), height(height), display(width, height)
 	{
 		image.resize((std::size_t) width * height);
 		clear();

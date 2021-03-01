@@ -24,7 +24,7 @@ if(MSVC)
 
     #Delete /W3
     string(REGEX REPLACE "/W[0-4]" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-    target_compile_options(game PRIVATE /W4 /O2)
+    target_compile_options(game PRIVATE /W4)
 else()
     target_compile_options(game PRIVATE -Og -pipe -Wno-language-extension-token -fno-elide-type -fdiagnostics-show-template-tree -Wall -Wextra -Wpedantic -Wvla -Wextra-semi -Wnull-dereference -MP)
 endif()
@@ -47,6 +47,25 @@ endif()
 
 add_library(gmtl INTERFACE)
 target_include_directories(gmtl INTERFACE extern/gmtl/)
-target_link_libraries(game gmtl)
 
+
+add_library(png++ INTERFACE)
+target_include_directories(png++ INTERFACE extern/png++/ extern/lpng1637/)
+
+# add_subdirectory(extern/lpng1637)
+
+if(TARGET png++)   
+    message("png++ is a target")
+endif()
+if(TARGET zlibtest)   
+    message("zlibtest is a target")
+endif()
+if(TARGET zlib)   
+    message("zlib is a target")
+endif()
+
+# set(SFML_STATIC_LIBRARIES TRUE)
+set(SFML_DIR ${CMAKE_SOURCE_DIR}/extern/sfml/build/install/lib/cmake/SFML)
+find_package(SFML 2.5.1 COMPONENTS graphics system REQUIRED)
+target_link_libraries(game gmtl png++ png_static zlibstatic sfml-graphics sfml-window)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)

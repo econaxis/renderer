@@ -4,7 +4,6 @@
 #include <gmtl/Matrix.h>
 
 
-
 namespace VertexCalculator {
 	void triangle() {
 
