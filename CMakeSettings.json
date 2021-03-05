@@ -10,7 +10,23 @@
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
-      "variables": []
+      "variables": [
+        {
+          "name": "PNG_STATIC",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "PNG_TESTS",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "PNG_SHARED",
+          "value": "False",
+          "type": "BOOL"
+        }
+      ]
     },
     {
       "name": "x64-Release",
