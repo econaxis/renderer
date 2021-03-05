@@ -51,7 +51,7 @@ public:
 		pixels.resize(width * height * 4);
 	}
 
-	void set_pixel(int x, int y, double value) {
+	void set_pixel(unsigned int x, unsigned int y, float value) {
 		// Convert x, y position to index at vector
 		std::size_t index = 4 * (y * texture.getSize().x + x);
 		pixels.at(index) = value * 255;
@@ -59,9 +59,9 @@ public:
 		pixels.at(index+2) = value * 255;
 		pixels.at(index + 3) = 255; //Full alpha
 	}
-	void set_pixel(int x, int y, double r, double g, double b) {
+	void set_pixel(unsigned int x, unsigned int y, float r, float g, float b) {
 		// Convert x, y position to index at vector
-		std::size_t index = 4 * (y * texture.getSize().x + x);
+		unsigned int index = 4 * (y * texture.getSize().x + x);
 		pixels.at(index) = r * 255;
 		pixels.at(index + 1) = g * 255;
 		pixels.at(index + 2) = g * 255;

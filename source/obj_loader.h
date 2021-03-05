@@ -7,15 +7,11 @@
 #include <iostream>
 #include <array>
 
-typedef std::array<std::size_t, 3> Triangle;
-
-
-//std::ostream& operator<<(std::ostream& os, const Model& m);
-
+typedef std::array<unsigned int, 3> Triangle;
 
 class Model {
 	std::vector<Triangle> tris;
-	std::vector<gmtl::Point3d> points;
+	std::vector<gmtl::Point3f> points;
 
 	friend std::ostream& operator<<(std::ostream& os, const Model& m);
 
@@ -42,8 +38,8 @@ public:
 		}
 	}
 
-	gmtl::Matrix<double, 4, 3> get_triangle(std::size_t index) const {
-		gmtl::Matrix<double, 4, 3> res;
+	gmtl::Matrix<float, 4, 3> get_triangle(unsigned int index) const {
+		gmtl::Matrix<float, 4, 3> res;
 		res(0, 0) = points[tris[index][0]][0];
 		res(1, 0) = points[tris[index][0]][1];
 		res(2, 0) = points[tris[index][0]][2];
@@ -67,7 +63,7 @@ public:
 std::ostream& operator<<(std::ostream& os, const Model& m) {
 	os << "Vertices:\n";
 
-	for (const gmtl::Point3d& p : m.points) {
+	for (const gmtl::Point3f& p : m.points) {
 		os << p[0] << " " << p[1] << " " << p[2] << "\n";
 	}
 

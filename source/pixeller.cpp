@@ -32,6 +32,7 @@ User Input
 Camera movement
 Filling in triangles
 Model loading from file
+Make universal container for image so we don't duplicate and use memory. e.g. both Image and Display class keeps a copy of total pixels.
 */
 
 using namespace std::chrono_literals;
@@ -89,8 +90,8 @@ int start(int argc, char* argv[])
 
 
 	// Right, near, far
-	double r = 1.0, n = 0.75, f = 7;
-	gmtl::Matrix44d persp, trans;
+	float r = 1.0, n = 0.75, f = 7;
+	gmtl::Matrix44f persp, trans;
 	persp.set(
 		n / r, 0, 0, 0,
 		0, n / r, 0, 0,
@@ -142,8 +143,8 @@ int start(int argc, char* argv[])
 		float sinb = std::sin(angle_b);
 		float cosy = std::cos(angle_c);
 		float siny = std::sin(angle_c);
-		gmtl::Matrix44d rotate;
-		const double rot_data[] = {
+		gmtl::Matrix44f rotate;
+		const float rot_data[] = {
 			cosa * cosb, cosa*sinb*siny-sina*cosy, cosa * sinb + sina*siny, 0,
 			sina * cosb, sina*sinb*siny + cosa*cosy, sina * sinb*cosy -cosa*siny, 0,
 			-sinb, cosb*siny, cosb*cosy, 0,
@@ -181,6 +182,12 @@ int start(int argc, char* argv[])
 			image->linef({ persp_pts(1, 0), persp_pts(1, 1) }, { persp_pts(2, 0), persp_pts(2, 1) });*/
 
 		}
+
+		image->triangle(
+			{ -0.9, -0.9 },
+			{ -0.7, -0.7 },
+			{ -0.95, -0.6 }
+		);
 
 		window.clear(sf::Color::Green);
 		image->render();

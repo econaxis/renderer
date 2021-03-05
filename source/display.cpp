@@ -66,9 +66,6 @@ void WindowDisplay::render(const Image& im) {
 
 			auto pixel= pixel_data.at(y * im.width + x);
 
-			if (pixel.get_darkness() == 0) {
-				continue;
-			}
 			set_pixel(x, y, pixel.get_r(), pixel.get_g(), pixel.get_b());
 		}
 	}
