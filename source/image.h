@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include "pixel.h"
 #include <iostream>
 #include <algorithm>
@@ -10,8 +11,10 @@ class Image
 {
 private:
 	std::vector<Pixel> image;
-	ASCIIDisplay asciidisplay;
-	PNGDisplay display;
+	ASCIIDisplay display;
+	PNGDisplay pngdisplay;
+	std::unique_ptr<WindowDisplay> windisplay_ptr; // Deferred construction. Must use unique_ptr
+
 
 public:
 	const int width, height;
@@ -19,10 +22,14 @@ public:
 	auto get_pixels() const -> const std::vector<Pixel>& {
 		return image;
 	}
-	Image(int width = 1000, int height = 1000) : width(width), height(height), display(width, height)
+	Image(int width = 800, int height = 600) : width(width), height(height)
 	{
 		image.resize((std::size_t) width * height);
 		clear();
+	}
+
+	void use_window_display(sf::RenderWindow& window) {
+		windisplay_ptr = std::make_unique<WindowDisplay>(window, width, height);
 	}
 	auto& operator[](int idx)
 	{
@@ -46,7 +53,7 @@ public:
 
 	void render()
 	{
-		display.render(*this);
+		windisplay_ptr->render(*this);
 		clear();
 	}
 	auto& arr()

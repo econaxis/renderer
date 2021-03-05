@@ -58,3 +58,18 @@ void PNGDisplay::render(const Image& im) {
 	// This doesn't clear the screen.
 
 };
+
+void WindowDisplay::render(const Image& im) {
+	const auto& pixel_data = im.get_pixels();
+	for (int y = 0; y < im.height; y++) {
+		for (int x = 0; x < im.width; x++) {
+
+			double value = pixel_data.at(y * im.width + x).get_darkness();
+
+			set_pixel(x, y, value);
+		}
+	}
+
+	texture.update(&pixels[0]);
+	window.draw(sprite);
+}

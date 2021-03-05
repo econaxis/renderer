@@ -54,20 +54,7 @@ std::ostream& operator<<(std::ostream& os, const gmtl::Matrix<DATA_TYPE, ROWS, C
 
 int start(int argc, char* argv[])
 {
-	sf::Window window(sf::VideoMode(800, 600), "My window");
 
-	// run the program as long as the window is open
-	while (window.isOpen())
-	{
-		// check all the window's events that were triggered since the last iteration of the loop
-		sf::Event event;
-		while (window.pollEvent(event))
-		{
-			// "close requested" event: we close the window
-			if (event.type == sf::Event::Closed)
-				window.close();
-		}
-	}
 	Pixel::init();
 	std::unique_ptr<Image> image;
 	if (argc == 3)
@@ -78,6 +65,7 @@ int start(int argc, char* argv[])
 	{
 		image = std::make_unique<Image>();
 	}
+
 
 	std::ios_base::sync_with_stdio(false);
 
@@ -133,7 +121,27 @@ int start(int argc, char* argv[])
 	//std::cout << persp * translate * cube_pts;
 	////return 0;
 
-	for (double angle = 0; angle < 2.0 * gmtl::Math::PI; angle += 0.05) {
+	sf::RenderWindow window(sf::VideoMode(800, 600), "My window");
+	image->use_window_display(window);
+
+
+	float angle = 0.F;
+	window.setFramerateLimit(60);
+	// run the program as long as the window is open
+	while (window.isOpen())
+	{
+
+		// check all the window's events that were triggered since the last iteration of the loop
+		sf::Event event;
+		while (window.pollEvent(event))
+		{
+			// "close requested" event: we close the window
+			if (event.type == sf::Event::Closed)
+				window.close();
+		}
+
+		// Rendering
+		angle += 0.01;
 		gmtl::Matrix44d rotate;
 		const double rot_data[] = { std::cos(angle), -std::sin(angle), 0, 0,
 			std::sin(angle), std::cos(angle), 0, 0,
@@ -145,17 +153,21 @@ int start(int argc, char* argv[])
 		for (int i = 0; i <= 23; i += 2) {
 			double w1 = persp_pts[3][i];
 			double w2 = persp_pts[3][i + 1];
-			 
-			auto pt1 = std::pair<float, float>{ (float) persp_pts[0][i] / w1, (float) persp_pts[1][i] / w1 };
-			auto pt2 = std::pair<float, float>{ (float) persp_pts[0][i + 1] / w2, (float) persp_pts[1][i + 1] / w2 };
+
+			auto pt1 = std::pair<float, float>{ (float)persp_pts[0][i] / w1, (float)persp_pts[1][i] / w1 };
+			auto pt2 = std::pair<float, float>{ (float)persp_pts[0][i + 1] / w2, (float)persp_pts[1][i + 1] / w2 };
 
 			std::cout << pt1.first << " " << pt1.second << "\n" << pt2.first << " " << pt2.second << "\n\n";
 			image->linef(pt1, pt2);
 		}
+
+		window.clear();
 		image->render();
-		std::this_thread::sleep_for(1000ms);
+		window.display();
 
 	}
+
+
 
 
 	return 0;
