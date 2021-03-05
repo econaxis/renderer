@@ -68,8 +68,8 @@ public:
 		return image;
 	}
 
-
-	auto line_points(std::pair<int, int> pt1, std::pair<int, int> pt2)
+	template<typename T>
+	auto line_points(std::pair<T, T> pt1, std::pair<T, T> pt2)
 	{
 		int x1 = pt1.first;
 		int y1 = pt1.second;
@@ -108,7 +108,7 @@ public:
 
 		// Reserve in advance the Manhatten distance between pt1 and pt2. 
 		// This will always overestimate the points, but it's quicker than Pythagorean theorem and prevents multiple costly allocations.
-		points.reserve(3*(std::abs(x1 - x2) + std::abs(y1 - y2)));
+		points.reserve(3 * (std::abs(x1 - x2) + std::abs(y1 - y2)));
 
 		// Use Bresenham's algorithm for all other lines. 
 		const bool steep = (fabs(y2 - y1) > fabs(x2 - x1));
@@ -159,7 +159,8 @@ public:
 		return points;
 	}
 
-	void line(std::pair<int, int> pt1, std::pair<int, int> pt2, float value = 1.F)
+	template<typename T>
+	void line(std::pair<T, T> pt1, std::pair<T, T> pt2, float value = 1.F)
 	{
 		auto pts = line_points(pt1, pt2);
 
@@ -177,7 +178,8 @@ public:
 		auto x = std::clamp((int)((in.first + 1) * width / 2), 0, width - 1);
 		auto y = std::clamp((int)((in.second + 1) * height / 2), 0, height - 1);
 
-		return std::pair<int, int>{x, y};
+		// Use unsigned short for memory efficiency
+		return std::pair<unsigned short, unsigned short>{x, y};
 	}
 	void linef(std::pair<float, float> pt1, std::pair<float, float> pt2, float value = 1.F)
 	{
@@ -187,7 +189,7 @@ public:
 
 	//TODO: fill triangles horizontally for cache efficiency. Do write-up on this choice.
 	// Renders a triangle given three points on the image.
-	void triangle(std::pair<double, double> pt1, std::pair<double, double> pt2, std::pair<double, double> pt3, float value = 1.F)
+	void triangle(std::pair<float, float> pt1, std::pair<float, float> pt2, std::pair<float, float> pt3, float value = 1.F)
 	{
 
 		// Convert coordinates from range (-1, 1) to (0, width)
@@ -197,42 +199,42 @@ public:
 							   pixel_coords(pt3) };
 
 
-		std::sort(pts.begin(), pts.end());
+		std::sort(pts.begin(), pts.end(), [](const auto& t1, const auto& t2) ->bool {
+			return t1.second < t2.second;
+		});
 
-		auto base_line = line_points(pts[0], pts[2]);
-		auto left_line = line_points(pts[0], pts[1]);
-		auto right_line = line_points(pts[1], pts[2]);
+		//auto base_line = line_points(pts[0], pts[2]);
+		//auto bottom_line = line_points(pts[0], pts[1]);
+		//auto top_line = line_points(pts[1], pts[2]);
 
 
 
 		// Interpolator function that interpolates between two points and outputs a point in between at x value.
-		auto interp = [](std::pair<double, double> p1, std::pair<double, double> p2, int x) {
-			if (std::abs(p1.first - p2.first) < 0.00001) {
+		auto interp = [](std::pair<short, short> p1, std::pair<short, short> p2, short y) -> std::pair<unsigned short, unsigned short> {
+			if (std::abs(p2.second - p1.second) < 0.00001) {
 				// Division by zero scary
 				// TODO bug prone? Cannot interp for vertical line, so we just output this bogus answer.
-				return std::pair<int, int>{x, p2.second};
+				return std::pair{(unsigned short) p1.second, y};
 			}
-			//TODO: division by zero?
-			auto slope = (p1.second - p2.second) / (p1.first - p2.first);
-			auto y_val = slope * (x - p2.first) + p2.second;
-			return std::pair<int, int>{ x, (int)y_val };
+
+			return std::pair{(unsigned short) ((y - p1.second) * (p2.first - p1.first) / (p2.second - p1.second) + p1.first), y };
 		};
 
 
 
 
-		for (int i = pts[0].first; i <= pts[2].first; i++) {
+		for (auto i = pts[0].second; i <= pts[2].second; i++) {
 			auto base_pt = interp(pts[0], pts[2], i);
 
-			if (i < pts[1].first) {
+			if (i < pts[1].second) {
 				// Left line + base line
-				auto left_pt = interp(pts[0], pts[1], i);
-				line( base_pt, left_pt , 0.2F);
+				auto bottom_pt = interp(pts[0], pts[1], i);
+				line(base_pt, bottom_pt, 0.2F);
 			}
 			else {
 				// Right line + base line
-				auto right_pt = interp(pts[1], pts[2], i);
-				line( base_pt, right_pt , 0.2F);
+				auto top_pt = interp(pts[1], pts[2], i);
+				line(base_pt, top_pt, 0.2F);
 
 			}
 
