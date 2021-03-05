@@ -17,6 +17,8 @@
 #include <gmtl/MatrixOps.h>
 
 
+
+
 #include <iomanip>
 
 #include <png++/png.hpp>
@@ -36,26 +38,42 @@ using namespace std::chrono_literals;
 
 
 
-template<typename DATA_TYPE, int ROWS, int COLS>
-std::ostream& operator<<(std::ostream& os, const gmtl::Matrix<DATA_TYPE, ROWS, COLS>& m) {
-	os << std::fixed << std::setprecision(2) << std::showpos;
-	os << "[";
-	for (int r = 0; r < ROWS; r++) {
-		os << "\n";
-		for (int c = 0; c < COLS; c++) {
-			os << m(r, c) << " ";
-		}
-	}
-	os << "]\n";
-	return os;
-}
+//template<typename DATA_TYPE, int ROWS, int COLS>
+//std::ostream& operator<<(std::ostream& os, const gmtl::Matrix<DATA_TYPE, ROWS, COLS>& m) {
+//	os << std::fixed << std::setprecision(2) << std::showpos;
+//	os << "[";
+//	for (int r = 0; r < ROWS; r++) {
+//		os << "\n";
+//		for (int c = 0; c < COLS; c++) {
+//			os << m(r, c) << " ";
+//		}
+//	}
+//	os << "]\n";
+//	return os;
+//}
 
+
+
+// Begin OBJ test
+#include "obj_loader.h"
+int obj_test() {
+	Model model;
+	model.load_from_file("C:/Users/Henry/pyramid.obj");
+	std::cout << model;
+
+	return 1;
+}
 
 
 int start(int argc, char* argv[])
 {
 
 	Pixel::init();
+
+	Model model;
+	model.load_from_file("C:/Users/Henry/teapot.obj");
+
+
 	std::unique_ptr<Image> image;
 	if (argc == 3)
 	{
@@ -71,8 +89,8 @@ int start(int argc, char* argv[])
 
 
 	// Right, near, far
-	double r = 0.5, n = 0.5, f = 3;
-	gmtl::Matrix44d persp;
+	double r = 1.0, n = 0.75, f = 7;
+	gmtl::Matrix44d persp, trans;
 	persp.set(
 		n / r, 0, 0, 0,
 		0, n / r, 0, 0,
@@ -80,41 +98,13 @@ int start(int argc, char* argv[])
 		0, 0, -1, 0
 	);
 
-	const std::vector<double> cube_pts_data{
-   0 ,  0 ,  0 ,  1,
-   1 ,  0 ,  0 ,  1,
-   0 ,  0 ,  1 ,  1,
-   1 ,  0 ,  1 ,  1,
-   0 ,  1 ,  1 ,  1,
-   1 ,  1 ,  1 ,  1,
-   0 ,  1 ,  0 ,  1,
-   1 ,  1 ,  0 ,  1,
-   0 ,  0 ,  1 ,  1,
-   0 ,  0 ,  0 ,  1,
-   1 ,  0 ,  1 ,  1,
-   1 ,  0 ,  0 ,  1,
-   1 ,  1 ,  1 ,  1,
-   1 ,  1 ,  0 ,  1,
-   0 ,  1 ,  1 ,  1,
-   0 ,  1 ,  0 ,  1,
-   0 ,  0 ,  1 ,  1,
-   0 ,  1 ,  1 ,  1,
-   1 ,  0 ,  1 ,  1,
-   1 ,  1 ,  1 ,  1,
-   1 ,  0 ,  0 ,  1,
-   1 ,  1 ,  0 ,  1,
-   0 ,  0 ,  0 ,  1,
-   0 ,  1 ,  0 ,  1
-	};
+	trans.set(
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, -5,
+		0, 0, 0, 1
+	);
 
-	double translate_data[] = { 1, 0, 0, -0.5, 0, 1, 0, -0.5, 0, 0, -1, -2, 0, 0, 0, 1 };
-
-	gmtl::Matrix44d translate;
-	translate.setTranspose(translate_data);
-
-
-	gmtl::Matrix<double, 4, 24> cube_pts;
-	cube_pts.set(&(*(cube_pts_data.begin())));
 
 	//std::cout << translate << cube_pts;
 	//std::cout << translate * cube_pts;
@@ -125,8 +115,9 @@ int start(int argc, char* argv[])
 	image->use_window_display(window);
 
 
-	float angle = 0.F;
-	window.setFramerateLimit(60);
+	float angle_a = 0.F, angle_b = 0.F, angle_c = 0.F;
+	window.setFramerateLimit(40);
+
 	// run the program as long as the window is open
 	while (window.isOpen())
 	{
@@ -138,33 +129,62 @@ int start(int argc, char* argv[])
 			// "close requested" event: we close the window
 			if (event.type == sf::Event::Closed)
 				window.close();
+
 		}
 
+		angle_a += 0.06F;
+		angle_b -= 0.02F;
+		angle_c += 0.05F;
 		// Rendering
-		angle += 0.01;
+		float cosa = std::cos(angle_a);
+		float sina = std::sin(angle_a);
+		float cosb = std::cos(angle_b);
+		float sinb = std::sin(angle_b);
+		float cosy = std::cos(angle_c);
+		float siny = std::sin(angle_c);
 		gmtl::Matrix44d rotate;
-		const double rot_data[] = { std::cos(angle), -std::sin(angle), 0, 0,
-			std::sin(angle), std::cos(angle), 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1 };
+		const double rot_data[] = {
+			cosa * cosb, cosa*sinb*siny-sina*cosy, cosa * sinb + sina*siny, 0,
+			sina * cosb, sina*sinb*siny + cosa*cosy, sina * sinb*cosy -cosa*siny, 0,
+			-sinb, cosb*siny, cosb*cosy, 0,
+			0, 0, 0, 1
+		};
 
 		rotate.setTranspose(rot_data);
-		auto persp_pts = persp * translate * rotate * cube_pts;
-		for (int i = 0; i <= 23; i += 2) {
-			double w1 = persp_pts[3][i];
-			double w2 = persp_pts[3][i + 1];
 
-			auto pt1 = std::pair<float, float>{ (float)persp_pts[0][i] / w1, (float)persp_pts[1][i] / w1 };
-			auto pt2 = std::pair<float, float>{ (float)persp_pts[0][i + 1] / w2, (float)persp_pts[1][i + 1] / w2 };
+		for (std::size_t i = 0; i < model.total_triangles(); i++) {
 
-			std::cout << pt1.first << " " << pt1.second << "\n" << pt2.first << " " << pt2.second << "\n\n";
-			image->linef(pt1, pt2);
+			auto persp_pts = persp * trans * rotate * model.get_triangle(i);
+
+
+			// Do the homogenous divide
+			for (int column = 0; column < 3; column++) {
+				for (int row = 0; row < 4; row++) {
+					persp_pts(row, column) /= persp_pts(3, column);
+
+				}
+			}
+
+			if (persp_pts(0, 0) > 1 || persp_pts(1, 0) > 1 || persp_pts(0, 0) < -1 || persp_pts(1, 0) < -1
+				|| persp_pts(0, 1) > 1 || persp_pts(1, 1) > 1 || persp_pts(0, 1) < -1 || persp_pts(1, 1) < -1
+				|| persp_pts(0, 2) > 1 || persp_pts(1, 2) > 1 || persp_pts(0, 2) < -1 || persp_pts(1, 2) < -1) {
+				continue;
+			}
+
+			image->triangle(
+				{ persp_pts(0, 0), persp_pts(1, 0) },
+				{ persp_pts(0, 1), persp_pts(1, 1) },
+				{ persp_pts(0, 2), persp_pts(1, 2) }
+			);
+			/*image->linef({ persp_pts(0, 0), persp_pts(0, 1) }, { persp_pts(1, 0), persp_pts(1, 1) });
+			image->linef({ persp_pts(0, 0), persp_pts(0, 1) }, { persp_pts(2, 0), persp_pts(2, 1) });
+			image->linef({ persp_pts(1, 0), persp_pts(1, 1) }, { persp_pts(2, 0), persp_pts(2, 1) });*/
+
 		}
 
-		window.clear();
+		window.clear(sf::Color::Green);
 		image->render();
 		window.display();
-
 	}
 
 
@@ -195,6 +215,7 @@ int main(int argc, char* argv[])
 {
 	try
 	{
+		//obj_test();
 		start(argc, argv);
 	}
 	catch (const std::exception& e)

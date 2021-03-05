@@ -5,8 +5,7 @@
 #include <sstream>
 class Pixel
 {
-	double value = 0;
-
+	double r = 0, g = 0, b = 0;
 
 	static std::ofstream debug;
 
@@ -17,7 +16,7 @@ public:
 	}
 
 	mutable double offset = 0;
-	Pixel(double v) : value(v) {};
+	Pixel(double v) : r(v), g(v), b(v) {};
 	Pixel() = default;
 
 
@@ -28,12 +27,33 @@ public:
 		{
 			throw std::runtime_error("invalid value");
 		}
-		value = static_cast<double>(v);
+		auto value = static_cast<double>(v);
+		r = value;
+		g = value;
+		b = value;
+	}
+
+	auto set_color(double _r, double _g, double _b) {
+		r = _r;
+		g = _g;
+		b = _b;
 	}
 
 	auto get_darkness() const {
-		return value;
+		return (r+g+b)/3;
 	}
+
+	auto get_r() const {
+		return r;
+	}
+
+	auto get_b() const {
+		return b;
+	}
+	auto get_g() const {
+		return g;
+	}
+
 
 };
 

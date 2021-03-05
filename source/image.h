@@ -5,6 +5,7 @@
 #include <algorithm>
 #include "display.h"
 
+std::ostream& operator<<(std::ostream& os, std::pair<int, int> p);
 
 // Responsible for blitting triangles/lines/pixels, antialiasing. Holds all the image data in a 1D vector. 
 class Image
@@ -24,7 +25,7 @@ public:
 	}
 	Image(int width = 800, int height = 600) : width(width), height(height)
 	{
-		image.resize((std::size_t) width * height);
+		image.resize((std::size_t)width * height);
 		clear();
 	}
 
@@ -47,8 +48,9 @@ public:
 
 	void clear()
 	{
+		Pixel p{ 0 };
 		// Clear screen white
-		std::fill(image.begin(), image.end(), Pixel());
+		std::fill(image.begin(), image.end(), p);
 	}
 
 	void render()
@@ -80,9 +82,7 @@ public:
 		// Holds all the pixels on the line between pt1 and pt2.
 		std::vector<std::pair<int, int>> points;
 
-		// Reserve in advance the Manhatten distance between pt1 and pt2. 
-		// This will always overestimate the points, but it's quicker than Pythagorean theorem and prevents multiple costly allocations.
-		points.reserve(std::abs(x1 - x2) + std::abs(y1 - y2));
+
 
 		// Handle the vertical case
 		if (x1 == x2)
@@ -105,6 +105,10 @@ public:
 
 			return points;
 		}
+
+		// Reserve in advance the Manhatten distance between pt1 and pt2. 
+		// This will always overestimate the points, but it's quicker than Pythagorean theorem and prevents multiple costly allocations.
+		points.reserve(3*(std::abs(x1 - x2) + std::abs(y1 - y2)));
 
 		// Use Bresenham's algorithm for all other lines. 
 		const bool steep = (fabs(y2 - y1) > fabs(x2 - x1));
@@ -134,10 +138,14 @@ public:
 			if (steep)
 			{
 				points.emplace_back(y, x);
+				//points.emplace_back(y + 1, x);
+				//points.emplace_back(y - 1, x);
 			}
 			else
 			{
 				points.emplace_back(x, y);
+				//points.emplace_back(x + 1, y);
+				//points.emplace_back(x - 1, y);
 			}
 
 			error -= dy;
@@ -151,24 +159,15 @@ public:
 		return points;
 	}
 
-	void line(std::pair<int, int> pt1, std::pair<int, int> pt2)
+	void line(std::pair<int, int> pt1, std::pair<int, int> pt2, float value = 1.F)
 	{
 		auto pts = line_points(pt1, pt2);
 
 		for (const auto& pair : pts)
 		{
-			this->at(pair.first, pair.second).set_darkness(1);
+			this->at(pair.first, pair.second).set_darkness(value);
 		}
 	}
-
-	void line(std::vector<std::pair<int, int>> pts, float value = 1)
-	{
-		for (const auto& p : pts)
-		{
-			this->at(p.first, p.second).set_darkness(value);
-		}
-	}
-
 	// Converts from floating point, -1 -> 1 coordinates to pixel coordinates
 	auto pixel_coords(std::pair<float, float> in)
 	{
@@ -180,15 +179,15 @@ public:
 
 		return std::pair<int, int>{x, y};
 	}
-	void linef(std::pair<float, float> pt1, std::pair<float, float> pt2)
+	void linef(std::pair<float, float> pt1, std::pair<float, float> pt2, float value = 1.F)
 	{
-		line(pixel_coords(pt1), pixel_coords(pt2));
+		line(pixel_coords(pt1), pixel_coords(pt2), value);
 	}
 
 
 	//TODO: fill triangles horizontally for cache efficiency. Do write-up on this choice.
 	// Renders a triangle given three points on the image.
-	void triangle(std::pair<float, float> pt1, std::pair<float, float> pt2, std::pair<float, float> pt3)
+	void triangle(std::pair<double, double> pt1, std::pair<double, double> pt2, std::pair<double, double> pt3, float value = 1.F)
 	{
 
 		// Convert coordinates from range (-1, 1) to (0, width)
@@ -205,13 +204,18 @@ public:
 		auto right_line = line_points(pts[1], pts[2]);
 
 
+
 		// Interpolator function that interpolates between two points and outputs a point in between at x value.
 		auto interp = [](std::pair<double, double> p1, std::pair<double, double> p2, int x) {
-
+			if (std::abs(p1.first - p2.first) < 0.00001) {
+				// Division by zero scary
+				// TODO bug prone? Cannot interp for vertical line, so we just output this bogus answer.
+				return std::pair<int, int>{x, p2.second};
+			}
 			//TODO: division by zero?
 			auto slope = (p1.second - p2.second) / (p1.first - p2.first);
 			auto y_val = slope * (x - p2.first) + p2.second;
-			return std::pair<int, int>{ x,(int)y_val };
+			return std::pair<int, int>{ x, (int)y_val };
 		};
 
 
@@ -219,22 +223,24 @@ public:
 
 		for (int i = pts[0].first; i <= pts[2].first; i++) {
 			auto base_pt = interp(pts[0], pts[2], i);
-			this->at(base_pt.first, base_pt.second).set_darkness(0.2);
 
 			if (i < pts[1].first) {
 				// Left line + base line
 				auto left_pt = interp(pts[0], pts[1], i);
-				line(base_pt, left_pt);
-				this->at(left_pt.first, left_pt.second).set_darkness(0.2);
+				line( base_pt, left_pt , 0.2F);
 			}
 			else {
 				// Right line + base line
 				auto right_pt = interp(pts[1], pts[2], i);
-				line(base_pt, right_pt);
-				this->at(right_pt.first, right_pt.second).set_darkness(0.2);
+				line( base_pt, right_pt , 0.2F);
+
 			}
 
 		}
+
+		line(pts[0], pts[2], 0.8F);
+		line(pts[1], pts[2], 0.8F);
+		line(pts[0], pts[1], 0.8F);
 
 	}
 

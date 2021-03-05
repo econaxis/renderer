@@ -55,8 +55,16 @@ public:
 		// Convert x, y position to index at vector
 		std::size_t index = 4 * (y * texture.getSize().x + x);
 		pixels.at(index) = value * 255;
-		pixels.at(index+1) = value * 255;
+		pixels.at(index+1) = value * 100;
 		pixels.at(index+2) = value * 255;
+		pixels.at(index + 3) = 255; //Full alpha
+	}
+	void set_pixel(int x, int y, double r, double g, double b) {
+		// Convert x, y position to index at vector
+		std::size_t index = 4 * (y * texture.getSize().x + x);
+		pixels.at(index) = r * 255;
+		pixels.at(index + 1) = g * 255;
+		pixels.at(index + 2) = g * 255;
 		pixels.at(index + 3) = 255; //Full alpha
 	}
 
