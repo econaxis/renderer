@@ -17,21 +17,24 @@ class Model {
 
 public:
 	void load_from_file(const std::string& filename) {
-		std::fstream file(filename);
+		std::ifstream file(filename);
 		std::string line, temp;
-		double holding1, holding2, holding3;
 
+		points.reserve(15000);
+		tris.reserve(5000);
 		while (std::getline(file, line)) {
-			std::stringstream iss(line);
+			std::istringstream iss(line);
 			iss >> temp;
-			iss >> holding1 >> holding2 >> holding3;
 			if (temp == "v") {
+				float holding1, holding2, holding3;
+				iss >> holding1 >> holding2 >> holding3;
 				// Vertex
 				points.emplace_back(holding1, holding2, holding3);
 			}
 			else if (temp == "f") {
-
-				Triangle temp{ holding1-1, holding2-1, holding3-1 };
+				unsigned int holding1, holding2, holding3;
+				iss >> holding1 >> holding2 >> holding3;
+				Triangle temp{ holding1 - 1, holding2 - 1, holding3 - 1 };
 				tris.push_back(std::move(temp));
 			}
 
@@ -55,7 +58,7 @@ public:
 		return res;
 	}
 
-	std::size_t total_triangles() const {
+	unsigned int total_triangles() const {
 		return tris.size();
 	}
 };

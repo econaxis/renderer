@@ -28,7 +28,7 @@ class PNGDisplay {
 public:
 	PNGDisplay(int width = 1000, int height = 1000) : pngimg(width, height) {
 		for (long i = 0; i < width * height; i++) {
-			pngimg.set_pixel( i % width, i / width, png::rgb_pixel(50, 50, 50));
+			pngimg.set_pixel(i % width, i / width, png::rgb_pixel(50, 50, 50));
 		}
 		pngimg.write("frame.png");
 	};
@@ -51,21 +51,21 @@ public:
 		pixels.resize(width * height * 4);
 	}
 
-	void set_pixel(unsigned int x, unsigned int y, float value) {
+	void set_pixel(std::size_t x, std::size_t y, float value) {
 		// Convert x, y position to index at vector
 		std::size_t index = 4 * (y * texture.getSize().x + x);
 		pixels.at(index) = value * 255;
-		pixels.at(index+1) = value * 100;
-		pixels.at(index+2) = value * 255;
+		pixels.at(index + 1) = value * 255;
+		pixels.at(index + 2) = value * 255;
 		pixels.at(index + 3) = 255; //Full alpha
 	}
-	void set_pixel(unsigned int x, unsigned int y, float r, float g, float b) {
+	void set_pixel(std::size_t x, std::size_t y, float r, float g, float b) {
 		// Convert x, y position to index at vector
-		unsigned int index = 4 * (y * texture.getSize().x + x);
-		pixels.at(index) = r * 255;
-		pixels.at(index + 1) = g * 255;
-		pixels.at(index + 2) = g * 255;
-		pixels.at(index + 3) = 255; //Full alpha
+		std::size_t index = 4 * (y * texture.getSize().x + x);
+		pixels.at(index)     = (sf::Uint8) (r * 255);
+		pixels.at(index + 1) = (sf::Uint8) (g * 255);
+		pixels.at(index + 2) = (sf::Uint8) (g * 255);
+		pixels.at(index + 3) = (sf::Uint8) 255; //Full alpha
 	}
 
 	void render(const Image& im);

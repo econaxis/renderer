@@ -72,7 +72,7 @@ int start(int argc, char* argv[])
 	Pixel::init();
 
 	Model model;
-	model.load_from_file("C:/Users/Henry/teapot.obj");
+	model.load_from_file("C:/Users/Henry/teddy.obj");
 
 
 	std::unique_ptr<Image> image;
@@ -82,15 +82,15 @@ int start(int argc, char* argv[])
 	}
 	else
 	{
-		image = std::make_unique<Image>();
+		image = std::make_unique<Image>(1000, 800);
 	}
-
+	image->clear();
 
 	std::ios_base::sync_with_stdio(false);
 
 
 	// Right, near, far
-	float r = 1.0, n = 0.75, f = 7;
+	float r = 5, n = 6, f = 80;
 	gmtl::Matrix44f persp, trans;
 	persp.set(
 		n / r, 0, 0, 0,
@@ -102,7 +102,7 @@ int start(int argc, char* argv[])
 	trans.set(
 		1, 0, 0, 0,
 		0, 1, 0, 0,
-		0, 0, 1, -5,
+		0, 0, 1, -40,
 		0, 0, 0, 1
 	);
 
@@ -112,16 +112,17 @@ int start(int argc, char* argv[])
 	//std::cout << persp * translate * cube_pts;
 	////return 0;
 
-	sf::RenderWindow window(sf::VideoMode(800, 600), "My window");
+	sf::RenderWindow window(sf::VideoMode(image->width, image->height), "My window");
 	image->use_window_display(window);
 
 
-	float angle_a = 0.F, angle_b = 0.F, angle_c = 0.F;
+	float angle_a = 3.14F, angle_b = 0.F, angle_c = -0.5F;
 	window.setFramerateLimit(40);
 
 	// run the program as long as the window is open
 	while (window.isOpen())
 	{
+
 
 		// check all the window's events that were triggered since the last iteration of the loop
 		sf::Event event;
@@ -130,30 +131,41 @@ int start(int argc, char* argv[])
 			// "close requested" event: we close the window
 			if (event.type == sf::Event::Closed)
 				window.close();
-
 		}
 
-		angle_a += 0.06F;
-		angle_b -= 0.02F;
-		angle_c += 0.05F;
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+			angle_b -= 0.2F;
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+			angle_b += 0.2F;
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
+			angle_a += 0.2F;
+		}if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
+			angle_a -= 0.2F;
+		}
+
+		//angle_a += 0.05F;
+		//angle_c += 0.075F;
 		// Rendering
-		float cosa = std::cos(angle_a);
-		float sina = std::sin(angle_a);
-		float cosb = std::cos(angle_b);
-		float sinb = std::sin(angle_b);
-		float cosy = std::cos(angle_c);
-		float siny = std::sin(angle_c);
+		float cosa = std::cosf(angle_a);
+		float sina = std::sinf(angle_a);
+		float cosb = std::cosf(angle_b);
+		float sinb = std::sinf(angle_b);
+		float cosy = std::cosf(angle_c);
+		float siny = std::sinf(angle_c);
 		gmtl::Matrix44f rotate;
 		const float rot_data[] = {
-			cosa * cosb, cosa*sinb*siny-sina*cosy, cosa * sinb + sina*siny, 0,
-			sina * cosb, sina*sinb*siny + cosa*cosy, sina * sinb*cosy -cosa*siny, 0,
-			-sinb, cosb*siny, cosb*cosy, 0,
+			cosa * cosb, cosa * sinb * siny - sina * cosy, cosa * sinb + sina * siny, 0,
+			sina * cosb, sina * sinb * siny + cosa * cosy, sina * sinb * cosy - cosa * siny, 0,
+			-sinb, cosb * siny, cosb * cosy, 0,
 			0, 0, 0, 1
 		};
 
 		rotate.setTranspose(rot_data);
 
-		for (std::size_t i = 0; i < model.total_triangles(); i++) {
+		const auto tot_triangles = model.total_triangles();
+		for (unsigned int i = 0; i < tot_triangles; i++) {
 
 			auto persp_pts = persp * trans * rotate * model.get_triangle(i);
 
@@ -172,26 +184,31 @@ int start(int argc, char* argv[])
 				continue;
 			}
 
-			image->triangle(
-				{ persp_pts(0, 0), persp_pts(1, 0) },
-				{ persp_pts(0, 1), persp_pts(1, 1) },
-				{ persp_pts(0, 2), persp_pts(1, 2) }
-			);
+			Point p1((persp_pts(0, 0) + 1) * image->width / 2, (persp_pts(1, 0) + 1) * image->height / 2, persp_pts(2, 0));
+			Point p2((persp_pts(0, 1) + 1) * image->width / 2, (persp_pts(1, 1) + 1) * image->height / 2, persp_pts(2, 1));
+			Point p3((persp_pts(0, 2) + 1) * image->width / 2, (persp_pts(1, 2) + 1) * image->height / 2, persp_pts(2, 2));
+
+			image->triangle(p1, p2, p3);
+
+
+			static int counter = 0;
+		
+		
 			/*image->linef({ persp_pts(0, 0), persp_pts(0, 1) }, { persp_pts(1, 0), persp_pts(1, 1) });
 			image->linef({ persp_pts(0, 0), persp_pts(0, 1) }, { persp_pts(2, 0), persp_pts(2, 1) });
 			image->linef({ persp_pts(1, 0), persp_pts(1, 1) }, { persp_pts(2, 0), persp_pts(2, 1) });*/
 
 		}
-
-		image->triangle(
-			{ -0.9, -0.9 },
-			{ -0.7, -0.7 },
-			{ -0.95, -0.6 }
-		);
-
 		window.clear(sf::Color::Green);
 		image->render();
 		window.display();
+		//image->triangle(
+		//	{ 10, 10, 1.0},
+		//	{ 40, 40 , 1.0},
+		//	{ 5, 60, 1.0}
+		//);
+		//std::cout << "rendered one frame\n";
+
 	}
 
 
@@ -200,21 +217,6 @@ int start(int argc, char* argv[])
 	return 0;
 
 
-	for (int i = 0; i < 50; i++)
-	{
-		float radian = i * 6.141F / 50.F;
-		constexpr float incr = 6.141F / 3.F;
-
-		auto pt1 = std::pair{ std::cosf(radian), std::sinf(radian) };
-		auto pt2 = std::pair{ std::cosf(radian + incr), std::sinf(radian + incr) };
-		auto pt3 = std::pair{ std::cosf(radian + incr * 2), std::sinf(radian + incr * 2) };
-
-		image->triangle(pt1, pt2, pt3);
-		image->render();
-		std::this_thread::sleep_for(50ms);
-	}
-
-	return 0;
 
 }
 
