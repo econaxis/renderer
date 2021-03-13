@@ -41,7 +41,7 @@ class WindowDisplay {
 	sf::RenderWindow& window;
 	std::vector<sf::Uint8> pixels;
 public:
-	WindowDisplay(sf::RenderWindow& window, int width = 800, int height = 600) : window(window) {
+	WindowDisplay(sf::RenderWindow& window, std::size_t width = 800, std::size_t height = 600) : window(window) {
 		if (!texture.create(width, height)) {
 			throw std::runtime_error("texture creation failed\n");
 		}
@@ -49,24 +49,10 @@ public:
 
 		//RGBA color. 4 Uint8 per pixel
 		pixels.resize(width * height * 4);
-	}
 
-	void set_pixel(std::size_t x, std::size_t y, float value) {
-		// Convert x, y position to index at vector
-		std::size_t index = 4 * (y * texture.getSize().x + x);
-		pixels.at(index) = value * 255;
-		pixels.at(index + 1) = value * 255;
-		pixels.at(index + 2) = value * 255;
-		pixels.at(index + 3) = 255; //Full alpha
+		for (int i = 3; i < pixels.size(); i += 4) {
+			pixels[i] = (sf::Uint8)255;
+		}
 	}
-	void set_pixel(std::size_t x, std::size_t y, float r, float g, float b) {
-		// Convert x, y position to index at vector
-		std::size_t index = 4 * (y * texture.getSize().x + x);
-		pixels.at(index)     = (sf::Uint8) (r * 255);
-		pixels.at(index + 1) = (sf::Uint8) (g * 255);
-		pixels.at(index + 2) = (sf::Uint8) (g * 255);
-		pixels.at(index + 3) = (sf::Uint8) 255; //Full alpha
-	}
-
 	void render(const Image& im);
 };

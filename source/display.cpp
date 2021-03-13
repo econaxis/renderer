@@ -1,6 +1,7 @@
 #include "display.h"
 #include <gmtl/AABox.h>
 #include "image.h"
+#include <omp.h>
 
 const std::string ASCIIDisplay::scale = ".':-=+*#%B@$";
 const int ASCIIDisplay::scale_size = (int) ASCIIDisplay::scale.size() - 1;
@@ -12,8 +13,8 @@ void ASCIIDisplay::render(const Image& im) {
 	std::stringstream screen_buffer;
 	const auto& pixel_data = im.get_pixels();
 
-	for (int y = 0; y < im.height; y++) {
-		for (int x = 0; x < im.width; x++) {
+	for (std::size_t y = 0; y < im.height; y++) {
+		for (std::size_t x = 0; x < im.width; x++) {
 
 			double value = pixel_data.at(y * im.width + x).get_darkness();
 
@@ -59,16 +60,21 @@ void PNGDisplay::render(const Image& im) {
 };
 
 void WindowDisplay::render(const Image& im) {
-	const auto& pixel_data = im.get_pixels();
+	const auto* pixel_data = im.get_pixels().data();
+	auto* pixel_data_destination = pixels.data();
+	
+#pragma omp parallel for default(none) shared(pixel_data, pixel_data_destination)
 	for (int y = 0; y < im.height; y++) {
+		std::size_t y_cache = 4 * y * texture.getSize().x;
 		for (int x = 0; x < im.width; x++) {
+			y_cache += 4;
+			const auto& pixel= pixel_data[y * im.width + x];
+			pixel_data_destination[y_cache] = (sf::Uint8)(pixel.r * 255);
+			pixel_data_destination[y_cache + 1] = (sf::Uint8)(pixel.g * 255);
+			pixel_data_destination[y_cache + 2] = (sf::Uint8)(pixel.b * 255);
+			// Alpha, we don't need to set.
+			// pixel_data_destination[y_cache + x + 3] = 255;
 
-			auto pixel= pixel_data.at(y * im.width + x);
-
-			if (pixel.get_r() > 0.0) {
-				bool dummmy = false;
-			}
-			set_pixel(x, y, pixel.get_r(), pixel.get_g(), pixel.get_b());
 		}
 	}
 

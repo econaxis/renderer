@@ -4,11 +4,16 @@
 #include <iostream>
 #include <algorithm>
 #include "display.h"
+#include <array>
+#include <omp.h>
+#include <chrono>
+#include <thread>
+#include <gmtl/gmtl.h>
 
 std::ostream& operator<<(std::ostream& os, std::pair<int, int> p);
 
 struct Color {
-	float r = 0.0,  g = 0.0,  b = 0.0;
+	float r = 0.0, g = 0.0, b = 0.0;
 };
 
 
@@ -30,7 +35,7 @@ public:
 	}
 	Image(int width = 800, int height = 600) : width(width), height(height)
 	{
-		image.resize((std::size_t)width * height);
+		image.resize((std::size_t)width * height + 1);
 		clear();
 	}
 
@@ -48,12 +53,24 @@ public:
 
 	auto& at(std::size_t x, std::size_t y)
 	{
+		return image[y * width + x];
+	}
+
+	auto& at_check(std::size_t x, std::size_t y)
+	{
+		if (x < 0 || x > width || y < 0 || y > width) {
+#ifdef _DEBUG
+			throw std::runtime_error("Out of bounds");
+#else
+			return image[0];
+#endif
+		}
 		return image.at(y * width + x);
 	}
 
 	void clear()
 	{
-		Pixel p{};
+		const static Pixel p{};
 		// Clear screen white
 
 		for (auto& i : image) {
@@ -76,7 +93,7 @@ public:
 		return image;
 	}
 
-	const auto& carr() const
+	const auto& arr() const
 	{
 		return image;
 	}
@@ -84,16 +101,16 @@ public:
 	template<typename T>
 	auto line_points(std::pair<T, T> pt1, std::pair<T, T> pt2)
 	{
-		unsigned short x1 = pt1.first;
-		unsigned short y1 = pt1.second;
-		unsigned short x2 = pt2.first;
-		unsigned short y2 = pt2.second;
+		T x1 = pt1.first;
+		T y1 = pt1.second;
+		T x2 = pt2.first;
+		T y2 = pt2.second;
 		// Returns the list of pixels to fill on the line from (x1, y1) to (x2, y2)
 		// Uses Bresenham's algorithm
 		// TODO: antialiasing
 
 		// Holds all the pixels on the line between pt1 and pt2.
-		std::vector<std::pair<unsigned short, unsigned short>> points;
+		std::vector<std::pair<short, short>> points;
 
 		// Horizontal case
 		if (y1 == y2)
@@ -169,12 +186,12 @@ public:
 
 
 
-	void line(Point p1, Point p2, float value = 1.F) {
-		auto pts = line_points(std::pair{ p1.calculated_x, p1.y }, std::pair{ p2.calculated_x, p2.y });
+	void line(Point p1, Point p2, Color c) {
+		auto pts = line_points(std::pair{ p1.x, p1.y }, std::pair{ p2.x, p2.y });
 
 		for (const auto& p : pts) {
-			if (at(p.first, p.second).get_z() < std::min(p1.z, p2.z)) {
-				at(p.first, p.second) = Pixel(1.0, 0.2, 0.3, std::max(p1.z, p2.z));
+			if (at(p.first, p.second).z < std::min(p1.z, p2.z)) {
+				at(p.first, p.second) = Pixel(c.r, c.g, c.b, (float)std::max(p1.z, p2.z));
 			}
 		}
 	}
@@ -187,85 +204,77 @@ public:
 		auto x = (in.first + 1) * width / 2;
 		auto y = (in.second + 1) * height / 2;
 
-		// Use unsigned short for memory efficiency
-		return std::pair<unsigned short, unsigned short>{x, y};
+		// Use short for memory efficiency
+		return std::pair<short, short>{x, y};
 	}
 
 
 	void horizontal_line(Point p1, Point p2, Color c) {
-		if (p1.calculated_x == 0 || p2.calculated_x == 0) {
-			bool dummy = false;
+		if (p1.x == p2.x) return;
+		const auto& start = std::min(p1, p2);
+		const auto& end = std::max(p1, p2);
 
-		}
-		auto start = std::min(p1, p2, [](const auto& less, const auto& more) ->bool {
-			return less.calculated_x < more.calculated_x; });
-		auto end = std::max(p1, p2, [](const auto& less, const auto& more) ->bool {
-			return less.calculated_x < more.calculated_x;
-		});
-		if (at(start.calculated_x, p1.y).get_z() > start.z) {
-			// Yes, can overwrite.
-			at(start.calculated_x, p1.y) = Pixel(c.r+0.1, c.g + 0.2, c.b-0.1, start.z);
-		}
-		if (at(end.calculated_x, p1.y).get_z() > end.z) {
-			// Yes, can overwrite.
-			at(end.calculated_x, p1.y) = Pixel(c.r+0.1, c.g + 0.2, c.b-0.1, end.z);
-		}
-		for (auto x = start.calculated_x; x <= end.calculated_x; x++)
+
+		double interp_z = start.z;
+		double incr = (end.z - start.z) / (end.x - start.x);
+		for (auto x = start.x; x < end.x; x++)
 		{
-			auto interp_z = (start.z * (x - start.calculated_x) + end.z * (end.calculated_x - x)) / (end.calculated_x - start.calculated_x);
-				// Check z buffer.
-				if (at(x, p1.y).get_z() > interp_z) {
-					// Yes, can overwrite.
-					if (at(x, p1.y).r == 0.0 && at(x, p1.y).g == 0.5) {
-						at(x, p1.y) = Pixel(c.r, c.g, c.b, interp_z);
-					}
-					else {
-						at(x, p1.y) = Pixel(c.r, c.g, c.b, interp_z);
-					}
-				}
-				else {
-					//at(x, p1.y).g = 1.0;
-				}
+			interp_z += incr;
+			auto& target_pixel = at(x, p1.y);
+
+#ifdef _DEBUG
+			assert(x < width&& p1.y < height);
+#endif // _DEBUG
+
+			// Check z buffer.
+			if (target_pixel.z >= interp_z) {
+				// Yes, can overwrite.
+				target_pixel.replace(c.r, c.g, c.b, interp_z);
+			}
+
 		}
 
 	}
 
 	//TODO: fill triangles horizontally for cache efficiency. Do write-up on this choice.
 	// Renders a triangle given three points on the image.
-	void triangle(Point pt1, Point pt2, Point pt3, float value = 1.F)
+	void triangle(Point pt1, Point pt2, Point pt3, Color c)
 	{
 
-		// Convert coordinates from range (-1, 1) to (0, width)
-
-		auto pts = std::vector{ pt1, pt2, pt3 };
+		auto pts = std::array<Point, 3>{ pt1, pt2, pt3 };
 
 
 		std::sort(pts.begin(), pts.end(), [](const auto& t1, const auto& t2) ->bool {
 			return t1.y < t2.y;
-			});
-
+		});
 
 
 		Point base_pt, bottom_pt, top_pt;
-		for (auto y = pts[0].y; y <= pts[1].y; y++) {
+		for (short y = pts[0].y; y <= pts[1].y; y++) {
 			base_pt = Point::interp_all(pts[0], pts[2], y);
-
 			// Left line + base line
 			bottom_pt = Point::interp_all(pts[0], pts[1], y);
-			horizontal_line(base_pt, bottom_pt, {  (1.F- (float) base_pt.z) , 0.1F, 0.1F });
-
-		}
-		for (auto y = pts[1].y; y <= pts[2].y; y++) {
+			horizontal_line(base_pt, bottom_pt, c);
+		};
+		for (short y = pts[1].y; y <= pts[2].y; y++) {
 			base_pt = Point::interp_all(pts[0], pts[2], y);
 			// Right line + base line
 			top_pt = Point::interp_all(pts[1], pts[2], y);
-			horizontal_line(base_pt, top_pt, { (float) (1.0 - base_pt.z) , 0.1F, 0.1F });
-		}
+			horizontal_line(base_pt, top_pt, c);
+		};
+	}
 
-		//line(pts[0], pts[2], 0.8F);
-		//line(pts[1], pts[2], 0.8F);
-		//line(pts[0], pts[1], 0.8F);
+	void triangle(gmtl::Matrix<float, 4, 3> points, Color c) {
 
+		Point p1{ points(0, 0), points(1, 0), points(2, 0) };
+		Point p2{ points(0, 0 + 1), points(1, 0 + 1), points(2, 0 + 1) };
+		Point p3{ points(0, 0 + 2), points(1, 0 + 2), points(2, 0 + 2) };
+
+		const static gmtl::Vec3f light_direction = gmtl::makeNormal(gmtl::Vec3f{ -1, -1, -1 });
+
+		auto tri_normal = Point::find_normal(p1, p2, p3);
+		auto intensity = std::abs(gmtl::dot(light_direction, tri_normal));
+		triangle(p1, p2, p3, { intensity, 1 - intensity, 0.5 });
 	}
 
 	//void print() const
@@ -279,7 +288,7 @@ public:
 	//		buffer << "\n";
 	//	}
 
-	//	//for (const auto& arr : carr())
+	//	//for (const auto& arr : arr())
 	//	//{
 	//	//	auto last_offset = 0;
 	//	//	for (const auto& i : arr)
