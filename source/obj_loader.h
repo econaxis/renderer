@@ -11,17 +11,58 @@
 #include <string>
 #include <ctype.h>
 #include <gmtl/Matrix.h>
-typedef std::array<unsigned int, 3> Triangle;
+struct Face {
+	std::array<unsigned int, 3> point_indices;
+	gmtl::Vec3f normal;
+	unsigned int& operator[](unsigned int index) {
+		return point_indices[index];
+	}
+	const unsigned int operator[](unsigned int index) const {
+		return point_indices[index];
+	}
+
+	const gmtl::Vec3f& get_normal() const {
+		return normal;
+	}
+
+};
 
 class Model {
-	std::vector<Triangle> tris;
+	std::vector<Face> tris;
 	std::vector<gmtl::Point3f> points;
-	std::vector<std::array<std::string, 9>> debug;
 
 	friend std::ostream& operator<<(std::ostream& os, const Model& m);
 
+	float pos_x = 0, pos_y = 0, pos_z = 0;
+	bool pos_changed = true;
+	gmtl::Matrix44f model_mat;
+
 
 public:
+
+	Model() = default;
+	Model(float pos_x, float pos_y) : pos_x(pos_x), pos_y(pos_y) {};
+
+	void set_pos(float pos_x, float pos_y, float pos_z) {
+		this->pos_x = pos_x;
+		this->pos_y = pos_y;
+		this->pos_z = pos_z;
+		pos_changed = true;
+	}
+
+	const gmtl::Matrix44f& get_model_matrix() {
+
+		if (pos_changed) {
+			model_mat(0, 3) = pos_x;
+			model_mat(1, 3) = pos_y;
+			model_mat(2, 3) = pos_z;
+		}
+
+		pos_changed = false;
+
+		return model_mat;
+	}
+
 	void load_from_file(const std::string& filename) {
 		std::ifstream file(filename);
 		std::string line;
@@ -74,11 +115,18 @@ public:
 			}
 
 		}
+		
+		// Iterate through each triangle to calculate normals.
+		for (int i = 0; i < tris.size(); i ++) {
+			auto tri = get_triangle(i);
+			gmtl::Vec3f world_point1(tri(0, 0), tri(1, 0), tri(2, 0));
+			gmtl::Vec3f world_point2(tri(0, 1), tri(1, 1), tri(2, 1));
+			gmtl::Vec3f world_point3(tri(0, 2), tri(1, 2), tri(2, 2));
 
+			auto tri_normal = gmtl::makeNormal(gmtl::makeCross(gmtl::Vec3f(world_point2 - world_point1), gmtl::Vec3f(world_point3 - world_point1)));
 
-
-
-
+			tris[i].normal = tri_normal;
+		}
 
 	}
 
@@ -99,11 +147,14 @@ public:
 		return res;
 	}
 
+	const gmtl::Vec3f& get_normal(int index) const {
+		return tris[index].normal;
+	}
 	gmtl::Matrix<float, 4, 9> get_3_triangle(std::size_t index) const {
 		gmtl::Matrix<float, 4, 9> res;
 		auto* data = res.mData;
 		//gmtl::Point3f* points = &points[0];
-		//Triangle* tris = &tris[0];
+		//Face* tris = &tris[0];
 		res.mState = gmtl::Matrix<float, 4, 9>::XformState::FULL;
 		int tri_index0 = tris[index][0], tri_index1 = tris[index][1], tri_index2 = tris[index][2];
 		data[0] = points[tri_index0][0];
@@ -152,19 +203,7 @@ public:
 	unsigned int total_triangles() const {
 		return tris.size();
 	}
+
+
+
 };
-
-std::ostream& operator<<(std::ostream& os, const Model& m) {
-	os << "Vertices:\n";
-
-	for (const gmtl::Point3f& p : m.points) {
-		os << p[0] << " " << p[1] << " " << p[2] << "\n";
-	}
-
-	os << "Faces:\n";
-	for (const Triangle& f : m.tris) {
-		os << f.at(0) << " " << f.at(1) << " " << f.at(2) << "\n";
-
-	}
-	return os;
-}
