@@ -11,7 +11,7 @@ file(GLOB src "source/*.cpp" "source/*.h")
 
 
 
-add_executable (game ${src} "source/image.h" "source/image.cpp" "source/pixel.h" "source/pixel.cpp" "source/display.h" "source/display.cpp" "source/VertexCalculator.cpp" "source/VertexCalculator.h")
+add_executable (game ${src} "source/image.h" "source/image.cpp" "source/pixel.h" "source/pixel.cpp" "source/display.h" "source/display.cpp" "source/VertexCalculator.cpp" "source/VertexCalculator.h" "source/light.cpp" "source/light.h" "source/utils.h")
 
 set_property(TARGET game PROPERTY CXX_STANDARD 20)
 
