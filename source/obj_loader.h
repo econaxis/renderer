@@ -36,6 +36,8 @@ class Model {
 	float pos_x = 0, pos_y = 0, pos_z = 0;
 	mutable bool pos_changed = true;
 	gmtl::Matrix44f model_mat, rotate;
+	mutable gmtl::Matrix44f total_model_mat;
+	mutable bool model_changed = true;
 
 
 public:
@@ -50,10 +52,15 @@ public:
 		model_mat(0, 3) = pos_x;
 		model_mat(1, 3) = pos_y;
 		model_mat(2, 3) = pos_z;
+		model_changed = true;
 	}
 
-	gmtl::Matrix44f get_model_matrix() const {
-		return rotate * model_mat;
+	const gmtl::Matrix44f& get_model_matrix() const {
+		if (model_changed) {
+			total_model_mat = rotate * model_mat;
+			model_changed = false;
+		}
+		return total_model_mat;
 	}
 
 	void set_rotation(float angle_a, float angle_b, float angle_c) {
@@ -68,6 +75,8 @@ public:
 			sina * cosb, sina * sinb * siny + cosa * cosy, sina * sinb * cosy - cosa * siny, 0,
 			-sinb, cosb * siny, cosb * cosy, 0,
 			0, 0, 0, 1);
+
+		model_changed = true;
 	}
 
 	void load_from_file(const std::string& filename) {
@@ -130,9 +139,9 @@ public:
 			}
 
 		}
-		
+
 		// Iterate through each triangle to calculate normals.
-		for (int i = 0; i < tris.size(); i ++) {
+		for (int i = 0; i < tris.size(); i++) {
 			auto tri = get_triangle(i);
 			gmtl::Vec3f world_point1(tri(0, 0), tri(1, 0), tri(2, 0));
 			gmtl::Vec3f world_point2(tri(0, 1), tri(1, 1), tri(2, 1));
@@ -146,15 +155,6 @@ public:
 		}
 
 	}
-
-	void fix_up_normals(const gmtl::Vec3f& camera_pos) {
-		for (int i = 0; i < tris.size(); i++) {
-			if (gmtl::dot(tris[i].normal, camera_pos) < 0) {
-				tris[i].normal *= -1;
-			}
-		}
-	}
-
 	gmtl::Matrix<float, 4, 3> get_triangle(int index) const {
 		gmtl::Matrix<float, 4, 3> res;
 		res(0, 0) = points[tris[index][0]][0];
@@ -225,7 +225,7 @@ public:
 		return res;
 	}
 
-	unsigned int total_triangles() const {
+	int total_triangles() const {
 		return tris.size();
 	}
 

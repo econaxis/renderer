@@ -86,7 +86,7 @@ public:
 		if (point[0] >= image.width || point[1] >= image.height || point[0] <0  || point[1]< 0) {
 			return -100000;
 		}
-		return image.at(point[0], point[1]).z;
+		return image.at((std::size_t) point[0], (std::size_t)point[1]).z;
 	}
 
 	void render() {
@@ -96,7 +96,7 @@ public:
 		image.clear();
 		const int tot_triangles = model.total_triangles();
 		screen_complete_matrix_transforms = screen_matrix * perspective_matrix * lookAt(light_pos, light_target);
-		auto model_matrix = model.get_model_matrix();
+		const auto& model_matrix = model.get_model_matrix();
 #pragma omp parallel for shared(model)
 		for (int i = 0; i <= tot_triangles - 3; i += 3) {
 			auto normal_points = model_matrix * model.get_3_triangle(i);

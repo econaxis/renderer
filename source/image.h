@@ -245,7 +245,7 @@ public:
 
 	//TODO: fill triangles horizontally for cache efficiency. Do write-up on this choice.
 	// Renders a triangle given three points on the image.
-	void triangle(Point pt1, Point pt2, Point pt3, Color c)
+	void triangle(Point pt1, Point pt2, Point pt3, const Color& c)
 	{
 
 		auto pts = std::array<Point, 3>{ pt1, pt2, pt3 };

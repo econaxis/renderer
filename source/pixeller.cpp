@@ -169,15 +169,17 @@ int start(int argc, char* argv[])
 	sf::Vector2i prev_mouse_pos;
 	float angle_x = 1.542F, angle_y = 0.F;
 	gmtl::Vec3f cam_direction, cam_position(0, 0, 400), target, up_direction(0, 1, 0);
-	gmtl::Matrix44f camera_mat;
+	gmtl::Matrix44f camera_mat, screen_complete_matrix_transforms;
 
 	int specular_selectivity = 35;
 	double k_reflectivity = 0.6;
 
 	light.light_pos = { 200, 200, 200 };
 	light.light_target = { 0, 0, 0 };
-	bool view_light = true, check_shadow = true;
+	bool view_light = false, check_shadow = true;
+	bool rotated = true, cam_changed = true;
 	unsigned long long interval = 0;
+
 
 	//model.fix_up_normals(cam_position);
 
@@ -202,66 +204,75 @@ int start(int argc, char* argv[])
 				if (event.key.code == sf::Keyboard::Num2) {
 					check_shadow = !check_shadow;
 				}
+				else if (event.key.code == sf::Keyboard::LAlt) {
+					prev_mouse_pos = sf::Mouse::getPosition(window);
+				}
+				else if (event.key.code == sf::Keyboard::Num1) {
+					//std::cout << "Z buffer val: " << image->at_check(x, y).z << "\n" << angle_x << " " << angle_y << "\n";
+					view_light = !view_light;
+				}
 			}
 		}
 
 
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt)) {
-			if ((sf::Mouse::getPosition() - prev_mouse_pos).x < 10) {
-				angle_x -= 2 * (float)(sf::Mouse::getPosition().x - prev_mouse_pos.x) / window.getSize().x;
-				angle_y += 2 * (float)(sf::Mouse::getPosition().y - prev_mouse_pos.y) / window.getSize().y;
-			}
-			prev_mouse_pos = sf::Mouse::getPosition();
+			angle_x -= 2 * (float)(sf::Mouse::getPosition(window).x - prev_mouse_pos.x) / window.getSize().x;
+			angle_y += 2 * (float)(sf::Mouse::getPosition(window).y - prev_mouse_pos.y) / window.getSize().y;
+			prev_mouse_pos = sf::Mouse::getPosition(window);
+			rotated = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-			angle_b -= 0.02F;
+			angle_b -= 0.02F; rotated = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-			angle_b += 0.02F;
+			angle_b += 0.02F; rotated = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
-			angle_a += 0.02F;
+			angle_a += 0.02F; rotated = true;
 		}if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
-			angle_a -= 0.02F;
+			angle_a -= 0.02F; rotated = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::PageUp)) {
-			angle_c -= 0.02F;
+			angle_c -= 0.02F; rotated = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::PageDown)) {
-			angle_c += 0.02F;
+			angle_c += 0.02F; rotated = true;
 		}
 
-		model.set_rotation(angle_a, angle_b, angle_c);
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) { cam_position += cam_direction; }
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) { cam_position -= cam_direction; }
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) { cam_position += up_direction; }
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) { cam_position -= up_direction; }
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) { cam_position -= gmtl::makeCross(cam_direction, up_direction); }
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) { cam_position += gmtl::makeCross(cam_direction, up_direction); }
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) { angle_x = 1.542F; angle_y = 0.F; }
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::G)) { specular_selectivity += 1; }
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::G) && sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) && specular_selectivity > 0.5) { specular_selectivity -= 2; }
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::H)) { k_reflectivity *= 1.3; }
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::H) && sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) { k_reflectivity /= 1.7; }
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) { cam_position += cam_direction; cam_changed = true; }
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) { cam_position -= cam_direction; cam_changed = true; }
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) { cam_position += up_direction; cam_changed = true; }
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) { cam_position -= up_direction; cam_changed = true; }
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) { cam_position -= gmtl::makeCross(cam_direction, up_direction); cam_changed = true; }
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) { cam_position += gmtl::makeCross(cam_direction, up_direction); cam_changed = true; }
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) { angle_x = 1.542F; angle_y = 0.F; cam_changed = true; }
 
+		if (rotated || cam_changed || view_light) {
+			if (rotated) {
+				model.set_rotation(angle_a, angle_b, angle_c);
+				rotated = false;
+			}
+			if (cam_changed) {
+				cam_direction[0] = -std::cosf(angle_x);
+				cam_direction[1] = -std::sinf(angle_y);
+				cam_direction[2] = -std::sinf(angle_x);
+				gmtl::normalize(cam_direction);
+				target = cam_position + cam_direction;
+				camera_mat = lookAt(cam_position, target);
+				cam_changed = false;
+			}
+			light.bake_light(model);
+		}
 
-		cam_direction[0] = -std::cosf(angle_x);
-		cam_direction[1] = -std::sinf(angle_y);
-		cam_direction[2] = -std::sinf(angle_x);
-		gmtl::normalize(cam_direction);
-		target = cam_position + cam_direction;
-		camera_mat = lookAt(cam_position, target);
-
-		light.bake_light(model);
 		gmtl::Matrix44f light_matrix = light.get_matrix_transforms();
 
 
 		static int iterations = 0;
 		auto tot_triangles = model.total_triangles();
 
-		auto screen_complete_matrix_transforms = screen * persp * camera_mat;
-		auto model_matrix = model.get_model_matrix();
+		screen_complete_matrix_transforms = screen * persp * camera_mat;
+		const auto& model_matrix = model.get_model_matrix();
 
 #pragma omp parallel for shared(model) num_threads(8)
 		for (int i = 0; i <= tot_triangles - 3; i += 3) {
@@ -280,7 +291,7 @@ int start(int argc, char* argv[])
 
 
 			for (int tri_index = 0; tri_index <= 6; tri_index += 3) {
-				gmtl::Point4f pt1_normal{ normal_points(0, tri_index), normal_points(1, tri_index), normal_points(2, tri_index), 1 };
+				gmtl::Point4f pt1_world{ normal_points(0, tri_index), normal_points(1, tri_index), normal_points(2, tri_index), 1 };
 
 				gmtl::Point4f pt1{ persp_pts(0, tri_index), persp_pts(1, tri_index), persp_pts(2, tri_index), 1 };
 				gmtl::Point4f pt2{ persp_pts(0, tri_index + 1), persp_pts(1, tri_index + 1), persp_pts(2, tri_index + 1), 1 };
@@ -295,7 +306,7 @@ int start(int argc, char* argv[])
 
 
 					gmtl::Vec3f normal_dir = model.get_normal(i + tri_index / 3); // Automatically normalized
-					gmtl::Vec3f face_position = { normal_points(0, tri_index), normal_points(1, tri_index), normal_points(2, tri_index) };
+					gmtl::Vec3f face_position = { pt1_world[0], pt1_world[1], pt1_world[2] };
 					auto intensity = std::max(gmtl::dot(gmtl::makeNormal(light.light_pos), normal_dir), 0.F) * 0.5F;
 					gmtl::Vec3f incident_light = face_position - light.light_pos;
 					gmtl::normalize(incident_light);
@@ -307,25 +318,26 @@ int start(int argc, char* argv[])
 					gmtl::Vec3f reflected_light = incident_light - 2 * gmtl::dot(normal_dir, incident_light) * normal_dir;
 
 					auto specular_intensity = std::powf(std::max(gmtl::dot(reflected_light, face_to_camera), 0.F), specular_selectivity) * k_reflectivity;
+					float ambient_light = 0.3;
 
 					// Maybe negative?
 
-					auto light_reference_frame = light_matrix * pt1_normal;
+					auto light_reference_frame = light_matrix * pt1_world;
 					light_reference_frame[0] /= light_reference_frame[3];
 					light_reference_frame[1] /= light_reference_frame[3];
 					light_reference_frame[2] /= light_reference_frame[3];
 					light_reference_frame[3] = 1;
 
-					float ambient_light = 0.3, red_ambience = 0;
 
 					// Don't want this to trip. 
 					if (check_shadow && light.check_closest_lit(light_reference_frame) < light_reference_frame[2] - 0.0001) {
 						// Current shape is in shadow because it is further away from what's closest lit by the light.
 						specular_intensity = 0;
-						intensity = 0;
+						intensity /= 2;
+						ambient_light = 0.1F;
 						//red_ambience = 0.4;
 					}
-					Color c = Color::clamp(specular_intensity + intensity + ambient_light + red_ambience + 0.05, specular_intensity + intensity + ambient_light, specular_intensity + intensity + ambient_light);
+					Color c = Color::clamp(specular_intensity + intensity + ambient_light +  0.15, specular_intensity + intensity + ambient_light, specular_intensity + intensity + ambient_light);
 
 
 					image->triangle(pt1, pt2, pt3, c);
@@ -337,17 +349,11 @@ int start(int argc, char* argv[])
 
 
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1)) {
-			float x = sf::Mouse::getPosition(window).x * image->width / window.getSize().x,
-				y = sf::Mouse::getPosition(window).y * image->height / window.getSize().y;
-			//std::cout << "Z buffer val: " << image->at_check(x, y).z << "\n" << angle_x << " " << angle_y << "\n";
-			view_light = !view_light;
-			std::cout << light.check_closest_lit({ x, y, 1, 1 }) << " " << image->at_check(x, y).z << "\n";
-		}
+
 
 
 		window.clear();
-		if (view_light) {
+		if (!view_light) {
 			image->render();
 		}
 		else {
