@@ -97,7 +97,7 @@ public:
 		const int tot_triangles = model.total_triangles();
 		screen_complete_matrix_transforms = screen_matrix * perspective_matrix * lookAt(light_pos, light_target);
 		auto model_matrix = model.get_model_matrix();
-#pragma omp parallel for default(none) shared(model)
+#pragma omp parallel for shared(model)
 		for (int i = 0; i <= tot_triangles - 3; i += 3) {
 			auto normal_points = model_matrix * model.get_3_triangle(i);
 			auto persp_pts = screen_complete_matrix_transforms * normal_points;
