@@ -63,7 +63,7 @@ void WindowDisplay::render(const Image& im) {
 	const auto* pixel_data = im.get_pixels().data();
 	auto* pixel_data_destination = pixels.data();
 	
-#pragma omp parallel for default(none) shared(pixel_data, pixel_data_destination)
+#pragma omp parallel for default(none) shared(pixel_data, pixel_data_destination, im)
 	for (int y = 0; y < im.height; y++) {
 		std::size_t y_cache = 4 * y * texture.getSize().x;
 		for (int x = 0; x < im.width; x++) {

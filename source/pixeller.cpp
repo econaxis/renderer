@@ -171,7 +171,8 @@ int start(int argc, char* argv[])
 	gmtl::Vec3f cam_direction, cam_position(0, 0, 400), target, up_direction(0, 1, 0);
 	gmtl::Matrix44f camera_mat;
 
-	double reflect_selectivity = 35, k_reflectivity = 0.6;
+	int reflect_selectivity = 35;
+	double k_reflectivity = 0.6;
 
 	light.light_pos = { 200, 200, 200 };
 	light.light_target = { 0, 0, 0 };
@@ -206,18 +207,12 @@ int start(int argc, char* argv[])
 
 
 
-		if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
-			angle_x -= 2 * (float)(sf::Mouse::getPosition().x - prev_mouse_pos.x) / window.getSize().x;
-			angle_y += 2 * (float)(sf::Mouse::getPosition().y - prev_mouse_pos.y) / window.getSize().y;
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt)) {
+			if ((sf::Mouse::getPosition() - prev_mouse_pos).x < 10) {
+				angle_x -= 2 * (float)(sf::Mouse::getPosition().x - prev_mouse_pos.x) / window.getSize().x;
+				angle_y += 2 * (float)(sf::Mouse::getPosition().y - prev_mouse_pos.y) / window.getSize().y;
+			}
 			prev_mouse_pos = sf::Mouse::getPosition();
-
-			cam_direction[0] = -std::cosf(angle_x);
-			cam_direction[1] = -std::sinf(angle_y);
-			cam_direction[2] = -std::sinf(angle_x);
-			gmtl::normalize(cam_direction);
-			target = cam_position + cam_direction;
-
-			camera_mat = lookAt(cam_position, target);
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
 			angle_b -= 0.02F;
@@ -245,8 +240,8 @@ int start(int argc, char* argv[])
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) { cam_position -= gmtl::makeCross(cam_direction, up_direction); }
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) { cam_position += gmtl::makeCross(cam_direction, up_direction); }
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) { angle_x = 1.542F; angle_y = 0.F; }
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::G)) { reflect_selectivity += 0.5; }
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::G) && sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) && reflect_selectivity > 0.5) { reflect_selectivity -= 0.2; }
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::G)) { reflect_selectivity += 1; }
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::G) && sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) && reflect_selectivity > 0.5) { reflect_selectivity -= 2; }
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::H)) { k_reflectivity *= 1.3; }
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::H) && sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) { k_reflectivity /= 1.7; }
 
@@ -258,8 +253,6 @@ int start(int argc, char* argv[])
 		target = cam_position + cam_direction;
 		camera_mat = lookAt(cam_position, target);
 
-		//light.light_pos = cam_position;
-		//light.light_target = target;
 		light.bake_light(model);
 		gmtl::Matrix44f light_matrix = light.get_matrix_transforms();
 
@@ -270,7 +263,7 @@ int start(int argc, char* argv[])
 		auto screen_complete_matrix_transforms = screen * persp * camera_mat;
 		auto model_matrix = model.get_model_matrix();
 
-#pragma omp parallel for default(none) shared( model) num_threads(8)
+#pragma omp parallel for shared(model) num_threads(8)
 		for (int i = 0; i <= tot_triangles - 3; i += 3) {
 			auto normal_points = model_matrix * model.get_3_triangle(i);
 			auto persp_pts = screen_complete_matrix_transforms * normal_points;
@@ -301,7 +294,7 @@ int start(int argc, char* argv[])
 
 
 
-					gmtl::Vec3f normal_dir =  model.get_normal(i + tri_index / 3); // Automatically normalized
+					gmtl::Vec3f normal_dir = model.get_normal(i + tri_index / 3); // Automatically normalized
 					gmtl::Vec3f face_position = { normal_points(0, tri_index), normal_points(1, tri_index), normal_points(2, tri_index) };
 					auto intensity = std::max(gmtl::dot(gmtl::makeNormal(light.light_pos), normal_dir), 0.F) * 0.5F;
 					gmtl::Vec3f incident_light = face_position - light.light_pos;
@@ -329,8 +322,7 @@ int start(int argc, char* argv[])
 					if (check_shadow && light.check_closest_lit(light_reference_frame) < light_reference_frame[2] - 0.0001) {
 						// Current shape is in shadow because it is further away from what's closest lit by the light.
 						specular_intensity = 0;
-						intensity /= 1.4;
-						ambient_light = 0.2;
+						intensity = 0;
 						//red_ambience = 0.4;
 					}
 					Color c = Color::clamp(specular_intensity + intensity + ambient_light + red_ambience + 0.05, specular_intensity + intensity + ambient_light, specular_intensity + intensity + ambient_light);
