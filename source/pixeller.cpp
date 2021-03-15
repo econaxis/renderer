@@ -29,6 +29,8 @@
 
 #include <atomic>
 
+#include "utils.h"
+#include "light.h"
 
 /* Jobs:
 Separate input thread with std::mutex and std::thread and thread-safe queue
@@ -63,39 +65,8 @@ using namespace std::chrono_literals;
 
 
 std::unique_ptr<Image> image;
-bool between(float a, float max) {
-	return a > 0 && a < max;
-}
 
-bool between_mat(const gmtl::Matrix<float, 4, 9>& persp_pts, int index) {
-	const static float width = image->width;
-	const static float height = image->height;
-	return (
-		between(persp_pts(0, index), width) &&
-		between(persp_pts(1, index), height) &&
-		between(persp_pts(2, index), 1) &&
-		between(persp_pts(0, index + 1), width) &&
-		between(persp_pts(1, index + 1), height) &&
-		between(persp_pts(2, index + 1), 1) &&
-		between(persp_pts(0, index + 2), width) &&
-		between(persp_pts(1, index + 2), height) &&
-		between(persp_pts(2, index + 2), 1));
-}
 
-bool between_mat(const gmtl::Matrix<float, 4, 3>& persp_pts) {
-	const float width = image->width;
-	const float height = image->height;
-	return (
-		between(persp_pts(0, 0), width) &&
-		between(persp_pts(1, 0), height) &&
-		between(persp_pts(2, 0), 1) &&
-		between(persp_pts(0, 1), width) &&
-		between(persp_pts(1, 1), height) &&
-		between(persp_pts(2, 1), 1) &&
-		between(persp_pts(0, 2), width) &&
-		between(persp_pts(1, 2), height) &&
-		between(persp_pts(2, 2), 1));
-}
 
 
 gmtl::Matrix44f lookAt(gmtl::Vec3f& eye, gmtl::Vec3f& target, const gmtl::Vec3f& upDir = gmtl::Vec3f{ 0, 1, 0 })
@@ -154,6 +125,7 @@ int start(int argc, char* argv[])
 	Model model, model1;
 	model.load_from_file("C:/Users/henry/OneDrive - The University Of British Columbia/head.obj");
 
+
 	model1 = model;
 	model1.set_pos(0.5, 0.5, 0);
 
@@ -182,13 +154,12 @@ int start(int argc, char* argv[])
 	};
 	horizon_line.set(&hor_line_data[0]);
 
-	//std::cout << translate << cube_pts;
-	//std::cout << translate * cube_pts;
-	//std::cout << persp * translate * cube_pts;
-	////return 0;
 
 	sf::RenderWindow window(sf::VideoMode(image->width, image->height), "My window");
 	image->use_window_display(window);
+
+	Light light(1000, 800);
+	light.set_window(window);
 
 
 	float angle_a = 1.537F, angle_b = 0.F, angle_c = -0.5F;
@@ -197,10 +168,17 @@ int start(int argc, char* argv[])
 
 	sf::Vector2i prev_mouse_pos;
 	float angle_x = 1.542F, angle_y = 0.F;
-	gmtl::Vec3f cam_direction, cam_position(0, 0, 30), target, up_direction(0, 1, 0);
+	gmtl::Vec3f cam_direction, cam_position(0, 0, 400), target, up_direction(0, 1, 0);
 	gmtl::Matrix44f camera_mat;
 
-	double reflectivity = 3;
+	double reflect_selectivity = 35, k_reflectivity = 0.6;
+
+	light.light_pos = { 200, 200, 200 };
+	light.light_target = { 0, 0, 0 };
+	bool view_light = true, check_shadow = true;
+	unsigned long long interval = 0;
+
+	//model.fix_up_normals(cam_position);
 
 	// run the program as long as the window is open
 	while (window.isOpen())
@@ -212,17 +190,23 @@ int start(int argc, char* argv[])
 		while (window.pollEvent(event))
 		{
 			// "close requested" event: we close the window
-			if (event.type == sf::Event::Closed)
+			if (event.type == sf::Event::Closed) {
+				image.release();
 				window.close();
-
+			}
 			else if (event.type == sf::Event::MouseButtonPressed) {
 				prev_mouse_pos = sf::Mouse::getPosition();
+			}
+			else if (event.type == sf::Event::KeyPressed) {
+				if (event.key.code == sf::Keyboard::Num2) {
+					check_shadow = !check_shadow;
+				}
 			}
 		}
 
 
 
-		if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
+		if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
 			angle_x -= 2 * (float)(sf::Mouse::getPosition().x - prev_mouse_pos.x) / window.getSize().x;
 			angle_y += 2 * (float)(sf::Mouse::getPosition().y - prev_mouse_pos.y) / window.getSize().y;
 			prev_mouse_pos = sf::Mouse::getPosition();
@@ -252,6 +236,8 @@ int start(int argc, char* argv[])
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::PageDown)) {
 			angle_c += 0.02F;
 		}
+
+		model.set_rotation(angle_a, angle_b, angle_c);
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) { cam_position += cam_direction; }
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) { cam_position -= cam_direction; }
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) { cam_position += up_direction; }
@@ -259,8 +245,10 @@ int start(int argc, char* argv[])
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) { cam_position -= gmtl::makeCross(cam_direction, up_direction); }
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) { cam_position += gmtl::makeCross(cam_direction, up_direction); }
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) { angle_x = 1.542F; angle_y = 0.F; }
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::G)) { reflectivity += 0.1; }
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::G) && sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) && reflectivity > 0.5) { reflectivity -= 0.2; }
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::G)) { reflect_selectivity += 0.5; }
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::G) && sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) && reflect_selectivity > 0.5) { reflect_selectivity -= 0.2; }
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::H)) { k_reflectivity *= 1.3; }
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::H) && sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) { k_reflectivity /= 1.7; }
 
 
 		cam_direction[0] = -std::cosf(angle_x);
@@ -270,27 +258,21 @@ int start(int argc, char* argv[])
 		target = cam_position + cam_direction;
 		camera_mat = lookAt(cam_position, target);
 
-		float cosa = std::cosf(angle_a);
-		float sina = std::sinf(angle_a);
-		float cosb = std::cosf(angle_b);
-		float sinb = std::sinf(angle_b);
-		float cosy = std::cosf(angle_c);
-		float siny = std::sinf(angle_c);
-		rotate.set(
-			cosa * cosb, cosa * sinb * siny - sina * cosy, cosa * sinb * cosy + sina * siny, 0,
-			sina * cosb, sina * sinb * siny + cosa * cosy, sina * sinb * cosy - cosa * siny, 0,
-			-sinb, cosb * siny, cosb * cosy, 0,
-			0, 0, 0, 1);
+		//light.light_pos = cam_position;
+		//light.light_target = target;
+		light.bake_light(model);
+		gmtl::Matrix44f light_matrix = light.get_matrix_transforms();
 
 
 		static int iterations = 0;
 		auto tot_triangles = model.total_triangles();
 
-		auto complete_matrix_transforms = persp * camera_mat * rotate * model.get_model_matrix();
-		auto screen_complete_matrix_transforms = screen * complete_matrix_transforms;
-#pragma omp parallel for default(none) shared(complete_matrix_transforms, model) num_threads(8)
+		auto screen_complete_matrix_transforms = screen * persp * camera_mat;
+		auto model_matrix = model.get_model_matrix();
+
+#pragma omp parallel for default(none) shared( model) num_threads(8)
 		for (int i = 0; i <= tot_triangles - 3; i += 3) {
-			auto normal_points = model.get_3_triangle(i);
+			auto normal_points = model_matrix * model.get_3_triangle(i);
 			auto persp_pts = screen_complete_matrix_transforms * normal_points;
 
 
@@ -303,46 +285,59 @@ int start(int argc, char* argv[])
 			}
 
 
+
 			for (int tri_index = 0; tri_index <= 6; tri_index += 3) {
+				gmtl::Point4f pt1_normal{ normal_points(0, tri_index), normal_points(1, tri_index), normal_points(2, tri_index), 1 };
+
+				gmtl::Point4f pt1{ persp_pts(0, tri_index), persp_pts(1, tri_index), persp_pts(2, tri_index), 1 };
+				gmtl::Point4f pt2{ persp_pts(0, tri_index + 1), persp_pts(1, tri_index + 1), persp_pts(2, tri_index + 1), 1 };
+				gmtl::Point4f pt3{ persp_pts(0, tri_index + 2), persp_pts(1, tri_index + 2), persp_pts(2, tri_index + 2), 1 };
 				if (
-					between_mat(persp_pts, tri_index) &&
-					(persp_pts(2, tri_index) - 0.01 < image->at(persp_pts(0, tri_index), persp_pts(1, tri_index)).z ||
-						persp_pts(2, tri_index + 1) - 0.01 < image->at(persp_pts(0, tri_index + 1), persp_pts(1, tri_index + 1)).z ||
-						persp_pts(2, tri_index + 2) - 0.01 < image->at(persp_pts(0, tri_index + 2), persp_pts(1, tri_index + 2)).z)
+					between_mat(persp_pts, tri_index, *image) &&
+					(pt1[2] - 0.01 < image->at(pt1[0], pt1[1]).z ||
+						pt2[2] - 0.01 < image->at(pt2[0], pt2[1]).z ||
+						pt3[2] - 0.01 < image->at(pt3[0], pt3[1]).z)
 					) {
 
 
-					const static gmtl::Vec3f light_direction = gmtl::makeNormal(gmtl::Vec3f{ -1, -1, -1 });
 
-					gmtl::Vec3f face_position = rotate * gmtl::Vec3f{ normal_points(0, tri_index), normal_points(1, tri_index), normal_points(2, tri_index) };
-					gmtl::Vec3f incident_light = face_position - light_direction;
+					gmtl::Vec3f normal_dir =  model.get_normal(i + tri_index / 3); // Automatically normalized
+					gmtl::Vec3f face_position = { normal_points(0, tri_index), normal_points(1, tri_index), normal_points(2, tri_index) };
+					auto intensity = std::max(gmtl::dot(gmtl::makeNormal(light.light_pos), normal_dir), 0.F) * 0.5F;
+					gmtl::Vec3f incident_light = face_position - light.light_pos;
 					gmtl::normalize(incident_light);
-					gmtl::Vec3f normal_dir = rotate * model.get_normal(i + tri_index / 3); // Automatically normalized
 					gmtl::Vec3f face_to_camera = cam_position - face_position;
 					gmtl::normalize(face_to_camera);
 
 
-					if (gmtl::dot(normal_dir, face_to_camera) < 0) {
-						normal_dir *= -1;
-					}
 
 					gmtl::Vec3f reflected_light = incident_light - 2 * gmtl::dot(normal_dir, incident_light) * normal_dir;
 
-					if (gmtl::dot(reflected_light, face_to_camera) < 0) {
-						reflected_light *= -1;
-					}
-					auto specular_intensity = std::powf(std::max(gmtl::dot(reflected_light, face_to_camera), 0.F), reflectivity) * 0.5F;
+					auto specular_intensity = std::powf(std::max(gmtl::dot(reflected_light, face_to_camera), 0.F), reflect_selectivity) * k_reflectivity;
 
 					// Maybe negative?
-					auto intensity = std::max(gmtl::dot(light_direction, normal_dir), 0.F) * 0.6F;
 
-					Color c =  Color::clamp(specular_intensity  + intensity * 0.2 , specular_intensity  + intensity * 0.2 + 0.1 , specular_intensity  + intensity * 0.2  + 0.3);
+					auto light_reference_frame = light_matrix * pt1_normal;
+					light_reference_frame[0] /= light_reference_frame[3];
+					light_reference_frame[1] /= light_reference_frame[3];
+					light_reference_frame[2] /= light_reference_frame[3];
+					light_reference_frame[3] = 1;
 
-					image->triangle(
-						{ persp_pts(0, tri_index), persp_pts(1, tri_index), persp_pts(2, tri_index) },
-						{ persp_pts(0, tri_index + 1), persp_pts(1, tri_index + 1), persp_pts(2, tri_index + 1) },
-						{ persp_pts(0, tri_index + 2), persp_pts(1, tri_index + 2), persp_pts(2, tri_index + 2) },
-						c);
+					float ambient_light = 0.3, red_ambience = 0;
+
+					// Don't want this to trip. 
+					if (check_shadow && light.check_closest_lit(light_reference_frame) < light_reference_frame[2] - 0.0001) {
+						// Current shape is in shadow because it is further away from what's closest lit by the light.
+						specular_intensity = 0;
+						intensity /= 1.4;
+						ambient_light = 0.2;
+						//red_ambience = 0.4;
+					}
+					Color c = Color::clamp(specular_intensity + intensity + ambient_light + red_ambience + 0.05, specular_intensity + intensity + ambient_light, specular_intensity + intensity + ambient_light);
+
+
+					image->triangle(pt1, pt2, pt3, c);
+
 				}
 			}
 
@@ -350,41 +345,23 @@ int start(int argc, char* argv[])
 
 
 
-		auto hor_points = complete_matrix_transforms * horizon_line;
-		for (int column = 0; column < 3; column++) {
-			hor_points(0, column) /= hor_points(3, column);
-			hor_points(1, column) /= hor_points(3, column);
-			hor_points(2, column) /= hor_points(3, column);
-			hor_points(3, column) = 1;
-		}
-		if (between_mat(hor_points)) {
-			image->triangle(hor_points, Color{ 1.F, 0.F, 1.F });
-		}
-
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1)) {
-			auto x = sf::Mouse::getPosition(window).x * image->width / window.getSize().x,
+			float x = sf::Mouse::getPosition(window).x * image->width / window.getSize().x,
 				y = sf::Mouse::getPosition(window).y * image->height / window.getSize().y;
-			std::cout << "Z buffer val: " << image->at_check(x, y).z << "\n" << angle_x << " " << angle_y << "\n";
+			//std::cout << "Z buffer val: " << image->at_check(x, y).z << "\n" << angle_x << " " << angle_y << "\n";
+			view_light = !view_light;
+			std::cout << light.check_closest_lit({ x, y, 1, 1 }) << " " << image->at_check(x, y).z << "\n";
 		}
 
 
-		image->render();
-
-		if ((++iterations) % 500 == 0) {
-			//std::cout << mat_time << " " << tri_time << " " << render_time << ": total time 500 iters\n";
-			//std::cout << " real time: " << std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - start).count() << "\n";
-			//render_time = 0;
-			//tri_time = 0;
-			//mat_time = 0;
-			//start = std::chrono::high_resolution_clock::now();
+		window.clear();
+		if (view_light) {
+			image->render();
+		}
+		else {
+			light.render();
 		}
 		window.display();
-		//image->triangle(
-		//	{ 10, 10, 1.0},
-		//	{ 40, 40 , 1.0},
-		//	{ 5, 60, 1.0}
-		//)
-		//std::cout << "rendered one frame\n";
 
 	}
 

@@ -34,8 +34,8 @@ class Model {
 	friend std::ostream& operator<<(std::ostream& os, const Model& m);
 
 	float pos_x = 0, pos_y = 0, pos_z = 0;
-	bool pos_changed = true;
-	gmtl::Matrix44f model_mat;
+	mutable bool pos_changed = true;
+	gmtl::Matrix44f model_mat, rotate;
 
 
 public:
@@ -47,20 +47,27 @@ public:
 		this->pos_x = pos_x;
 		this->pos_y = pos_y;
 		this->pos_z = pos_z;
-		pos_changed = true;
+		model_mat(0, 3) = pos_x;
+		model_mat(1, 3) = pos_y;
+		model_mat(2, 3) = pos_z;
 	}
 
-	const gmtl::Matrix44f& get_model_matrix() {
+	gmtl::Matrix44f get_model_matrix() const {
+		return rotate * model_mat;
+	}
 
-		if (pos_changed) {
-			model_mat(0, 3) = pos_x;
-			model_mat(1, 3) = pos_y;
-			model_mat(2, 3) = pos_z;
-		}
-
-		pos_changed = false;
-
-		return model_mat;
+	void set_rotation(float angle_a, float angle_b, float angle_c) {
+		float cosa = std::cosf(angle_a);
+		float sina = std::sinf(angle_a);
+		float cosb = std::cosf(angle_b);
+		float sinb = std::sinf(angle_b);
+		float cosy = std::cosf(angle_c);
+		float siny = std::sinf(angle_c);
+		rotate.set(
+			cosa * cosb, cosa * sinb * siny - sina * cosy, cosa * sinb * cosy + sina * siny, 0,
+			sina * cosb, sina * sinb * siny + cosa * cosy, sina * sinb * cosy - cosa * siny, 0,
+			-sinb, cosb * siny, cosb * cosy, 0,
+			0, 0, 0, 1);
 	}
 
 	void load_from_file(const std::string& filename) {
@@ -107,6 +114,14 @@ public:
 						{ { (unsigned int)std::stoi(tokens[0]) - 1, (unsigned int)std::stoi(tokens[tot_tokens / 3]) - 1, (unsigned int)std::stoi(tokens[tot_tokens * 2 / 3]) - 1 } }
 					);
 				}
+				else if (tot_tokens == 4) {
+					tris.push_back(
+						{ { (unsigned int)std::stoi(tokens[0]) - 1, (unsigned int)std::stoi(tokens[1]) - 1, (unsigned int)std::stoi(tokens[3]) - 1 } }
+					);
+					tris.push_back(
+						{ { (unsigned int)std::stoi(tokens[1]) - 1, (unsigned int)std::stoi(tokens[2]) - 1, (unsigned int)std::stoi(tokens[3]) - 1 } }
+					);
+				}
 			}
 
 
@@ -125,9 +140,19 @@ public:
 
 			auto tri_normal = gmtl::makeNormal(gmtl::makeCross(gmtl::Vec3f(world_point2 - world_point1), gmtl::Vec3f(world_point3 - world_point1)));
 
+
+
 			tris[i].normal = tri_normal;
 		}
 
+	}
+
+	void fix_up_normals(const gmtl::Vec3f& camera_pos) {
+		for (int i = 0; i < tris.size(); i++) {
+			if (gmtl::dot(tris[i].normal, camera_pos) < 0) {
+				tris[i].normal *= -1;
+			}
+		}
 	}
 
 	gmtl::Matrix<float, 4, 3> get_triangle(int index) const {
@@ -147,8 +172,8 @@ public:
 		return res;
 	}
 
-	const gmtl::Vec3f& get_normal(int index) const {
-		return tris[index].normal;
+	gmtl::Vec3f get_normal(int index) const {
+		return get_model_matrix() * tris[index].normal;
 	}
 	gmtl::Matrix<float, 4, 9> get_3_triangle(std::size_t index) const {
 		gmtl::Matrix<float, 4, 9> res;

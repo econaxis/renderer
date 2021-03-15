@@ -35,12 +35,12 @@ private:
 
 
 public:
-	const int width, height;
+	const std::size_t width, height;
 
 	auto get_pixels() const -> const std::vector<Pixel>& {
 		return image;
 	}
-	Image(int width = 800, int height = 600) : width(width), height(height)
+	Image(std::size_t width = 800, std::size_t height = 600) : width(width), height(height)
 	{
 		image.resize((std::size_t)width * height + 1);
 		clear();
@@ -271,17 +271,8 @@ public:
 		};
 	}
 
-	void triangle(gmtl::Matrix<float, 4, 3> points, Color c) {
-
-		Point p1{ points(0, 0), points(1, 0), points(2, 0) };
-		Point p2{ points(0, 0 + 1), points(1, 0 + 1), points(2, 0 + 1) };
-		Point p3{ points(0, 0 + 2), points(1, 0 + 2), points(2, 0 + 2) };
-
-		const static gmtl::Vec3f light_direction = gmtl::makeNormal(gmtl::Vec3f{ -1, -1, -1 });
-
-		auto tri_normal = Point::find_normal(p1, p2, p3);
-		auto intensity = std::abs(gmtl::dot(light_direction, tri_normal));
-		triangle(p1, p2, p3, { intensity, 1 - intensity, 0.5 });
+	void triangle(gmtl::Point4f pt1, gmtl::Point4f pt2, gmtl::Point4f pt3, Color c) {
+		triangle(Point::from_Point4f(pt1), Point::from_Point4f(pt2), Point::from_Point4f(pt3), c);
 	}
 
 	//void print() const
