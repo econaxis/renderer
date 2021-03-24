@@ -49,7 +49,7 @@ public:
 	void use_window_display(sf::RenderWindow& window) {
 		windisplay_ptr = std::make_unique<WindowDisplay>(window, width, height);
 	}
-	auto& operator[](int idx)
+	auto& operator[](std::size_t idx)
 	{
 		if (idx >= height)
 		{
@@ -63,17 +63,7 @@ public:
 		return image[y * width + x];
 	}
 
-	auto& at_check(std::size_t x, std::size_t y)
-	{
-		if (x < 0 || x > width || y < 0 || y > width) {
-#ifdef _DEBUG
-			throw std::runtime_error("Out of bounds");
-#else
-			return image[0];
-#endif
-		}
-		return image.at(y * width + x);
-	}
+
 
 	void clear()
 	{
@@ -91,10 +81,6 @@ public:
 		clear();
 	}
 
-	void render_no_clear() {
-		windisplay_ptr->render(*this);
-
-	}
 	auto& arr()
 	{
 		return image;
@@ -203,13 +189,10 @@ public:
 		}
 	}
 	// Converts from floating point, -1 -> 1 coordinates to pixel coordinates
-	auto pixel_coords(std::pair<float, float> in)
+	auto pixel_coords(const std::pair<float, float>& in) const
 	{
-		in.first = std::clamp(in.first, -1.F, 1.F);
-		in.second = std::clamp(in.second, -1.F, 1.F);
-
-		auto x = (in.first + 1) * width / 2;
-		auto y = (in.second + 1) * height / 2;
+		auto x = (std::clamp(in.first, -1.F, 1.F) + 1) * width / 2;
+		auto y = (std::clamp(in.second, -1.F, 1.F) + 1) * height / 2;
 
 		// Use short for memory efficiency
 		return std::pair<short, short>{x, y};
@@ -262,16 +245,16 @@ public:
 			// Left line + base line
 			bottom_pt = Point::interp_all(pts[0], pts[1], y);
 			horizontal_line(base_pt, bottom_pt, c);
-		};
+		}
 		for (short y = pts[1].y; y <= pts[2].y; y++) {
 			base_pt = Point::interp_all(pts[0], pts[2], y);
 			// Right line + base line
 			top_pt = Point::interp_all(pts[1], pts[2], y);
 			horizontal_line(base_pt, top_pt, c);
-		};
+		}
 	}
 
-	void triangle(gmtl::Point4f pt1, gmtl::Point4f pt2, gmtl::Point4f pt3, Color c) {
+	void triangle(const gmtl::Point4f& pt1, const gmtl::Point4f& pt2, const gmtl::Point4f& pt3, Color c) {
 		triangle(Point::from_Point4f(pt1), Point::from_Point4f(pt2), Point::from_Point4f(pt3), c);
 	}
 

@@ -11,7 +11,7 @@ file(GLOB src "source/*.cpp" "source/*.h")
 
 
 
-add_executable (game ${src} "source/image.h" "source/image.cpp" "source/pixel.h" "source/pixel.cpp" "source/display.h" "source/display.cpp" "source/VertexCalculator.cpp" "source/VertexCalculator.h" "source/light.cpp" "source/light.h" "source/utils.h")
+add_executable (game ${src} "source/image.h" "source/image.cpp" "source/pixel.h" "source/pixel.cpp" "source/display.h" "source/display.cpp" "source/light.cpp" "source/light.h" "source/utils.h")
 
 set_property(TARGET game PROPERTY CXX_STANDARD 20)
 
@@ -26,7 +26,7 @@ if(MSVC)
     string(REGEX REPLACE "/W[0-4]" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     target_compile_options(game PRIVATE /W4 /openmp:experimental)
 else()
-    target_compile_options(game PRIVATE -Og -pipe -Wno-language-extension-token -fno-elide-type -fdiagnostics-show-template-tree -Wall -Wextra -Wpedantic -Wvla -Wextra-semi -Wnull-dereference -MP)
+    target_compile_options(game PRIVATE -pipe -fno-elide-type -fdiagnostics-show-template-tree -Wall -Wnull-dereference)
 endif()
 
 
@@ -53,13 +53,18 @@ add_library(png++ INTERFACE)
 target_include_directories(png++ INTERFACE extern/png++/ extern/lpng1637/)
 
 set(SFML_STATIC_LIBRARIES TRUE)
-IF(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
-    set(SFML_DIR ${CMAKE_SOURCE_DIR}/extern/sfml/build/Release/install/lib/cmake/SFML)
-    target_compile_options(game PRIVATE /O2 /Qpar /Qpar-report:1)
-    target_link_options(game PRIVATE /PROFILE)
+message(${CMAKE_BUILD_TYPE} "cmake build type")
+IF(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo OR CMAKE_BUILD_TYPE MATCHES Release OR TRUE)
+    set(SFML_DIR ${CMAKE_SOURCE_DIR}/extern/sfml/build/Release/lib/cmake/SFML)
+    target_compile_options(game PRIVATE -fopenmp)
+    target_link_options(game PRIVATE -fopenmp -O3)
+    # target_compile_options(game PRIVATE /O2 /Qpar /Qpar-report:1)
+#    target_link_options(game PRIVATE /PROFILE)
     message("building for release mode")
 ELSE()
-    set(SFML_DIR ${CMAKE_SOURCE_DIR}/extern/sfml/build/Debug/install/lib/cmake/SFML)
+    target_compile_options(game PRIVATE -Og)
+
+    set(SFML_DIR ${CMAKE_SOURCE_DIR}/extern/sfml/build/Debug/lib/cmake/SFML)
 endif()
 find_package(SFML 2.5.1 COMPONENTS graphics system REQUIRED)
 target_link_libraries(game gmtl png++ png_static zlibstatic sfml-graphics sfml-window)

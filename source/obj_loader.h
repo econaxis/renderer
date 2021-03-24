@@ -9,7 +9,7 @@
 
 #include <regex>
 #include <string>
-#include <ctype.h>
+#include <cctype>
 #include <gmtl/Matrix.h>
 struct Face {
 	std::array<unsigned int, 3> point_indices;
@@ -17,13 +17,10 @@ struct Face {
 	unsigned int& operator[](unsigned int index) {
 		return point_indices[index];
 	}
-	const unsigned int operator[](unsigned int index) const {
+	unsigned int operator[](unsigned int index) const {
 		return point_indices[index];
 	}
 
-	const gmtl::Vec3f& get_normal() const {
-		return normal;
-	}
 
 };
 
@@ -31,10 +28,6 @@ class Model {
 	std::vector<Face> tris;
 	std::vector<gmtl::Point3f> points;
 
-	friend std::ostream& operator<<(std::ostream& os, const Model& m);
-
-	float pos_x = 0, pos_y = 0, pos_z = 0;
-	mutable bool pos_changed = true;
 	gmtl::Matrix44f model_mat, rotate;
 	mutable gmtl::Matrix44f total_model_mat;
 	mutable bool model_changed = true;
@@ -43,17 +36,7 @@ class Model {
 public:
 
 	Model() = default;
-	Model(float pos_x, float pos_y) : pos_x(pos_x), pos_y(pos_y) {};
 
-	void set_pos(float pos_x, float pos_y, float pos_z) {
-		this->pos_x = pos_x;
-		this->pos_y = pos_y;
-		this->pos_z = pos_z;
-		model_mat(0, 3) = pos_x;
-		model_mat(1, 3) = pos_y;
-		model_mat(2, 3) = pos_z;
-		model_changed = true;
-	}
 
 	const gmtl::Matrix44f& get_model_matrix() const {
 		if (model_changed) {
@@ -64,12 +47,12 @@ public:
 	}
 
 	void set_rotation(float angle_a, float angle_b, float angle_c) {
-		float cosa = std::cosf(angle_a);
-		float sina = std::sinf(angle_a);
-		float cosb = std::cosf(angle_b);
-		float sinb = std::sinf(angle_b);
-		float cosy = std::cosf(angle_c);
-		float siny = std::sinf(angle_c);
+		float cosa = std::cos(angle_a);
+		float sina = std::sin(angle_a);
+		float cosb = std::cos(angle_b);
+		float sinb = std::sin(angle_b);
+		float cosy = std::cos(angle_c);
+		float siny = std::sin(angle_c);
 		rotate.set(
 			cosa * cosb, cosa * sinb * siny - sina * cosy, cosa * sinb * cosy + sina * siny, 0,
 			sina * cosb, sina * sinb * siny + cosa * cosy, sina * sinb * cosy - cosa * siny, 0,
@@ -96,13 +79,13 @@ public:
 		std::array<std::string, 9> tokens;
 		while (std::getline(file, line)) {
 			if (line[0] == 'v') {
-				std::size_t prev_pos = 2, new_pos = line.find_first_of(" ", prev_pos);
+				std::size_t prev_pos = 2, new_pos = line.find_first_of(' ', prev_pos);
 				float holding1 = std::stof(line.substr(prev_pos, new_pos));
 				prev_pos = new_pos + 1;
-				new_pos = line.find_first_of(" ", prev_pos);
+				new_pos = line.find_first_of(' ', prev_pos);
 				float holding2 = std::stof(line.substr(prev_pos, new_pos));
 				prev_pos = new_pos + 1;
-				new_pos = line.find_first_of(" ", prev_pos);
+				new_pos = line.find_first_of(' ', prev_pos);
 				float holding3 = std::stof(line.substr(prev_pos, new_pos));
 				points.emplace_back(holding1, holding2, holding3);
 			}
@@ -141,7 +124,7 @@ public:
 		}
 
 		// Iterate through each triangle to calculate normals.
-		for (int i = 0; i < tris.size(); i++) {
+		for (std::size_t i = 0; i < tris.size(); i++) {
 			auto tri = get_triangle(i);
 			gmtl::Vec3f world_point1(tri(0, 0), tri(1, 0), tri(2, 0));
 			gmtl::Vec3f world_point2(tri(0, 1), tri(1, 1), tri(2, 1));
@@ -181,7 +164,7 @@ public:
 		//gmtl::Point3f* points = &points[0];
 		//Face* tris = &tris[0];
 		res.mState = gmtl::Matrix<float, 4, 9>::XformState::FULL;
-		int tri_index0 = tris[index][0], tri_index1 = tris[index][1], tri_index2 = tris[index][2];
+		unsigned int tri_index0 = tris[index][0], tri_index1 = tris[index][1], tri_index2 = tris[index][2];
 		data[0] = points[tri_index0][0];
 		data[1] = points[tri_index0][1];
 		data[2] = points[tri_index0][2];

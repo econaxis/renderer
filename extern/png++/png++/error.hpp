@@ -94,10 +94,10 @@ namespace png
         static std::string thread_safe_strerror(int errnum)
         {
 #define ERRBUF_SIZE 512
-            char buf[ERRBUF_SIZE] = { 0 };
-
-            strerror_s(buf, ERRBUF_SIZE, errnum);
-            return std::string(buf);
+//            char buf[ERRBUF_SIZE] = { 0 };
+//
+//            strerror_l(buf, ERRBUF_SIZE, errnum);
+//            return std::string(buf);
 
 #undef ERRBUF_SIZE
         }

@@ -1,17 +1,7 @@
-#include <algorithm>
-#include <chrono>
 #include <cmath>
 #include <iostream>
-#include <memory>
-#include <sstream>
 #include <ostream>
-#include <stdlib.h>
-#include <thread>
-#include <cassert>
 #include <vector>
-
-#include "VertexCalculator.h"
-
 #include "image.h"
 #include <gmtl/Matrix.h>
 #include <gmtl/MatrixOps.h>
@@ -21,50 +11,17 @@
 
 #include <iomanip>
 
-#include <png++/png.hpp>
 #include <SFML/Window.hpp>
-#include <omp.h>
 
 #include "obj_loader.h"
 
-#include <atomic>
 
 #include "utils.h"
 #include "light.h"
 
-/* Jobs:
-Separate input thread with std::mutex and std::thread and thread-safe queue
-User Input
-Camera movement
-Filling in triangles
-Model loading from file
-Make universal container for image so we don't duplicate and use memory. e.g. both Image and Display class keeps a copy of total pixels.
-*/
 
 using namespace std::chrono_literals;
 
-
-
-//template<typename DATA_TYPE, int ROWS, int COLS>
-//std::ostream& operator<<(std::ostream& os, const gmtl::Matrix<DATA_TYPE, ROWS, COLS>& m) {
-//	os << std::fixed << std::setprecision(2) << std::showpos;
-//	os << "[";
-//	for (int r = 0; r < ROWS; r++) {
-//		os << "\n";
-//		for (int c = 0; c < COLS; c++) {
-//			os << m(r, c) << " ";
-//		}
-//	}
-//	os << "]\n";
-//	return os;
-//}
-
-
-
-// Begin OBJ test
-
-
-std::unique_ptr<Image> image;
 
 
 
@@ -108,8 +65,7 @@ gmtl::Matrix44f lookAt(gmtl::Vec3f& eye, gmtl::Vec3f& target, const gmtl::Vec3f&
 }
 int start(int argc, char* argv[])
 {
-
-
+    std::unique_ptr<Image> image;
 
 
 	if (argc == 3)
@@ -123,11 +79,9 @@ int start(int argc, char* argv[])
 	image->clear();
 
 	Model model, model1;
-	model.load_from_file("C:/Users/henry/OneDrive - The University Of British Columbia/head.obj");
+	model.load_from_file("../head.obj");
 
 
-	model1 = model;
-	model1.set_pos(0.5, 0.5, 0);
 
 	// Right, near, far
 	float r = 0.8, n = 2, f = 700;
@@ -177,8 +131,7 @@ int start(int argc, char* argv[])
 	light.light_pos = { 200, 200, 200 };
 	light.light_target = { 0, 0, 0 };
 	bool view_light = false, check_shadow = true;
-	bool rotated = true, cam_changed = true;
-	unsigned long long interval = 0;
+	bool model_rotated = true, cam_changed = true;
 
 
 	//model.fix_up_normals(cam_position);
@@ -216,30 +169,30 @@ int start(int argc, char* argv[])
 
 
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt)) {
-			angle_x -= 2 * (float)(sf::Mouse::getPosition(window).x - prev_mouse_pos.x) / window.getSize().x;
-			angle_y += 2 * (float)(sf::Mouse::getPosition(window).y - prev_mouse_pos.y) / window.getSize().y;
-			prev_mouse_pos = sf::Mouse::getPosition(window);
-			rotated = true;
-		}
+
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-			angle_b -= 0.02F; rotated = true;
+			angle_b -= 0.02F; model_rotated = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-			angle_b += 0.02F; rotated = true;
+			angle_b += 0.02F; model_rotated = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
-			angle_a += 0.02F; rotated = true;
+			angle_a += 0.02F; model_rotated = true;
 		}if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
-			angle_a -= 0.02F; rotated = true;
+			angle_a -= 0.02F; model_rotated = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::PageUp)) {
-			angle_c -= 0.02F; rotated = true;
+			angle_c -= 0.02F; model_rotated = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::PageDown)) {
-			angle_c += 0.02F; rotated = true;
+			angle_c += 0.02F; model_rotated = true;
 		}
-
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt)) {
+            angle_x -= 2 * (float)(sf::Mouse::getPosition(window).x - prev_mouse_pos.x) / window.getSize().x;
+            angle_y += 2 * (float)(sf::Mouse::getPosition(window).y - prev_mouse_pos.y) / window.getSize().y;
+            prev_mouse_pos = sf::Mouse::getPosition(window);
+            cam_changed = true;
+        }
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) { cam_position += cam_direction; cam_changed = true; }
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) { cam_position -= cam_direction; cam_changed = true; }
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) { cam_position += up_direction; cam_changed = true; }
@@ -248,15 +201,15 @@ int start(int argc, char* argv[])
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) { cam_position += gmtl::makeCross(cam_direction, up_direction); cam_changed = true; }
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) { angle_x = 1.542F; angle_y = 0.F; cam_changed = true; }
 
-		if (rotated || cam_changed || view_light) {
-			if (rotated) {
+		if (model_rotated || cam_changed || view_light) {
+			if (model_rotated) {
 				model.set_rotation(angle_a, angle_b, angle_c);
-				rotated = false;
+				model_rotated = false;
 			}
 			if (cam_changed) {
-				cam_direction[0] = -std::cosf(angle_x);
-				cam_direction[1] = -std::sinf(angle_y);
-				cam_direction[2] = -std::sinf(angle_x);
+				cam_direction[0] = -std::cos(angle_x);
+				cam_direction[1] = -std::sin(angle_y);
+				cam_direction[2] = -std::sin(angle_x);
 				gmtl::normalize(cam_direction);
 				target = cam_position + cam_direction;
 				camera_mat = lookAt(cam_position, target);
@@ -268,7 +221,6 @@ int start(int argc, char* argv[])
 		gmtl::Matrix44f light_matrix = light.get_matrix_transforms();
 
 
-		static int iterations = 0;
 		auto tot_triangles = model.total_triangles();
 
 		screen_complete_matrix_transforms = screen * persp * camera_mat;
@@ -317,7 +269,7 @@ int start(int argc, char* argv[])
 
 					gmtl::Vec3f reflected_light = incident_light - 2 * gmtl::dot(normal_dir, incident_light) * normal_dir;
 
-					auto specular_intensity = std::powf(std::max(gmtl::dot(reflected_light, face_to_camera), 0.F), specular_selectivity) * k_reflectivity;
+					float specular_intensity =  (float) std::pow(std::max(gmtl::dot(reflected_light, face_to_camera), 0.F), specular_selectivity) * k_reflectivity;
 					float ambient_light = 0.3;
 
 					// Maybe negative?
@@ -358,6 +310,9 @@ int start(int argc, char* argv[])
 		}
 		else {
 			light.render();
+
+			cam_changed = true;
+			model_rotated = true;
 		}
 		window.display();
 

@@ -66,8 +66,8 @@ class Pixel
 	static std::ofstream debug;
 
 public:
-	double z = 100000;
 	float r = 0, g = 0, b = 0;
+	double z = 100000;
 
 	Pixel(float r, float g, float b, double z) : r(r), g(g), b(b), z(z) {};
 	Pixel() = default;
