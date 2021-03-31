@@ -30,3 +30,43 @@ fovea and A makes up the two points for the hypotenuse of an imaginary right tri
 that hypotenuse, albeit a smaller, similar triangle. 
 
 (perspective_proj image 3)
+
+
+Thus, assuming the eye is at coordinate (0, 0), and the plane upon which we project the image is at z=1, then all we need to do is to divide the (x, y, z) coordinates by z. The resulting coordinate for all points would be (x/z, y/z, z/z) = (x/z, y/z, 1).
+
+Points farther away from us would be closer to the origin (as we experience in real life too). 
+
+(1dperspective)[https://www.thesprucecrafts.com/thmb/yTFMfeNboT1MOQYsdeiSJL_MZSc=/800x800/filters:no_upscale():max_bytes(150000):strip_icc()/perpsective8example3-56a26ccd3df78cf77275803b.jpg]
+
+
+Loosing information is inevitable when we project to 2D. For example, the coordinate (1, 1, 1) and (2, 2, 2), although they are distinct points, map to the same (1, 1) coordinate on the eye plane. It's similar to what happens when things overlap each other in real life. They map to the same position in our eye, but we only see the one that's closer to us. We loose information.
+
+With this, we can place any arbitrary 3D point into a location in our image. But since 3D objects can be described with triangles that are described with vertices, we can also view any 3D model.
+
+(teddy bear 3d model)
+
+The first problem we encountered, upon reaching this stage, was that the model appears transparent. Triangles in front don't block triangles behind, and it makes it very confusing. 
+
+
+# Compiling/Running
+
+Compiling this is quite weird :(
+
+You need to compile SFML first.
+```
+cd extern/sfml
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=FALSE -DCMAKE_INSTALL_PREFIX=Release
+cmake --build . --target install
+```
+
+Then, you need to compile the rest of the program.
+Change to the root source directory
+```
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build .
+./game
+```
