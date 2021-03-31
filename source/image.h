@@ -29,21 +29,29 @@ class Image
 {
 private:
 	std::vector<Pixel> image;
-	//ASCIIDisplay display;
+	ASCIIDisplay display;
 	//PNGDisplay pngdisplay;
 	std::unique_ptr<WindowDisplay> windisplay_ptr; // Deferred construction. Must use unique_ptr
 
 
 public:
-	const std::size_t width, height;
+	std::size_t width, height;
 
 	auto get_pixels() const -> const std::vector<Pixel>& {
 		return image;
 	}
-	Image(std::size_t width = 800, std::size_t height = 600) : width(width), height(height)
+	Image(std::size_t width = 500, std::size_t height = 50) : width(width), height(height)
 	{
-		image.resize((std::size_t)width * height + 1);
+		image.resize(width * height + 1);
 		clear();
+	}
+
+	void resize(std::size_t new_width, std::size_t new_height) {
+	    image.resize(new_width * new_height + 1);
+	    width = new_width;
+	    height = new_height;
+	    clear();
+	    std::cout<<"Resized to "<<new_width<<" "<<new_height<<"\n";
 	}
 
 	void use_window_display(sf::RenderWindow& window) {
@@ -67,17 +75,13 @@ public:
 
 	void clear()
 	{
-		const static Pixel p{};
-		// Clear screen white
-
-		for (auto& i : image) {
-			i = p;
-		}
+		std::fill(image.begin(), image.end(), Pixel{});
 	}
 
 	void render()
 	{
-		windisplay_ptr->render(*this);
+//		windisplay_ptr->render(*this);
+        display.render(*this);
 		clear();
 	}
 
@@ -203,7 +207,9 @@ public:
 		if (p1.x == p2.x) return;
 		const auto& start = std::min(p1, p2);
 		const auto& end = std::max(p1, p2);
-
+#ifdef _DEBUG
+        assert(x < width&& p1.y < height);
+#endif // _DEBUG
 
 		double interp_z = start.z;
 		double incr = (end.z - start.z) / (end.x - start.x);
@@ -212,9 +218,7 @@ public:
 			interp_z += incr;
 			auto& target_pixel = at(x, p1.y);
 
-#ifdef _DEBUG
-			assert(x < width&& p1.y < height);
-#endif // _DEBUG
+
 
 			// Check z buffer.
 			if (target_pixel.z >= interp_z) {
