@@ -10,8 +10,8 @@ inline bool between(float a, float max) {
 
 
 inline bool between_mat(const gmtl::Matrix<float, 4, 9>& persp_pts, int index, const Image& im) {
-	const static float width = im.width;
-	const static float height = im.height;
+	const float width = im.width;
+	const float height = im.height;
 	return (
 		between(persp_pts(0, index), width) &&
 		between(persp_pts(1, index), height) &&

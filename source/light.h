@@ -97,7 +97,7 @@ public:
 		const int tot_triangles = model.total_triangles();
 		screen_complete_matrix_transforms = screen_matrix * perspective_matrix * lookAt(light_pos, light_target);
 		const auto& model_matrix = model.get_model_matrix();
-#pragma omp parallel for shared(model)
+#pragma omp parallel for shared(model, tot_triangles, model_matrix) default(none)
 		for (int i = 0; i <= tot_triangles - 3; i += 3) {
 			auto normal_points = model_matrix * model.get_3_triangle(i);
 			auto persp_pts = screen_complete_matrix_transforms * normal_points;
@@ -112,6 +112,8 @@ public:
 			}
 
 			for (int tri_index = 0; tri_index <= 6; tri_index += 3) {
+			    // Repeated code with pixeller.cpp.
+			    // Maybe combine into a function.
 				gmtl::Point4f pt1{ persp_pts(0, tri_index), persp_pts(1, tri_index), persp_pts(2, tri_index), 1 };
 				gmtl::Point4f pt2{ persp_pts(0, tri_index + 1), persp_pts(1, tri_index + 1), persp_pts(2, tri_index + 1), 1 };
 				gmtl::Point4f pt3{ persp_pts(0, tri_index + 2), persp_pts(1, tri_index + 2), persp_pts(2, tri_index + 2), 1 };

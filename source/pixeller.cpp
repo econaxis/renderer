@@ -58,21 +58,31 @@ gmtl::Matrix44f lookAt(gmtl::Vec3f &eye, gmtl::Vec3f &target, const gmtl::Vec3f 
     return matrix;
 }
 
+gmtl::Matrix44f create_screen_matrix(std::size_t pixel_width, std::size_t pixel_height) {
+    gmtl::Matrix44f screen;
+    screen.set(
+            (float) pixel_width / 2, 0, 0, (float) pixel_width / 2,
+            0, (float) pixel_height / 2, 0, (float) pixel_height / 2,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+    );
+    return screen;
+}
+
 int start(int argc, char *argv[]) {
     std::unique_ptr<Image> image;
 
+    std::size_t width = 500, height = 400;
 
     if (argc == 3) {
-        image = std::make_unique<Image>(std::stoi(argv[1]), std::stoi(argv[2]));
-    } else {
-        image = std::make_unique<Image>(1000, 800);
+        width = std::stoi(argv[1]);
+        height = std::stoi(argv[2]);
     }
+    image = std::make_unique<Image>(width, height);
     image->clear();
 
     Model model, model1;
     model.load_from_file("../head.obj");
-
-
 
     // Right, near, far
     float r = 0.8, n = 2, f = 700;
@@ -84,13 +94,7 @@ int start(int argc, char *argv[]) {
             0, 0, -1, 0
     );
 
-    screen.set(
-            (float) image->width / 2, 0, 0, (float) image->width / 2,
-            0, (float) image->height / 2, 0, (float) image->height / 2,
-            0, 0, 1, 0,
-            0, 0, 0, 1
-    );
-
+    screen = create_screen_matrix(image->width, image->height);
     gmtl::Matrix<float, 4, 3> horizon_line;
     const float hor_line_data[] = {
             f * r / n - 1, 1, -f + 1, 1,
@@ -101,7 +105,7 @@ int start(int argc, char *argv[]) {
 
 
     sf::RenderWindow window(sf::VideoMode(image->width, image->height), "My window");
-    image->use_window_display(window);
+//    image->use_window_display(window);
 
     Light light(1000, 800);
     light.set_window(window);
@@ -145,9 +149,22 @@ int start(int argc, char *argv[]) {
                     prev_mouse_pos = sf::Mouse::getPosition(window);
                 } else if (event.key.code == sf::Keyboard::Num1) {
                     view_light = !view_light;
+                } else if (event.key.code == sf::Keyboard::Equal && sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
+                    // Increase the size of the image.
+                    width *= 1.2;
+                    height *= 1.2;
+                    image->resize(width, height);
+                    screen = create_screen_matrix(image->width, image->height);
+                } else if (event.key.code == sf::Keyboard::Hyphen && sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
+                    // Decrease size of the image
+                    width /= 1.2;
+                    height /= 1.2;
+                    image->resize(width, height);
+                    screen = create_screen_matrix(image->width, image->height);
                 }
             }
         }
+
 
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
@@ -174,7 +191,7 @@ int start(int argc, char *argv[]) {
             angle_c += 0.02F;
             model_rotated = true;
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt)) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) {
             angle_x -= 2 * (float) (sf::Mouse::getPosition(window).x - prev_mouse_pos.x) / window.getSize().x;
             angle_y += 2 * (float) (sf::Mouse::getPosition(window).y - prev_mouse_pos.y) / window.getSize().y;
             prev_mouse_pos = sf::Mouse::getPosition(window);

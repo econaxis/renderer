@@ -26,8 +26,8 @@ class PNGDisplay {
 	png::image<png::rgb_pixel> pngimg;
 
 public:
-	PNGDisplay(int width = 1000, int height = 1000) : pngimg(width, height) {
-		for (long i = 0; i < width * height; i++) {
+	PNGDisplay(std::size_t width = 1000, std::size_t height = 1000) : pngimg(width, height) {
+		for (std::size_t i = 0; i < width * height; i++) {
 			pngimg.set_pixel(i % width, i / width, png::rgb_pixel(50, 50, 50));
 		}
 		pngimg.write("frame.png");
@@ -50,7 +50,7 @@ public:
 		//RGBA color. 4 Uint8 per pixel
 		pixels.resize(width * height * 4);
 
-		for (int i = 3; i < pixels.size(); i += 4) {
+		for (std::size_t i = 3; i < pixels.size(); i += 4) {
 			pixels[i] = (sf::Uint8)255;
 		}
 	}
