@@ -2,6 +2,7 @@
 ![image](/gifs/window-cube.gif)
 ![image](/gifs/weird%20teapot.gif)
 ![image](/gifs/text-cube.gif)
+![image](/gifs/font size test.webm)
 
 For our capstone project, we made a renderer that converts a 3D object to a 2D image that could be displayed on the 
 screen. Essentially, it's similar to simulating how the camera works. It converts a 3D scene into a 2D image, losing 
@@ -45,7 +46,20 @@ With this, we can place any arbitrary 3D point into a location in our image. But
 
 (teddy bear 3d model)
 
-The first problem we encountered, upon reaching this stage, was that the model appears transparent. Triangles in front don't block triangles behind, and it makes it very confusing. 
+The first problem we encountered, upon reaching this stage, was that the model appears transparent. Triangles in front don't block triangles behind. To solve this issue, we used an old technique called the z-buffer.
+
+# Some other problems
+
+Some of these topics are problems that I solved through this project that I found was interesting and had to devise my own methods to solve. 
+
+## Multithreaded file processing using Okazaki fragments
+
+## Fractional font scaling and rendering small, subpixel characters
+
+## Warm vs cool, artificial vs natural lighting and shadows and hue
+
+## std::vector<std::vector<Pixel>> vs std::vector<Pixel> for cache efficiency
+
 
 
 # Compiling/Running
