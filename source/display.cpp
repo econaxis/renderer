@@ -1,10 +1,11 @@
 #include "display.h"
 #include "image.h"
+#include <SFML/Graphics/Font.hpp>
 
 const std::string ASCIIDisplay::scale = " .'`^\",:;Il!i><~+_-?][}{1)(|/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
 const int ASCIIDisplay::scale_size = (int) ASCIIDisplay::scale.size() - 1;
 
-void ASCIIDisplay::render(const Image &im) {
+std::stringstream ASCIIDisplay::render(const Image &im) {
     // Special ANSI Escape code to reset the cursor back to screen location 0, 0 to redraw the frame.
     // We push to this out_buffer, then we push out_buffer to cout then flush stream.
     // Can't control how often cout flushes, so this method gives us more control and more performance.
@@ -26,10 +27,18 @@ void ASCIIDisplay::render(const Image &im) {
     }
 
 
-    // Load the screen_buffer into cout.
-    std::cout << screen_buffer.rdbuf() << std::flush;
-    std::cout << ANSII_ESC << "[0;2H";
+//    // Load the screen_buffer into cout.
+//    std::cout << screen_buffer.rdbuf() << std::flush;
+//    std::cout << ANSII_ESC << "[0;2H";
+
+    return screen_buffer;
 };
+
+sf::Text ASCIIDisplay::render_with_gui_text(const Image& im) {
+    auto text_stream = render(im);
+    text.setString(text_stream.str());
+    return text;
+}
 
 void PNGDisplay::render(const Image &im) {
 
