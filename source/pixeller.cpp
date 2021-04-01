@@ -69,10 +69,12 @@ gmtl::Matrix44f create_screen_matrix(std::size_t pixel_width, std::size_t pixel_
     return screen;
 }
 
+
+
 int start(int argc, char *argv[]) {
     std::unique_ptr<Image> image;
 
-    std::size_t width = 500, height = 400;
+    std::size_t width = 800, height = 400;
 
     if (argc == 3) {
         width = std::stoi(argv[1]);
@@ -104,8 +106,10 @@ int start(int argc, char *argv[]) {
     horizon_line.set(&hor_line_data[0]);
 
 
-    sf::RenderWindow window(sf::VideoMode(image->width, image->height), "My window");
-//    image->use_window_display(window);
+    sf::RenderWindow window(sf::VideoMode(1900, 1050), "My window");
+    const sf::Vector2<unsigned int> window_dimensions = window.getSize();
+    image->use_window_display(window);
+    image->display.set_scale(window.getSize().y / height);
 
     Light light(1000, 800);
     light.set_window(window);
@@ -129,8 +133,6 @@ int start(int argc, char *argv[]) {
     bool model_rotated = true, cam_changed = true;
 
 
-    //model.fix_up_normals(cam_position);
-
     // run the program as long as the window is open
     while (window.isOpen()) {
         // check all the window's events that were triggered since the last iteration of the loop
@@ -143,25 +145,23 @@ int start(int argc, char *argv[]) {
             } else if (event.type == sf::Event::MouseButtonPressed) {
                 prev_mouse_pos = sf::Mouse::getPosition();
             } else if (event.type == sf::Event::KeyPressed) {
-                if (event.key.code == sf::Keyboard::Num2) {
-                    check_shadow = !check_shadow;
-                } else if (event.key.code == sf::Keyboard::LAlt) {
+                if (event.key.code == sf::Keyboard::LAlt) {
                     prev_mouse_pos = sf::Mouse::getPosition(window);
-                } else if (event.key.code == sf::Keyboard::Num1) {
-                    view_light = !view_light;
-                } else if (event.key.code == sf::Keyboard::Equal && sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
+                }else if (event.key.code == sf::Keyboard::Num1 && width < 2000) {
                     // Increase the size of the image.
                     width *= 1.2;
                     height *= 1.2;
                     image->resize(width, height);
                     screen = create_screen_matrix(image->width, image->height);
-                } else if (event.key.code == sf::Keyboard::Hyphen && sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
+                    image->display.set_scale((float) window.getSize().y / height);
+                } else if (event.key.code == sf::Keyboard::Tilde && height > 10 && width > 10) {
                     // Decrease size of the image
                     width /= 1.2;
                     height /= 1.2;
                     image->resize(width, height);
                     screen = create_screen_matrix(image->width, image->height);
-                }
+                    image->display.set_scale((float) window.getSize().y / height);}
+
             }
         }
 

@@ -29,12 +29,12 @@ class Image
 {
 private:
 	std::vector<Pixel> image;
-	ASCIIDisplay display;
 	//PNGDisplay pngdisplay;
 	std::unique_ptr<WindowDisplay> windisplay_ptr; // Deferred construction. Must use unique_ptr
 
 
 public:
+	ASCIIDisplay display;
 	std::size_t width, height;
 
 	auto get_pixels() const -> const std::vector<Pixel>& {
@@ -81,7 +81,9 @@ public:
 	void render()
 	{
 //		windisplay_ptr->render(*this);
-        display.render(*this);
+//        display.render(*this);
+        sf::Text windowed_text = display.render_with_gui_text(*this);
+        windisplay_ptr->draw(windowed_text);
 		clear();
 	}
 

@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <iomanip>
 #include <vector>
 #include <iostream>
 #include <png++/png.hpp>
@@ -13,15 +14,51 @@ class Image;
 // - xterm 256 color display
 
 class ASCIIDisplay {
-	static const char ANSII_ESC = char(27);
-	static const std::string scale;
-	static const int scale_size;
-
+    static const char ANSII_ESC = char(27);
+    static const std::string scale;
+    static const int scale_size;
+    sf::Font font;
+    sf::Text text;
 public:
-	// Renders the image
-	void render(const Image& im);
-};
+    float font_size_scale = 6;
+    ASCIIDisplay() {
+        const static std::string FONT_PATH = "/usr/share/fonts/TTF/FiraCode-Regular.ttf";
+        if (!font.loadFromFile(FONT_PATH)) {
+            throw std::runtime_error(FONT_PATH + " doesn't exist");
+        }
 
+        std::cout<<std::setprecision(3);
+    }
+
+    void set_scale(float scale) {
+        scale /= 10;
+        float font_size = 10;
+        // Set font size "breakpoints" similar to CSS breakpoints.
+        // When the scale gets too small, we reduce the font size (from 10) and increase the scale. 
+        if (scale < 0.3) {
+            scale *= 6;
+            font_size = 1;
+            text.setScale({scale, scale * 2.12F});
+        } else if (scale < 0.5) {
+            scale *= 3;
+            font_size = 3;
+            text.setScale({scale, scale * 1.09F});
+        }else if (scale < 0.8) {
+            scale *= 1.9;
+            font_size = 5;
+            text.setScale({scale, scale * 1.03F});
+
+        }else {
+            text.setScale({scale, scale});
+        }
+        text.setFont(font);
+        text.setCharacterSize((unsigned int) font_size);
+
+    }
+    // Renders the image
+    std::stringstream render(const Image &im);
+    sf::Text render_with_gui_text(const Image &im);
+};
 class PNGDisplay {
 	png::image<png::rgb_pixel> pngimg;
 
@@ -55,4 +92,8 @@ public:
 		}
 	}
 	void render(const Image& im);
+
+	void draw(sf::Drawable& drawable) {
+	    window.draw(drawable);
+	}
 };
