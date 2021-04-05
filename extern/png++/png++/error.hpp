@@ -100,7 +100,7 @@ namespace png
 //            return std::string(buf);
 
 #undef ERRBUF_SIZE
-        }
+        return "uwu";}
     };
 
 } // namespace png

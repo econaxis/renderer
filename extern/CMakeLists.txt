@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.16)
 add_subdirectory(zlib-1.2.11)
 
 set(ZLIB_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/zlib-1.2.11 ${CMAKE_CURRENT_SOURCE_DIR}/zlib-1.2.11)
-set(ZLIB_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/zlib-1.2.11/libz.a)
+set(ZLIB_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/zlib-1.2.11/Debug/zlibstaticd.lib)
 
 set(PNG_BUILD_ZLIB ON CACHE BOOL "" FORCE)
 add_subdirectory(lpng1637)

@@ -22,7 +22,7 @@ class ASCIIDisplay {
 public:
     float font_size_scale = 6;
     ASCIIDisplay() {
-        const static std::string FONT_PATH = "/usr/share/fonts/TTF/FiraCode-Regular.ttf";
+        const static std::string FONT_PATH = "SF-Pro.ttf";
         if (!font.loadFromFile(FONT_PATH)) {
             throw std::runtime_error(FONT_PATH + " doesn't exist");
         }

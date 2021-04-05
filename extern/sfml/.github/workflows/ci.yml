@@ -8,6 +8,7 @@ jobs:
     runs-on: ${{ matrix.platform.os }}
 
     strategy:
+      fail-fast: false
       matrix:
         platform:
         - { name: Windows VS2017, os: windows-2016   }
@@ -34,7 +35,7 @@ jobs:
 
     - name: Install Linux Dependencies
       if: runner.os == 'Linux'
-      run: sudo apt-get install libxrandr-dev libxcursor-dev libudev-dev libopenal-dev libflac-dev libvorbis-dev libgl1-mesa-dev libegl1-mesa-dev
+      run: sudo apt-get update && sudo apt-get install libxrandr-dev libxcursor-dev libudev-dev libopenal-dev libflac-dev libvorbis-dev libgl1-mesa-dev libegl1-mesa-dev
 
 
     - name: Install Android Components
@@ -43,7 +44,7 @@ jobs:
         echo "y" | /usr/local/lib/android/sdk/tools/bin/sdkmanager --install "cmake;3.10.2.4988404" --sdk_root=ANDROID_SDK_ROOT
         sudo ln -sf /usr/local/lib/android/sdk/cmake/3.10.2.4988404/bin/cmake /usr/bin/cmake
         wget -nv https://dl.google.com/android/repository/android-ndk-r18b-linux-x86_64.zip -P $GITHUB_WORKSPACE
-        unzip -qq -d $GITHUB_WORKSPACE android-ndk-r18b-linux-x86_64.zip 
+        unzip -qq -d $GITHUB_WORKSPACE android-ndk-r18b-linux-x86_64.zip
 
 
     - name: Configure CMake

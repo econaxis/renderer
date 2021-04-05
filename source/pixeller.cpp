@@ -74,7 +74,7 @@ gmtl::Matrix44f create_screen_matrix(std::size_t pixel_width, std::size_t pixel_
 int start(int argc, char *argv[]) {
     std::unique_ptr<Image> image;
 
-    std::size_t width = 800, height = 400;
+    std::size_t width = 1900, height = 1050;
 
     if (argc == 3) {
         width = std::stoi(argv[1]);
@@ -84,7 +84,7 @@ int start(int argc, char *argv[]) {
     image->clear();
 
     Model model, model1;
-    model.load_from_file("../head.obj");
+    model.load_from_file("../teddy.obj");
 
     // Right, near, far
     float r = 0.8, n = 2, f = 700;
@@ -121,7 +121,7 @@ int start(int argc, char *argv[]) {
 
     sf::Vector2i prev_mouse_pos;
     float angle_x = 1.542F, angle_y = 0.F;
-    gmtl::Vec3f cam_direction, cam_position(0, 0, 400), target, up_direction(0, 1, 0);
+    gmtl::Vec3f cam_direction, cam_position(0, 0, 100), target, up_direction(0, 1, 0);
     gmtl::Matrix44f camera_mat, screen_complete_matrix_transforms;
 
     int specular_selectivity = 35;
@@ -146,7 +146,8 @@ int start(int argc, char *argv[]) {
                 prev_mouse_pos = sf::Mouse::getPosition();
             } else if (event.type == sf::Event::KeyPressed) {
                 if (event.key.code == sf::Keyboard::LAlt) {
-                    prev_mouse_pos = sf::Mouse::getPosition(window);
+                //    prev_mouse_pos = sf::Mouse::getPosition(window);
+                    view_light = !view_light;
                 }else if (event.key.code == sf::Keyboard::Num1 && width < 2000) {
                     // Increase the size of the image.
                     width *= 1.2;
@@ -160,8 +161,8 @@ int start(int argc, char *argv[]) {
                     height /= 1.2;
                     image->resize(width, height);
                     screen = create_screen_matrix(image->width, image->height);
-                    image->display.set_scale((float) window.getSize().y / height);}
-
+                    image->display.set_scale((float) window.getSize().y / height);
+                }
             }
         }
 

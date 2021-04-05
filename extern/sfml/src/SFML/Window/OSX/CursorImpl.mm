@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2020 Marco Antognini (antognini.marco@gmail.com),
+// Copyright (C) 2007-2021 Marco Antognini (antognini.marco@gmail.com),
 //                         Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -98,14 +98,22 @@ bool CursorImpl::loadFromSystem(Cursor::Type type)
         case Cursor::SizeVertical:    m_cursor = [NSCursor resizeUpDownCursor];        break;
         case Cursor::Cross:           m_cursor = [NSCursor crosshairCursor];           break;
         case Cursor::NotAllowed:      m_cursor = [NSCursor operationNotAllowedCursor]; break;
+        case Cursor::SizeLeft:        m_cursor = [NSCursor resizeLeftRightCursor];     break;
+        case Cursor::SizeRight:       m_cursor = [NSCursor resizeLeftRightCursor];     break;
+        case Cursor::SizeTop:         m_cursor = [NSCursor resizeUpDownCursor];        break;
+        case Cursor::SizeBottom:      m_cursor = [NSCursor resizeUpDownCursor];        break;
             
         // These cursor types are undocumented, may not be available on some platforms
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wundeclared-selector"
+        case Cursor::SizeTopRight:
+        case Cursor::SizeBottomLeft:
         case Cursor::SizeBottomLeftTopRight:
             m_cursor = loadFromSelector(@selector(_windowResizeNorthEastSouthWestCursor));
             break;
 
+        case Cursor::SizeTopLeft:
+        case Cursor::SizeBottomRight:
         case Cursor::SizeTopLeftBottomRight:
             m_cursor = loadFromSelector(@selector(_windowResizeNorthWestSouthEastCursor));
             break;

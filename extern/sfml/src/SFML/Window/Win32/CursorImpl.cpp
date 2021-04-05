@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2020 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2021 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -152,6 +152,14 @@ bool CursorImpl::loadFromSystem(Cursor::Type type)
         case Cursor::SizeVertical:           shape = IDC_SIZENS;      break;
         case Cursor::SizeTopLeftBottomRight: shape = IDC_SIZENWSE;    break;
         case Cursor::SizeBottomLeftTopRight: shape = IDC_SIZENESW;    break;
+        case Cursor::SizeLeft:               shape = IDC_SIZEWE;      break;
+        case Cursor::SizeRight:              shape = IDC_SIZEWE;      break;
+        case Cursor::SizeTop:                shape = IDC_SIZENS;      break;
+        case Cursor::SizeBottom:             shape = IDC_SIZENS;      break;
+        case Cursor::SizeTopLeft:            shape = IDC_SIZENWSE;    break;
+        case Cursor::SizeBottomRight:        shape = IDC_SIZENWSE;    break;
+        case Cursor::SizeBottomLeft:         shape = IDC_SIZENESW;    break;
+        case Cursor::SizeTopRight:           shape = IDC_SIZENESW;    break;
         case Cursor::SizeAll:                shape = IDC_SIZEALL;     break;
         case Cursor::Cross:                  shape = IDC_CROSS;       break;
         case Cursor::Help:                   shape = IDC_HELP;        break;
