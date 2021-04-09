@@ -2,7 +2,7 @@
 ![image](/gifs/window-cube.gif)
 ![image](/gifs/weird%20teapot.gif)
 ![image](/gifs/text-cube.gif)
-![image](/gifs/font size test.webm)
+![fractional font scaling (imgur link)](https://i.imgur.com/eTUwRlt.mp4)
 
 For our capstone project, we made a renderer that converts a 3D object to a 2D image that could be displayed on the 
 screen. Essentially, it's similar to simulating how the camera works. It converts a 3D scene into a 2D image, losing 
@@ -88,10 +88,11 @@ It was taking ~5 seconds to parse the head object, which was significant but not
 
 Running through the file parsing code (`obj_loader.h`) in Visual Studio debugger showed that IO was taking a significant percentage of time. Since I couldn't optimize the standard library, I chose instead to multi-thread file parsing with OpenMP. OpenMP allows me to spawn multiple threads (workers) that each tackle a portion of the file. I accomplished this by splitting the file into chunks equals to the number of threads.
 
-`
-************|************|************|************|************|************|
+```
+------------|------------|------------|------------|------------|------------|
 W1 --> ...  |W2 --> ...  |W3 --> ...  |W4 --> ...  |W5 --> ...  |W6 --> ...  |
-`
+```
+
 *W1, W2, W3... represent worker num. 1, worker num. 2, worker num.3, ...*
 
 Here, each 6 workers parse their portions of the file (delineated by the |) independently. Theoretically, this would cut file parsing time by 6 times. The actual implementation of this in C++ was accomplished by finding approximate locations of line separators (\n) at each "stop point" (|), then storing the location, found by `stream.tellg()`, in an array. We would loop across that 5 element array (as there are only 5 separators needed to separate 6 workers) and work from the start separator to the end separator. Then, we use OpenMP magic to parallelize that for loop. 
@@ -108,6 +109,7 @@ I set to work optimizing other parts. For example, I removed stringstream and ch
 ## Fractional font scaling and rendering small, subpixel characters
 
 Check gifs folder, [font size test](https://github.com/econaxis/renderer/blob/main/gifs/font%20size%20test.webm)
+
 Write-up soon.
 
 ## Warm vs cool, artificial vs natural lighting and shadows and hue
