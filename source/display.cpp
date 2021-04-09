@@ -65,6 +65,7 @@ void PNGDisplay::render(const Image &im) {
 };
 
 void WindowDisplay::render(const Image &im) {
+    window.clear();
     const auto *pixel_data = im.get_pixels().data();
     auto *pixel_data_destination = pixels.data();
 
@@ -85,4 +86,5 @@ void WindowDisplay::render(const Image &im) {
 
     texture.update(&pixels[0]);
     window.draw(sprite);
+    window.display();
 }

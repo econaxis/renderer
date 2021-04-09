@@ -82,6 +82,7 @@ public:
 	{
 //		windisplay_ptr->render(*this);
 //        display.render(*this);
+
         sf::Text windowed_text = display.render_with_gui_text(*this);
         windisplay_ptr->draw(windowed_text);
 		clear();
@@ -210,7 +211,7 @@ public:
 		const auto& start = std::min(p1, p2);
 		const auto& end = std::max(p1, p2);
 #ifdef _DEBUG
-        assert(x < width&& p1.y < height);
+            assert(p1.x < width&& p1.y < height);
 #endif // _DEBUG
 
 		double interp_z = start.z;

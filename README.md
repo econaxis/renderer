@@ -2,7 +2,7 @@
 ![image](/gifs/window-cube.gif)
 ![image](/gifs/weird%20teapot.gif)
 ![image](/gifs/text-cube.gif)
-![image](/gifs/font size test.webm)
+![image](/gifs/text%20size%20latest.gif)
 
 For our capstone project, we made a renderer that converts a 3D object to a 2D image that could be displayed on the 
 screen. Essentially, it's similar to simulating how the camera works. It converts a 3D scene into a 2D image, losing 

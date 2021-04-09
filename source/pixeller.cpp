@@ -332,16 +332,7 @@ int start(int argc, char *argv[]) {
         }
 
 
-        window.clear();
-        if (!view_light) {
-            image->render();
-        } else {
-            light.render();
-
-            cam_changed = true;
-            model_rotated = true;
-        }
-        window.display();
+        image->render();
 
     }
 
