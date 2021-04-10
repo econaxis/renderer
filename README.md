@@ -1,8 +1,53 @@
-![image](/gifs/latest.gif)
-![image](/gifs/window-cube.gif)
-![image](/gifs/weird%20teapot.gif)
+# Rudimentary Software 3D Renderer
+Features implemented:
+ - 3d OBJ file loading
+ - ambient lighting
+ - specular lighting
+ - object rotations/movement
+ - camera rotations/movement
+ - multiple rendering outputs (ASCII, PNG, SFML window with operating system API's). Live switching between outputs not supported yet.
+ - shadows by rendering the scene twice--from POV of light and from POV of camera.
+
+Features not yet worked out:
+ - texture mapping
+    - perspective correct texture interpolation
+ - multiple models 
+ - better UI controls
+ - running in the web by compiling to WASM or using server/client model
+
+
+## Progression
+
+![image](/gifs/simple-triangle.gif)
+Rendering a filled triangle
+
+
 ![image](/gifs/text-cube.gif)
+*First perspective calculation. First rudimentary line rendering*
+
+A lot of time was spent getting to this point that I didn't document. Getting the cube to rotate correctly in 3D space was difficult. I first prototyped the perspective matrices in MATLAB, then I copied the code over to C++ and also implemented text-based rendering in C++. 
+
+For each frame, I output each pixel to a stringstream object, then flush that stringstream to std::cout. 
+
+Just based from visual inspection, I confirmed the cube to be perspectively correct. For example, parralel lines do converge towards the horizon line.
+
+![image](/gifs/window-cube.gif)
+Instead of using text, I used actual pixels to render. Therefore, I could render at much higher quality and performance, without being constrained by the terminal emulator implementation.
+
+![image](/gifs/weird%20teapot.gif)
+Implementing a rotating teapot on 3 of Euler rotation axes, with no z-buffering. I think I implemented one of the rotation matrices wrong, hence the warping at the end of the GIF.
+
+![image](/gifs/teddy-bear-z-buffer-coloring-closness.gif)
+Implemented z-buffering. I colored each face by how close it was. The closer the face, the more red it became.
+
+![image](/gifs/latest.gif)
+This is after a lot of performance improvements, z-buffering, and implementing basic lighting scheme.
+
 ![image](/gifs/text%20size%20latest.gif)
+Going retro. I tried using the ASCII renderer with this. I also spent a lot of time implementing variable font size, which was quite hard and I couldn't get it to work perfectly (notice the slight jumping when changing font size)
+
+
+# Project Description
 
 For our capstone project, we made a renderer that converts a 3D object to a 2D image that could be displayed on the 
 screen. Essentially, it's similar to simulating how the camera works. It converts a 3D scene into a 2D image, losing 
