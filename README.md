@@ -44,6 +44,7 @@ Implemented z-buffering. I colored each face by how close it was. The closer the
 This is after a lot of performance improvements, z-buffering, and implementing basic lighting scheme.
 
 ![image](/gifs/text%20size%20latest.gif)
+
 Going retro. I tried using the ASCII renderer with this. I also spent a lot of time implementing variable font size, which was quite hard and I couldn't get it to work perfectly (notice the slight jumping when changing font size)
 
 
