@@ -37,8 +37,14 @@ Instead of using text, I used actual pixels to render. Therefore, I could render
 ![image](/gifs/weird%20teapot.gif)
 Implementing a rotating teapot on 3 of Euler rotation axes, with no z-buffering. I think I implemented one of the rotation matrices wrong, hence the warping at the end of the GIF.
 
+![image](/gifs/teddy%20bear.gif)
+Still no z-buffer, but filled in triangles.
+
 ![image](/gifs/teddy-bear-z-buffer-coloring-closness.gif)
 Implemented z-buffering. I colored each face by how close it was. The closer the face, the more red it became.
+
+![image](/gifs/head.gif)
+Implemented z-buffering.
 
 ![image](/gifs/latest.gif)
 This is after a lot of performance improvements, z-buffering, and implementing basic lighting scheme.
