@@ -92,6 +92,11 @@ public:
 		b = _b;
 	}
 
+	Color get_color(){
+		//do i need to do error handling
+		return Color(r, g, b);
+	}
+
 	auto get_darkness() const {
 		return (r + g + b) / 3;
 	}
