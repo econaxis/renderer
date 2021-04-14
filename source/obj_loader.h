@@ -11,6 +11,8 @@
 #include <string>
 #include <cctype>
 #include <gmtl/Matrix.h>
+
+#include <SFML/Graphics.h>
 struct Face {
 	std::array<unsigned int, 3> point_indices;
 	gmtl::Vec3f normal;
@@ -32,10 +34,13 @@ class Model {
 	mutable gmtl::Matrix44f total_model_mat;
 	mutable bool model_changed = true;
 
+    float angle_a = 1.537F, angle_b = 0.F, angle_c = -0.5F;
 
 public:
 
-	Model() = default;
+	Model(std::string filename) {
+		load_from_file(filename);
+	};
 
 
 	const gmtl::Matrix44f& get_model_matrix() const {
@@ -46,7 +51,31 @@ public:
 		return total_model_mat;
 	}
 
-	void set_rotation(float angle_a, float angle_b, float angle_c) {
+	void check_rotated() {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+            angle_b -= 0.02F;
+            model_rotated = true;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+            angle_b += 0.02F;
+            model_rotated = true;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
+            angle_a += 0.02F;
+            model_rotated = true;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
+            angle_a -= 0.02F;
+            model_rotated = true;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::PageUp)) {
+            angle_c -= 0.02F;
+            model_rotated = true;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::PageDown)) {
+            angle_c += 0.02F;
+            model_rotated = true;
+        }
 		float cosa = std::cos(angle_a);
 		float sina = std::sin(angle_a);
 		float cosb = std::cos(angle_b);
@@ -58,8 +87,8 @@ public:
 			sina * cosb, sina * sinb * siny + cosa * cosy, sina * sinb * cosy - cosa * siny, 0,
 			-sinb, cosb * siny, cosb * cosy, 0,
 			0, 0, 0, 1);
-
-		model_changed = true;
+		
+		return model_rotated;
 	}
 
 	void load_from_file(const std::string& filename) {

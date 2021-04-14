@@ -17,46 +17,13 @@
 #include "utils.h"
 #include "light.h"
 
+#include "camera.h"
+
 
 using namespace std::chrono_literals;
 
 
-gmtl::Matrix44f lookAt(gmtl::Vec3f &eye, gmtl::Vec3f &target, const gmtl::Vec3f &upDir = gmtl::Vec3f{0, 1, 0}) {
-    // compute the forward vector from target to eye
-    gmtl::Vec3f forward = eye - target;
-    gmtl::normalize(forward);
 
-    // compute the left vector
-    auto left = gmtl::makeCross(upDir, forward); // cross product
-    gmtl::normalize(left);
-
-    // recompute the orthonormal up vector
-    auto up = gmtl::makeCross(forward, left);    // cross product
-
-    // init 4x4 matrix
-    gmtl::Matrix44f matrix;
-
-
-    // set rotation part, inverse rotation matrix: M^-1 = M^T for Euclidean transform
-    matrix.mData[0] = left[0];
-    matrix.mData[4] = left[1];
-    matrix.mData[8] = left[2];
-    matrix.mData[1] = up[0];
-    matrix.mData[5] = up[1];
-    matrix.mData[9] = up[2];
-    matrix.mData[2] = forward[0];
-    matrix.mData[6] = forward[1];
-    matrix.mData[10] = forward[2];
-
-    // set translation part
-    matrix.mData[12] = -left[0] * eye[0] - left[1] * eye[1] - left[2] * eye[2];
-    matrix.mData[13] = -up[0] * eye[0] - up[1] * eye[1] - up[2] * eye[2];
-    matrix.mData[14] = -forward[0] * eye[0] - forward[1] * eye[1] - forward[2] * eye[2];
-
-    matrix.mState = gmtl::Matrix44f::XformState::FULL;
-
-    return matrix;
-}
 
 gmtl::Matrix44f create_screen_matrix(std::size_t pixel_width, std::size_t pixel_height) {
     gmtl::Matrix44f screen;
@@ -67,6 +34,17 @@ gmtl::Matrix44f create_screen_matrix(std::size_t pixel_width, std::size_t pixel_
             0, 0, 0, 1
     );
     return screen;
+}
+
+gmtl::Matrix44f create_perspective_transform_matrix (float r = 0.8, float n=2, float f = 700) {
+    gmtl::Matrix44f persp;
+    persp.set(
+            n / r, 0, 0, 0,
+            0, n / r, 0, 0,
+            0, 0, -(f + n) / (f - n), -2 * f * n / (f - n),
+            0, 0, -1, 0
+    );
+    return persp;
 }
 
 
@@ -83,54 +61,27 @@ int start(int argc, char *argv[]) {
     image = std::make_unique<Image>(width, height);
     image->clear();
 
-    Model model, model1;
-    model.load_from_file("../head.obj");
+    Model model ('../head.obj');
 
-    // Right, near, far
-    float r = 0.8, n = 2, f = 700;
-    gmtl::Matrix44f persp, trans, screen;
-    persp.set(
-            n / r, 0, 0, 0,
-            0, n / r, 0, 0,
-            0, 0, -(f + n) / (f - n), -2 * f * n / (f - n),
-            0, 0, -1, 0
-    );
-
-    screen = create_screen_matrix(image->width, image->height);
-    gmtl::Matrix<float, 4, 3> horizon_line;
-    const float hor_line_data[] = {
-            f * r / n - 1, 1, -f + 1, 1,
-            -f * r / n + 1, 1, -f + 1, 1,
-            0, -1, -f + 1, 1
-    };
-    horizon_line.set(&hor_line_data[0]);
-
+    gmtl::Matrix44f persp = create_perspective_transform_matrix();
+    gmtl::Matrix44f screen = create_screen_matrix(image->width, image->height);
 
     sf::RenderWindow window(sf::VideoMode(1900, 1050), "My window");
-    const sf::Vector2<unsigned int> window_dimensions = window.getSize();
     image->use_window_display(window);
     image->display.set_scale(window.getSize().y / height);
 
-    Light light(1000, 800);
-    light.set_window(window);
+    Light light(image.width, image.height);
+    light.bake_light(model);]
+    
+    Camera camera;
 
 
-    float angle_a = 1.537F, angle_b = 0.F, angle_c = -0.5F;
-    //window.setFramerateLimit(30);
-    gmtl::Matrix44f rotate;
-
-    sf::Vector2i prev_mouse_pos;
     float angle_x = 1.542F, angle_y = 0.F;
-    gmtl::Vec3f cam_direction, cam_position(0, 0, 400), target, up_direction(0, 1, 0);
-    gmtl::Matrix44f camera_mat, screen_complete_matrix_transforms;
 
+    // Lighting constants. Changing it changes the specific properties of the object (e.g. rubber/plastic/metal/wood...)
     int specular_selectivity = 35;
     double k_reflectivity = 0.6;
 
-    light.light_pos = {200, 200, 200};
-    light.light_target = {0, 0, 0};
-    bool view_light = false, check_shadow = true;
-    bool model_rotated = true, cam_changed = true;
 
 
     // run the program as long as the window is open
@@ -142,12 +93,12 @@ int start(int argc, char *argv[]) {
             if (event.type == sf::Event::Closed) {
                 image.release();
                 window.close();
-            } else if (event.type == sf::Event::MouseButtonPressed) {
-                prev_mouse_pos = sf::Mouse::getPosition();
             } else if (event.type == sf::Event::KeyPressed) {
-                if (event.key.code == sf::Keyboard::LAlt) {
-                    prev_mouse_pos = sf::Mouse::getPosition(window);
-                }else if (event.key.code == sf::Keyboard::Num1 && width < 2000) {
+                // Hard to integrate this into classes...TODO
+                // if (event.key.code == sf::Keyboard::LAlt) {
+                //     prev_mouse_pos = sf::Mouse::getPosition(window);
+                // }else
+                if (event.key.code == sf::Keyboard::Num1 && width < 2000) {
                     // Increase the size of the image.
                     width *= 1.2;
                     height *= 1.2;
@@ -161,102 +112,25 @@ int start(int argc, char *argv[]) {
                     image->resize(width, height);
                     screen = create_screen_matrix(image->width, image->height);
                     image->display.set_scale((float) window.getSize().y / height);}
-
             }
         }
 
-
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-            angle_b -= 0.02F;
-            model_rotated = true;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-            angle_b += 0.02F;
-            model_rotated = true;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
-            angle_a += 0.02F;
-            model_rotated = true;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
-            angle_a -= 0.02F;
-            model_rotated = true;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::PageUp)) {
-            angle_c -= 0.02F;
-            model_rotated = true;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::PageDown)) {
-            angle_c += 0.02F;
-            model_rotated = true;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) {
-            angle_x -= 2 * (float) (sf::Mouse::getPosition(window).x - prev_mouse_pos.x) / window.getSize().x;
-            angle_y += 2 * (float) (sf::Mouse::getPosition(window).y - prev_mouse_pos.y) / window.getSize().y;
-            prev_mouse_pos = sf::Mouse::getPosition(window);
-            cam_changed = true;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-            cam_position += cam_direction;
-            cam_changed = true;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-            cam_position -= cam_direction;
-            cam_changed = true;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) {
-            cam_position += up_direction;
-            cam_changed = true;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-            cam_position -= up_direction;
-            cam_changed = true;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-            cam_position -= gmtl::makeCross(cam_direction, up_direction);
-            cam_changed = true;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-            cam_position += gmtl::makeCross(cam_direction, up_direction);
-            cam_changed = true;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) {
-            angle_x = 1.542F;
-            angle_y = 0.F;
-            cam_changed = true;
-        }
-
-        if (model_rotated || cam_changed || view_light) {
-            if (model_rotated) {
-                model.set_rotation(angle_a, angle_b, angle_c);
-                model_rotated = false;
-            }
-            if (cam_changed) {
-                cam_direction[0] = -std::cos(angle_x);
-                cam_direction[1] = -std::sin(angle_y);
-                cam_direction[2] = -std::sin(angle_x);
-                gmtl::normalize(cam_direction);
-                target = cam_position + cam_direction;
-                camera_mat = lookAt(cam_position, target);
-                cam_changed = false;
-            }
-            light.bake_light(model);
-        }
+        // Handle keyboard inputs for model, light, and camera.
+        const model_did_rotate = model.check_rotated();
+        if(model_did_rotate) light.bake_light();
+        camera.handle_keyboard_input();
 
         gmtl::Matrix44f light_matrix = light.get_matrix_transforms();
-
+        gmtl::Matrix44f screen_complete_matrix_transforms = screen * persp * camera.camera_mat;
 
         auto tot_triangles = model.total_triangles();
-
-        screen_complete_matrix_transforms = screen * persp * camera_mat;
         const auto &model_matrix = model.get_model_matrix();
 
-#pragma omp parallel for shared(model) num_threads(8)
+#pragma omp parallel for shared(model)
         for (int i = 0; i <= tot_triangles - 3; i += 3) {
+            // Render 3 triangles at a time. Why 3? Idk.
             auto normal_points = model_matrix * model.get_3_triangle(i);
             auto persp_pts = screen_complete_matrix_transforms * normal_points;
-
 
             // Do the homogenous divide
             for (int column = 0; column < 9; column++) {
@@ -266,8 +140,12 @@ int start(int argc, char *argv[]) {
                 persp_pts(3, column) = 1;
             }
 
-
+            // Iterate through each triangle (triangle has 3 vertices, therefore increment by 3 each time). For loop runs 3 times.
             for (int tri_index = 0; tri_index <= 6; tri_index += 3) {
+                // TODO: refactor this code to avoid the interconversion between Point4f <--> Point3f <--> std::vector<Point>
+
+                // We'll just use the location of the first point for lighting and shadow calculations.
+                // Approximate the shadows/lighting/reflectance that applies to point 1 also applies equally to the other points.
                 gmtl::Point4f pt1_world{normal_points(0, tri_index), normal_points(1, tri_index),
                                         normal_points(2, tri_index), 1};
 
@@ -278,15 +156,17 @@ int start(int argc, char *argv[]) {
                                   1};
                 if (
                         between_mat(persp_pts, tri_index, *image) &&
-                        (pt1[2] - 0.01 < image->at(pt1[0], pt1[1]).z ||
-                         pt2[2] - 0.01 < image->at(pt2[0], pt2[1]).z ||
-                         pt3[2] - 0.01 < image->at(pt3[0], pt3[1]).z)
+                        (pt1[2] - 0.0000001 < image->at(pt1[0], pt1[1]).z ||
+                         pt2[2] - 0.0000001 < image->at(pt2[0], pt2[1]).z ||
+                         pt3[2] - 0.0000001 < image->at(pt3[0], pt3[1]).z)
                         ) {
 
 
                     gmtl::Vec3f normal_dir = model.get_normal(i + tri_index / 3); // Automatically normalized
                     gmtl::Vec3f face_position = {pt1_world[0], pt1_world[1], pt1_world[2]};
-                    auto intensity = std::max(gmtl::dot(gmtl::makeNormal(light.light_pos), normal_dir), 0.F) * 0.5F;
+
+                    // Light intensity changes to how the plane faces the light
+                    auto light_intensity = std::max(gmtl::dot(gmtl::makeNormal(light.light_pos), normal_dir), 0.F) * 0.5F;
                     gmtl::Vec3f incident_light = face_position - light.light_pos;
                     gmtl::normalize(incident_light);
                     gmtl::Vec3f face_to_camera = cam_position - face_position;
@@ -299,25 +179,21 @@ int start(int argc, char *argv[]) {
                     float specular_intensity =
                             (float) std::pow(std::max(gmtl::dot(reflected_light, face_to_camera), 0.F),
                                              specular_selectivity) * k_reflectivity;
-                    float ambient_light = 0.3;
+                    float ambient_light = 0.3F;
 
-                    // Maybe negative?
-
+                    // First, convert point 1 world coords into the coordinates of the light reference frame. 
                     auto light_reference_frame = light_matrix * pt1_world;
                     light_reference_frame[0] /= light_reference_frame[3];
                     light_reference_frame[1] /= light_reference_frame[3];
                     light_reference_frame[2] /= light_reference_frame[3];
                     light_reference_frame[3] = 1;
 
-
-                    // Don't want this to trip.
-                    if (check_shadow &&
-                        light.check_closest_lit(light_reference_frame) < light_reference_frame[2] - 0.0001) {
-                        // Current shape is in shadow because it is further away from what's closest lit by the light.
+                    // Then, we check if the point1 in light reference frame is seen by the light
+                    if (light.check_closest_lit(light_reference_frame) < light_reference_frame[2] - 0.000001) {
+                        // If coordinate is in light reference frame, then we decrease the lighting for it.
                         specular_intensity = 0;
                         intensity /= 2;
-                        ambient_light = 0.1F;
-                        //red_ambience = 0.4;
+                        ambient_light = 0.1F; // Contradicts the meaning of "ambient" light but this method looks better..
                     }
                     Color c = Color::clamp(specular_intensity + intensity + ambient_light + 0.15,
                                            specular_intensity + intensity + ambient_light,
@@ -325,13 +201,9 @@ int start(int argc, char *argv[]) {
 
 
                     image->triangle(pt1, pt2, pt3, c);
-
                 }
             }
-
         }
-
-
         image->render();
 
     }
