@@ -61,7 +61,7 @@ int start(int argc, char *argv[]) {
     image = std::make_unique<Image>(width, height);
     image->clear();
 
-    Model model ('../head.obj');
+    Model model ("../head.obj");
 
     gmtl::Matrix44f persp = create_perspective_transform_matrix();
     gmtl::Matrix44f screen = create_screen_matrix(image->width, image->height);
@@ -70,13 +70,11 @@ int start(int argc, char *argv[]) {
     image->use_window_display(window);
     image->display.set_scale(window.getSize().y / height);
 
-    Light light(image.width, image.height);
-    light.bake_light(model);]
+    Light light(image->width, image->height);
+    light.bake_light(model);
     
     Camera camera;
 
-
-    float angle_x = 1.542F, angle_y = 0.F;
 
     // Lighting constants. Changing it changes the specific properties of the object (e.g. rubber/plastic/metal/wood...)
     int specular_selectivity = 35;
@@ -116,8 +114,8 @@ int start(int argc, char *argv[]) {
         }
 
         // Handle keyboard inputs for model, light, and camera.
-        const model_did_rotate = model.check_rotated();
-        if(model_did_rotate) light.bake_light();
+        const bool model_did_rotate = model.check_rotated();
+        if(model_did_rotate) light.bake_light(model);
         camera.handle_keyboard_input();
 
         gmtl::Matrix44f light_matrix = light.get_matrix_transforms();
@@ -169,7 +167,7 @@ int start(int argc, char *argv[]) {
                     auto light_intensity = std::max(gmtl::dot(gmtl::makeNormal(light.light_pos), normal_dir), 0.F) * 0.5F;
                     gmtl::Vec3f incident_light = face_position - light.light_pos;
                     gmtl::normalize(incident_light);
-                    gmtl::Vec3f face_to_camera = cam_position - face_position;
+                    gmtl::Vec3f face_to_camera = camera.cam_position - face_position;
                     gmtl::normalize(face_to_camera);
 
 
@@ -192,12 +190,12 @@ int start(int argc, char *argv[]) {
                     if (light.check_closest_lit(light_reference_frame) < light_reference_frame[2] - 0.000001) {
                         // If coordinate is in light reference frame, then we decrease the lighting for it.
                         specular_intensity = 0;
-                        intensity /= 2;
+                        light_intensity /= 2;
                         ambient_light = 0.1F; // Contradicts the meaning of "ambient" light but this method looks better..
                     }
-                    Color c = Color::clamp(specular_intensity + intensity + ambient_light + 0.15,
-                                           specular_intensity + intensity + ambient_light,
-                                           specular_intensity + intensity + ambient_light);
+                    Color c = Color::clamp(specular_intensity + light_intensity + ambient_light + 0.15,
+                                           specular_intensity + light_intensity + ambient_light,
+                                           specular_intensity + light_intensity + ambient_light);
 
 
                     image->triangle(pt1, pt2, pt3, c);

@@ -12,7 +12,8 @@
 #include <cctype>
 #include <gmtl/Matrix.h>
 
-#include <SFML/Graphics.h>
+#include <SFML/Graphics.hpp>
+
 struct Face {
 	std::array<unsigned int, 3> point_indices;
 	gmtl::Vec3f normal;
@@ -51,7 +52,8 @@ public:
 		return total_model_mat;
 	}
 
-	void check_rotated() {
+	bool check_rotated() {
+		bool model_rotated = false;
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
             angle_b -= 0.02F;
             model_rotated = true;

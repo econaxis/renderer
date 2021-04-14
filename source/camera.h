@@ -5,20 +5,18 @@
 
 
 
-class Camera {
-    gmtl::Vec3f cam_position(0, 0, 400), target, up_direction(0, 1, 0);
+struct Camera {
     float angle_x = 1.542F, angle_y = 0.F;
-
-
-public:
+    gmtl::Vec3f cam_position, up_direction, target, cam_direction;
     gmtl::Matrix44f camera_mat;
 
-    Camera() {
-        reprocess_camera_mat();
+    Camera() : cam_position(0, 0, 400), up_direction(0, 1, 0), target(0, 0, 0) {
+        reprocess_camera_mat(); // Initializes cam_direction and camera_mat
     }
 
     void handle_keyboard_input() {
         bool cam_changed = false;
+        // Camera angle changing not supported yet.
         // if (sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) {
         //     angle_x -= 2 * (float) (sf::Mouse::getPosition(window).x - prev_mouse_pos.x) / window.getSize().x;
         //     angle_y += 2 * (float) (sf::Mouse::getPosition(window).y - prev_mouse_pos.y) / window.getSize().y;
@@ -59,7 +57,6 @@ public:
         }
     }
     void reprocess_camera_mat() {
-        gmtl::Vec3f cam_direction;
         cam_direction[0] = -std::cos(angle_x);
         cam_direction[1] = -std::sin(angle_y);
         cam_direction[2] = -std::sin(angle_x);
@@ -104,4 +101,4 @@ public:
 
         return matrix;
     }
-}
+};
