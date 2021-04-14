@@ -56,9 +56,6 @@ class Light {
 public:
 	gmtl::Vec3f light_pos = { -1, -1, -1 }, light_target = { 0, 0, 0 };
 
-	void set_window(sf::RenderWindow& window) {
-		image.use_window_display(window);
-	}
 	Light(std::size_t width, std::size_t height) :image(width, height) {
 		screen_matrix.set(
 			(float)width / 2, 0, 0, (float)width / 2,
@@ -74,6 +71,10 @@ public:
 			0, 0, -(f + n) / (f - n), -2 * f * n / (f - n),
 			0, 0, -1, 0
 		);
+
+		// Set this as default position and targret. 
+		light_pos = {200, 200, 200};
+		light_target = {0, 0, 0};
 	};
 
 	gmtl::Matrix44f get_matrix_transforms() {
@@ -89,10 +90,9 @@ public:
 		return image.at((std::size_t) point[0], (std::size_t)point[1]).z;
 	}
 
-	void render() {
-		image.render();
-	}
 	void bake_light(const Model& model) {
+		// TODO: lots of repeated code with pixeller.cpp. Have to separate into a member function of Model
+		// I'm thinking "Model.render_to_image(const Image& im)"
 		image.clear();
 		const int tot_triangles = model.total_triangles();
 		screen_complete_matrix_transforms = screen_matrix * perspective_matrix * lookAt(light_pos, light_target);
