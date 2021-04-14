@@ -21,13 +21,16 @@ class ASCIIDisplay {
     sf::Text text;
 public:
     float font_size_scale = 6;
+    bool font_loaded = false;
     ASCIIDisplay() {
         const static std::string FONT_PATH = "/usr/share/fonts/TTF/FiraCode-Regular.ttf";
         if (!font.loadFromFile(FONT_PATH)) {
-            throw std::runtime_error(FONT_PATH + " doesn't exist");
+            std::cout<<"Font couldn't be found. Reverting to console output.";
+        } else {
+            font_loaded = true;
         }
 
-        std::cout<<std::setprecision(3);
+        std::cout<<std::setprecision(2);
     }
 
     void set_scale(float scale) {
@@ -55,9 +58,8 @@ public:
         text.setCharacterSize((unsigned int) font_size);
 
     }
-    // Renders the image
-    std::stringstream render(const Image &im);
-    sf::Text render_with_gui_text(const Image &im);
+    std::stringstream render(const Image &im); // Renders the image as a stringstream, from which we push to std::cout
+    sf::Text render_with_gui_text(const Image &im); // Renders the image as sf::Text, from which we push to sf::RenderWindow.
 };
 class PNGDisplay {
 	png::image<png::rgb_pixel> pngimg;

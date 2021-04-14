@@ -10,54 +10,55 @@
 #include <thread>
 #include <gmtl/gmtl.h>
 
-std::ostream& operator<<(std::ostream& os, std::pair<int, int> p);
-
-struct Color {
+struct Color
+{
 	float r = 0.0, g = 0.0, b = 0.0;
 
-	static Color clamp(float r, float g, float b) {
+	static Color clamp(float r, float g, float b)
+	{
 		r = std::clamp(r, 0.F, 1.F);
 		g = std::clamp(g, 0.F, 1.F);
 		b = std::clamp(b, 0.F, 1.F);
-		return Color{ r, g, b };
+		return Color{r, g, b};
 	}
 };
 
-
-// Responsible for blitting triangles/lines/pixels, antialiasing. Holds all the image data in a 1D vector. 
+// Responsible for blitting triangles/lines/pixels, antialiasing. Holds all the image data in a 1D vector.
 class Image
 {
 private:
 	std::vector<Pixel> image;
-	//PNGDisplay pngdisplay;
 	std::unique_ptr<WindowDisplay> windisplay_ptr; // Deferred construction. Must use unique_ptr
-
 
 public:
 	ASCIIDisplay display;
 	std::size_t width, height;
 
-	auto get_pixels() const -> const std::vector<Pixel>& {
+	const auto &get_pixels() const
+	{
 		return image;
 	}
-	Image(std::size_t width = 500, std::size_t height = 50) : width(width), height(height)
+	Image(std::size_t width = 800, std::size_t height = 50) : width(width), height(height)
 	{
+		// In case we somehow overflow, make the image vector 1 bigger.
 		image.resize(width * height + 1);
 		clear();
 	}
 
-	void resize(std::size_t new_width, std::size_t new_height) {
-	    image.resize(new_width * new_height + 1);
-	    width = new_width;
-	    height = new_height;
-	    clear();
-	    std::cout<<"Resized to "<<new_width<<" "<<new_height<<"\n";
+	void resize(std::size_t new_width, std::size_t new_height)
+	{
+		image.resize(new_width * new_height + 1);
+		width = new_width;
+		height = new_height;
+		clear();
+		std::cout << "Resized to " << new_width << " " << new_height << "\n";
 	}
 
-	void use_window_display(sf::RenderWindow& window) {
+	void use_window_display(sf::RenderWindow &window)
+	{
 		windisplay_ptr = std::make_unique<WindowDisplay>(window, width, height);
 	}
-	auto& operator[](std::size_t idx)
+	auto &operator[](std::size_t idx)
 	{
 		if (idx >= height)
 		{
@@ -66,12 +67,10 @@ public:
 		return image[idx];
 	}
 
-	auto& at(std::size_t x, std::size_t y)
+	auto &at(std::size_t x, std::size_t y)
 	{
 		return image[y * width + x];
 	}
-
-
 
 	void clear()
 	{
@@ -80,25 +79,29 @@ public:
 
 	void render()
 	{
-//		windisplay_ptr->render(*this);
-//        display.render(*this);
-
-        sf::Text windowed_text = display.render_with_gui_text(*this);
-        windisplay_ptr->draw(windowed_text);
+		if (display.font_loaded && windisplay_ptr)
+		{
+			// If we initialized both the font and the window display, then use the better rendering method through OS window.
+			sf::Text windowed_text = display.render_with_gui_text(*this);
+			windisplay_ptr->draw(windowed_text);
+		} else {
+			// Else, just render to the console.
+			std::cout<<display.render(*this).str();
+		}
 		clear();
 	}
 
-	auto& arr()
+	auto &arr()
 	{
 		return image;
 	}
 
-	const auto& arr() const
+	const auto &arr() const
 	{
 		return image;
 	}
 
-	template<typename T>
+	template <typename T>
 	auto line_points(std::pair<T, T> pt1, std::pair<T, T> pt2)
 	{
 		T x1 = pt1.first;
@@ -134,12 +137,11 @@ public:
 			return points;
 		}
 
-
-		// Reserve in advance the Manhatten distance between pt1 and pt2. 
+		// Reserve in advance the Manhatten distance between pt1 and pt2.
 		// This will always overestimate the points, but it's quicker than Pythagorean theorem and prevents multiple costly allocations.
 		points.reserve(std::abs(x1 - x2) + std::abs(y1 - y2));
 
-		// Use Bresenham's algorithm for all other lines. 
+		// Use Bresenham's algorithm for all other lines.
 		const bool steep = (fabs(y2 - y1) > fabs(x2 - x1));
 		if (steep)
 		{
@@ -184,19 +186,20 @@ public:
 		return points;
 	}
 
+	void line(Point p1, Point p2, Color c)
+	{
+		auto pts = line_points(std::pair{p1.x, p1.y}, std::pair{p2.x, p2.y});
 
-
-	void line(Point p1, Point p2, Color c) {
-		auto pts = line_points(std::pair{ p1.x, p1.y }, std::pair{ p2.x, p2.y });
-
-		for (const auto& p : pts) {
-			if (at(p.first, p.second).z < std::min(p1.z, p2.z)) {
+		for (const auto &p : pts)
+		{
+			if (at(p.first, p.second).z < std::min(p1.z, p2.z))
+			{
 				at(p.first, p.second) = Pixel(c.r, c.g, c.b, (float)std::max(p1.z, p2.z));
 			}
 		}
 	}
 	// Converts from floating point, -1 -> 1 coordinates to pixel coordinates
-	auto pixel_coords(const std::pair<float, float>& in) const
+	auto pixel_coords(const std::pair<float, float> &in) const
 	{
 		auto x = (std::clamp(in.first, -1.F, 1.F) + 1) * width / 2;
 		auto y = (std::clamp(in.second, -1.F, 1.F) + 1) * height / 2;
@@ -205,13 +208,14 @@ public:
 		return std::pair<short, short>{x, y};
 	}
 
-
-	void horizontal_line(Point p1, Point p2, Color c) {
-		if (p1.x == p2.x) return;
-		const auto& start = std::min(p1, p2);
-		const auto& end = std::max(p1, p2);
+	void horizontal_line(Point p1, Point p2, Color c)
+	{
+		if (p1.x == p2.x)
+			return;
+		const auto &start = std::min(p1, p2);
+		const auto &end = std::max(p1, p2);
 #ifdef _DEBUG
-            assert(p1.x < width&& p1.y < height);
+		assert(p1.x < width && p1.y < height);
 #endif // _DEBUG
 
 		double interp_z = start.z;
@@ -219,41 +223,38 @@ public:
 		for (auto x = start.x; x < end.x; x++)
 		{
 			interp_z += incr;
-			auto& target_pixel = at(x, p1.y);
-
-
+			auto &target_pixel = at(x, p1.y);
 
 			// Check z buffer.
-			if (target_pixel.z >= interp_z) {
+			if (target_pixel.z >= interp_z)
+			{
 				// Yes, can overwrite.
 				target_pixel.replace(c.r, c.g, c.b, interp_z);
 			}
-
 		}
-
 	}
 
 	//TODO: fill triangles horizontally for cache efficiency. Do write-up on this choice.
 	// Renders a triangle given three points on the image.
-	void triangle(Point pt1, Point pt2, Point pt3, const Color& c)
+	void triangle(Point pt1, Point pt2, Point pt3, Color c)
 	{
 
-		auto pts = std::array<Point, 3>{ pt1, pt2, pt3 };
+		auto pts = std::array<Point, 3>{pt1, pt2, pt3};
 
-
-		std::sort(pts.begin(), pts.end(), [](const auto& t1, const auto& t2) ->bool {
+		std::sort(pts.begin(), pts.end(), [](const auto &t1, const auto &t2) -> bool {
 			return t1.y < t2.y;
 		});
 
-
 		Point base_pt, bottom_pt, top_pt;
-		for (short y = pts[0].y; y <= pts[1].y; y++) {
+		for (short y = pts[0].y; y <= pts[1].y; y++)
+		{
 			base_pt = Point::interp_all(pts[0], pts[2], y);
 			// Left line + base line
 			bottom_pt = Point::interp_all(pts[0], pts[1], y);
 			horizontal_line(base_pt, bottom_pt, c);
 		}
-		for (short y = pts[1].y; y <= pts[2].y; y++) {
+		for (short y = pts[1].y; y <= pts[2].y; y++)
+		{
 			base_pt = Point::interp_all(pts[0], pts[2], y);
 			// Right line + base line
 			top_pt = Point::interp_all(pts[1], pts[2], y);
@@ -261,7 +262,8 @@ public:
 		}
 	}
 
-	void triangle(const gmtl::Point4f& pt1, const gmtl::Point4f& pt2, const gmtl::Point4f& pt3, Color c) {
+	void triangle(const gmtl::Point4f &pt1, const gmtl::Point4f &pt2, const gmtl::Point4f &pt3, Color c)
+	{
 		triangle(Point::from_Point4f(pt1), Point::from_Point4f(pt2), Point::from_Point4f(pt3), c);
 	}
 

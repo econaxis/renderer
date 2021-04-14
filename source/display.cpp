@@ -2,6 +2,7 @@
 #include "image.h"
 #include <SFML/Graphics/Font.hpp>
 
+// Increasing ASCII ramp of more text character.
 const std::string ASCIIDisplay::scale = " .'`^\",:;Il!i><~+_-?][}{1)(|/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
 const int ASCIIDisplay::scale_size = (int) ASCIIDisplay::scale.size() - 1;
 
@@ -15,7 +16,7 @@ std::stringstream ASCIIDisplay::render(const Image &im) {
     for (std::size_t y = 0; y < im.height; y++) {
         for (std::size_t x = 0; x < im.width; x++) {
             // Get a value from 0 to 1 representing the darkness of the current pixel.
-            float value = pixel_data.at(y * im.width + x).get_darkness();
+            float value = pixel_data[y * im.width + x].get_darkness();
 
             // Convert the numerical darkness to a pixel representation. e.g. a very dark value would be presented by the high-pixel density dollar ($) sign.
             char pixel_representation = scale.at((std::size_t) (value * scale_size));
