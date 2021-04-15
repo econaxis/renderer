@@ -9,6 +9,7 @@
 #include <chrono>
 #include <thread>
 #include <gmtl/gmtl.h>
+#include <cmath>
 
 std::ostream& operator<<(std::ostream& os, std::pair<int, int> p);
 
@@ -21,8 +22,28 @@ struct Color {
 		b = std::clamp(b, 0.F, 1.F);
 		return Color{ r, g, b };
 	}
+
+
+	Color operator + (const Color&); 
+	Color operator * (float); 
+
 };
 
+Color Color::operator + (const Color& c){
+  	return Color{r+c.r, g+c.g, b+c.b};
+}
+
+Color Color::operator * (float f){
+  	return Color{f*r, f*g, f*b};
+}
+
+Color square(Color c){
+	return Color{c.r*c.r, c.g*c.g, c.b*c.b};
+}
+
+Color squareroot(Color c){
+	return Color{sqrtf(c.r), sqrtf(c.g), sqrtf(c.b)};
+}
 
 // Responsible for blitting triangles/lines/pixels, antialiasing. Holds all the image data in a 1D vector. 
 class Image

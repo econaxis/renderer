@@ -1,4 +1,5 @@
 #include <cmath>
+#include <image.h>
 
 // hmm ideally obtain the line segment and its adjacent colors
 // @henry u can do that, or i can if u want
@@ -100,7 +101,7 @@ Edge get_edge(LumaData l){
     double delta_neg = abs(l_neg - l.m);
 
     if(delta_pos < delta_neg) {
-        ed.pixel_factor = -1.0*ed.pixel_factor;
+        ed.pixel_factor = -1.0*ed.pixel_factor; // might ditch this depending on structure of points
     }
 
     return ed;
@@ -122,7 +123,7 @@ auto fxaa_line(Point pt1, Point pt2, Color c1, Color c2) {
     // yo do these guys have a color, if not i'll shoot them a default color???
     // let c1 be the "left" color and c2 be the "right" color (or bottom/top, if horizontal)
     for (Point p: points){
-    //    p.set_color(color_average(c1, c2)); // needed if no predetermined color
+    //    p.set_color(c1 or c2 idek); // needed if no predetermined color
         LumaData ld = sample(p);
         double b_factor = blend_factor(ld);
         Edge e = get_edge(ld);
@@ -130,8 +131,20 @@ auto fxaa_line(Point pt1, Point pt2, Color c1, Color c2) {
         // blendddddddddddddddd
         // because everything at the moment is monochromatic
         // I need to do a little more math to figure what to do here. Let's save that till tmrw
+        
+        // it is now tomorrow
         //this chunk should assign a color to p
-        p.set_color(yeet);
+        Point p0 = p; // am i supposed to have a pointer thingy here
+        if (e.is_horizontal) {
+		    p0.second += b_factor * e.pixel_factor; //offsets vertically
+	    }
+	    else {
+		    p0.first += b_factor * e.pixel_factor; //offsets horizontally
+	    }
+
+        // gets the color of the offset point and assigns it to the original point
+        // HOLD UP POINT IS 3D?!?!?!?!?!?!?!?!?!?!
+        p.set_color(get_blended_color(p0););
 
         // i am absolutely not sure whether this syntax is correct
     }
@@ -177,3 +190,29 @@ bool get_direction (LumaData l) {
 		abs(l.se + l.sw - 2.0 * l.s);
 	return horizontal >= vertical;
 }
+
+// ================================================
+// finds color of partial pixel
+// are points always int coordinates
+Color get_blended_color(Point p){
+    int x0 = ceil(p.first);
+    int y0 = ceil(p.second);
+    float x1 = x0 - p.first;
+    float y1 = y0 - p.second;
+    float x2 = 1.0-x1;
+    float y2 = 1.0-y1;
+
+    // will "average" colors by using proportion area as weight
+    // algo: taking the squareroot of the average of squares
+    Color val_nw, val_ne, val_sw, val_se;
+
+    // multiplying squared colors by weight
+    val_nw = square(Image.at(x0 - 1, y0 - 1).get_color())*(x1*y1);
+    val_ne = square(Image.at(x0 + 1, y0 - 1).get_color())*(x2*y1);
+    val_sw = square(Image.at(x0 - 1, y0 + 1).get_color())*(x1*y2);
+    val_se = square(Image.at(x0 + 1, y0 + 1).get_color())*(x2*y2);
+
+    // average time
+    return squareroot(val_nw + val_ne + val_sw + val_se);
+}
+
