@@ -78,6 +78,7 @@ public:
             angle_c += 0.02F;
             model_rotated = true;
         }
+        model_changed = model_rotated;
 		float cosa = std::cos(angle_a);
 		float sina = std::sin(angle_a);
 		float cosb = std::cos(angle_b);

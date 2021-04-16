@@ -7,6 +7,11 @@ const std::string ASCIIDisplay::scale = " .'`^\",:;Il!i><~+_-?][}{1)(|/tfjrxnuvc
 const int ASCIIDisplay::scale_size = (int) ASCIIDisplay::scale.size() - 1;
 
 std::stringstream ASCIIDisplay::render(const Image &im) {
+    /*
+     * Renders all image data in 'im' to a stringstream. Uses a grayscale ramp (ASCIIDisplay::scale) to convert analog
+     * floating point color values into digital characters.
+     */
+
     // Special ANSI Escape code to reset the cursor back to screen location 0, 0 to redraw the frame.
     // We push to this out_buffer, then we push out_buffer to cout then flush stream.
     // Can't control how often cout flushes, so this method gives us more control and more performance.
@@ -26,16 +31,17 @@ std::stringstream ASCIIDisplay::render(const Image &im) {
         }
         screen_buffer << "\n";
     }
-
-
-//    // Load the screen_buffer into cout.
-//    std::cout << screen_buffer.rdbuf() << std::flush;
-//    std::cout << ANSII_ESC << "[0;2H";
-
-    return screen_buffer;
+    ascii_file << screen_buffer.rdbuf();
+        return screen_buffer;
 };
 
 sf::Text ASCIIDisplay::render_with_gui_text(const Image& im) {
+    /*
+     * Renders all image data in 'im' to a sf::Text object (equivalent basically to a string). That sf::Text can be rendered
+     * to any window with window.draw(sf::Text).
+     *
+     * Uses ASCIIDisplay::render function to get the stream, then converts that stream to text.
+     */
     auto text_stream = render(im);
     text.setString(text_stream.str());
     return text;

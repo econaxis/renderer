@@ -23,8 +23,6 @@
 using namespace std::chrono_literals;
 
 
-
-
 gmtl::Matrix44f create_screen_matrix(std::size_t pixel_width, std::size_t pixel_height) {
     gmtl::Matrix44f screen;
     screen.set(
@@ -36,7 +34,7 @@ gmtl::Matrix44f create_screen_matrix(std::size_t pixel_width, std::size_t pixel_
     return screen;
 }
 
-gmtl::Matrix44f create_perspective_transform_matrix (float r = 0.8, float n=2, float f = 700) {
+gmtl::Matrix44f create_perspective_transform_matrix(float r = 0.8, float n = 2, float f = 700) {
     gmtl::Matrix44f persp;
     persp.set(
             n / r, 0, 0, 0,
@@ -46,7 +44,6 @@ gmtl::Matrix44f create_perspective_transform_matrix (float r = 0.8, float n=2, f
     );
     return persp;
 }
-
 
 
 int start(int argc, char *argv[]) {
@@ -61,18 +58,19 @@ int start(int argc, char *argv[]) {
     image = std::make_unique<Image>(width, height);
     image->clear();
 
-    Model model ("../head.obj");
+    Model model("../head.obj");
 
     gmtl::Matrix44f persp = create_perspective_transform_matrix();
     gmtl::Matrix44f screen = create_screen_matrix(image->width, image->height);
 
-    sf::RenderWindow window(sf::VideoMode(1900, 1050), "My window");
+
+    sf::RenderWindow window(sf::VideoMode(1, 1), "My window");
     image->use_window_display(window);
     image->display.set_scale(window.getSize().y / height);
 
     Light light(image->width, image->height);
     light.bake_light(model);
-    
+
     Camera camera;
 
 
@@ -109,13 +107,14 @@ int start(int argc, char *argv[]) {
                     height /= 1.2;
                     image->resize(width, height);
                     screen = create_screen_matrix(image->width, image->height);
-                    image->display.set_scale((float) window.getSize().y / height);}
+                    image->display.set_scale((float) window.getSize().y / height);
+                }
             }
         }
 
         // Handle keyboard inputs for model, light, and camera.
         const bool model_did_rotate = model.check_rotated();
-        if(model_did_rotate) light.bake_light(model);
+        if (model_did_rotate) light.bake_light(model);
         camera.handle_keyboard_input();
 
         gmtl::Matrix44f light_matrix = light.get_matrix_transforms();
@@ -153,10 +152,13 @@ int start(int argc, char *argv[]) {
                 gmtl::Point4f pt3{persp_pts(0, tri_index + 2), persp_pts(1, tri_index + 2), persp_pts(2, tri_index + 2),
                                   1};
                 if (
+                    // Do some simple bounds checking.
+                        // Points are inside the viewport (not behind/clipped/far away)
                         between_mat(persp_pts, tri_index, *image) &&
-                        (pt1[2] - 0.0000001 < image->at(pt1[0], pt1[1]).z ||
-                         pt2[2] - 0.0000001 < image->at(pt2[0], pt2[1]).z ||
-                         pt3[2] - 0.0000001 < image->at(pt3[0], pt3[1]).z)
+                        // Points are in front of the current z-buffer.
+                        (pt1[2] - 0.0000001F < image->at(pt1[0], pt1[1]).z ||
+                         pt2[2] - 0.0000001F < image->at(pt2[0], pt2[1]).z ||
+                         pt3[2] - 0.0000001F < image->at(pt3[0], pt3[1]).z)
                         ) {
 
 
@@ -164,7 +166,8 @@ int start(int argc, char *argv[]) {
                     gmtl::Vec3f face_position = {pt1_world[0], pt1_world[1], pt1_world[2]};
 
                     // Light intensity changes to how the plane faces the light
-                    auto light_intensity = std::max(gmtl::dot(gmtl::makeNormal(light.light_pos), normal_dir), 0.F) * 0.5F;
+                    auto simple_cosine_lighting =
+                            std::max(gmtl::dot(gmtl::makeNormal(light.light_pos), normal_dir), 0.F) * 0.5F;
                     gmtl::Vec3f incident_light = face_position - light.light_pos;
                     gmtl::normalize(incident_light);
                     gmtl::Vec3f face_to_camera = camera.cam_position - face_position;
@@ -179,7 +182,7 @@ int start(int argc, char *argv[]) {
                                              specular_selectivity) * k_reflectivity;
                     float ambient_light = 0.3F;
 
-                    // First, convert point 1 world coords into the coordinates of the light reference frame. 
+                    // First, convert point 1 world coords into the coordinates of the light reference frame.
                     auto light_reference_frame = light_matrix * pt1_world;
                     light_reference_frame[0] /= light_reference_frame[3];
                     light_reference_frame[1] /= light_reference_frame[3];
@@ -190,12 +193,12 @@ int start(int argc, char *argv[]) {
                     if (light.check_closest_lit(light_reference_frame) < light_reference_frame[2] - 0.000001) {
                         // If coordinate is in light reference frame, then we decrease the lighting for it.
                         specular_intensity = 0;
-                        light_intensity /= 2;
+                        simple_cosine_lighting /= 2;
                         ambient_light = 0.1F; // Contradicts the meaning of "ambient" light but this method looks better..
                     }
-                    Color c = Color::clamp(specular_intensity + light_intensity + ambient_light + 0.15,
-                                           specular_intensity + light_intensity + ambient_light,
-                                           specular_intensity + light_intensity + ambient_light);
+                    Color c = Color::clamp(specular_intensity + simple_cosine_lighting + ambient_light + 0.15,
+                                           specular_intensity + simple_cosine_lighting + ambient_light,
+                                           specular_intensity + simple_cosine_lighting + ambient_light);
 
 
                     image->triangle(pt1, pt2, pt3, c);
