@@ -17,12 +17,13 @@ class ASCIIDisplay {
     static const char ANSII_ESC = char(27);
     static const std::string scale;
     static const int scale_size;
+    std::ofstream ascii_file;
     sf::Font font;
     sf::Text text;
 public:
     float font_size_scale = 6;
     bool font_loaded = false;
-    ASCIIDisplay() {
+    ASCIIDisplay() : ascii_file("/home/henry/renderer/display.txt"){
         const static std::string FONT_PATH = "/usr/share/fonts/TTF/FiraCode-Regular.ttf";
         if (!font.loadFromFile(FONT_PATH)) {
             std::cout<<"Font couldn't be found. Reverting to console output.";
