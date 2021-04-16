@@ -12,6 +12,8 @@
 
 
 struct Point {
+
+
 	// conversion from gmtl::Point4f
 	static Point from_Point4f(const gmtl::Point4f& p4f) {
 		if (p4f[3] != 1) {
@@ -28,6 +30,20 @@ struct Point {
 
 	short x = 0, y = 0;
 	double z = 0; // Double precision used for z buffering
+
+	// Color
+	float r = 0, g = 0, b = 0;
+
+	Color get_color{
+		//do i need to do error handling
+		return Color(r, g, b);
+	}
+
+	void set_color(Color c){
+		r = c.r;
+		g = c.g;
+		b = c.b;
+	}
 
 	template<typename T>
 	Point(T x, T y, double z = std::numeric_limits<double>::max()) :x(x), y(y), z(z) {};
@@ -85,6 +101,11 @@ public:
 		r = _r;
 		g = _g;
 		b = _b;
+	}
+
+	Color get_color(){
+		//do i need to do error handling
+		return Color(r, g, b);
 	}
 
 	auto get_darkness() const {
