@@ -45,6 +45,10 @@ gmtl::Matrix44f create_perspective_transform_matrix(float r = 0.8, float n = 2, 
     return persp;
 }
 
+// Extracts a point from a 4x4 matrix given the column index.
+gmtl::Point4f mat_to_point(const gmtl::Matrix<float, 4, 9> mat, int col) {
+    return gmtl::Point4f {mat(0, col), mat(1, col), mat(2, col), 1};
+}
 
 int start(int argc, char *argv[]) {
     std::unique_ptr<Image> image;
@@ -66,12 +70,13 @@ int start(int argc, char *argv[]) {
 
     sf::RenderWindow window(sf::VideoMode(1, 1), "My window");
     image->use_window_display(window);
-    image->display.set_scale(window.getSize().y / height);
+    image->display.normalize_font_scaling(window.getSize().y / height);
 
     Light light(image->width, image->height);
     light.bake_light(model);
 
     Camera camera;
+
 
 
     // Lighting constants. Changing it changes the specific properties of the object (e.g. rubber/plastic/metal/wood...)
@@ -90,44 +95,54 @@ int start(int argc, char *argv[]) {
                 image.release();
                 window.close();
             } else if (event.type == sf::Event::KeyPressed) {
-                // Hard to integrate this into classes...TODO
-                // if (event.key.code == sf::Keyboard::LAlt) {
-                //     prev_mouse_pos = sf::Mouse::getPosition(window);
-                // }else
                 if (event.key.code == sf::Keyboard::Num1 && width < 2000) {
-                    // Increase the size of the image.
+                    // Increase the size of the image. This makes the picture clearer.
+                    // We limit width to around 2000 pixels because at that level too much memoy is used.
                     width *= 1.2;
                     height *= 1.2;
+
+                    // Clears the current image data and resizes it to specific width and height.
                     image->resize(width, height);
+
+                    // Since we changed the width/height, the screen matrix (mapping normalized device coordinates to
+                    // pixels need to be changed as well.
                     screen = create_screen_matrix(image->width, image->height);
-                    image->display.set_scale((float) window.getSize().y / height);
+
+                    // Only applies if we're using SFML to render text. Useless if we render with terminal.
+                    // If we increase the number of pixels (characters), then the size of each character should decrease
+                    // to make the overall image size constant.
+                    image->display.normalize_font_scaling((float) window.getSize().y / height);
                 } else if (event.key.code == sf::Keyboard::Tilde && height > 10 && width > 10) {
                     // Decrease size of the image
                     width /= 1.2;
                     height /= 1.2;
                     image->resize(width, height);
                     screen = create_screen_matrix(image->width, image->height);
-                    image->display.set_scale((float) window.getSize().y / height);
+                    image->display.normalize_font_scaling((float) window.getSize().y / height);
+                } else if (event.key.code == sf::Keyboard::F2) {
+                    window.close();
                 }
             }
         }
 
-        // Handle keyboard inputs for model, light, and camera.
-        const bool model_did_rotate = model.check_rotated();
-        if (model_did_rotate) light.bake_light(model);
+        // Handle keyboard input events for the frame, and if the model has rotated,
+        // that means the shadow map has also changed. We need to update the light shadow
+        // mapping everytime the model changes.
+        if (model.check_rotated()) light.bake_light(model);
+
         camera.handle_keyboard_input();
 
-        gmtl::Matrix44f light_matrix = light.get_matrix_transforms();
+        // This matrix transforms world coordinates -> camera coordinates -> perspective transform -> screen.
         gmtl::Matrix44f screen_complete_matrix_transforms = screen * persp * camera.camera_mat;
 
-        auto tot_triangles = model.total_triangles();
-        const auto &model_matrix = model.get_model_matrix();
 
-#pragma omp parallel for shared(model)
+        const auto tot_triangles = model.total_triangles();
+
+//#pragma omp parallel for shared(model, tot_triangles, screen_complete_matrix_transforms)
         for (int i = 0; i <= tot_triangles - 3; i += 3) {
             // Render 3 triangles at a time. Why 3? Idk.
-            auto normal_points = model_matrix * model.get_3_triangle(i);
-            auto persp_pts = screen_complete_matrix_transforms * normal_points;
+            auto model_coordinates = model.get_model_matrix() * model.get_3_triangle(i);
+            auto persp_pts = screen_complete_matrix_transforms * model_coordinates;
 
             // Do the homogenous divide
             for (int column = 0; column < 9; column++) {
@@ -143,14 +158,12 @@ int start(int argc, char *argv[]) {
 
                 // We'll just use the location of the first point for lighting and shadow calculations.
                 // Approximate the shadows/lighting/reflectance that applies to point 1 also applies equally to the other points.
-                gmtl::Point4f pt1_world{normal_points(0, tri_index), normal_points(1, tri_index),
-                                        normal_points(2, tri_index), 1};
+                gmtl::Point4f pt1_world = mat_to_point(model_coordinates, tri_index);
 
-                gmtl::Point4f pt1{persp_pts(0, tri_index), persp_pts(1, tri_index), persp_pts(2, tri_index), 1};
-                gmtl::Point4f pt2{persp_pts(0, tri_index + 1), persp_pts(1, tri_index + 1), persp_pts(2, tri_index + 1),
-                                  1};
-                gmtl::Point4f pt3{persp_pts(0, tri_index + 2), persp_pts(1, tri_index + 2), persp_pts(2, tri_index + 2),
-                                  1};
+                // Screen coordinates
+                gmtl::Point4f pt1 = mat_to_point(persp_pts, tri_index);
+                gmtl::Point4f pt2 = mat_to_point(persp_pts, tri_index+1);
+                gmtl::Point4f pt3 = mat_to_point(persp_pts, tri_index+2);
                 if (
                     // Do some simple bounds checking.
                         // Points are inside the viewport (not behind/clipped/far away)
@@ -183,7 +196,7 @@ int start(int argc, char *argv[]) {
                     float ambient_light = 0.3F;
 
                     // First, convert point 1 world coords into the coordinates of the light reference frame.
-                    auto light_reference_frame = light_matrix * pt1_world;
+                    auto light_reference_frame = light.get_matrix_transforms() * pt1_world;
                     light_reference_frame[0] /= light_reference_frame[3];
                     light_reference_frame[1] /= light_reference_frame[3];
                     light_reference_frame[2] /= light_reference_frame[3];
@@ -216,11 +229,11 @@ int start(int argc, char *argv[]) {
 }
 
 int main(int argc, char *argv[]) {
-    try {
+//    try {
         //obj_test();
         start(argc, argv);
-    }
-    catch (const std::exception &e) {
-        std::cout << "error: " << e.what();
-    }
+//    }
+//    catch (const std::exception &e) {
+//        std::cout << "error: " << e.what();
+//    }
 }

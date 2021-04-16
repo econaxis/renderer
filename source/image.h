@@ -9,19 +9,8 @@
 #include <chrono>
 #include <thread>
 #include <gmtl/gmtl.h>
-
-struct Color
-{
-	float r = 0.0, g = 0.0, b = 0.0;
-
-	static Color clamp(float r, float g, float b)
-	{
-		r = std::clamp(r, 0.F, 1.F);
-		g = std::clamp(g, 0.F, 1.F);
-		b = std::clamp(b, 0.F, 1.F);
-		return Color{r, g, b};
-	}
-};
+#include <thread>
+#include "color.h"
 
 // Responsible for blitting triangles/lines/pixels, antialiasing. Holds all the image data in a 1D vector.
 class Image
@@ -89,16 +78,6 @@ public:
 			std::cout<<display.render(*this).str();
 		}
 		clear();
-	}
-
-	auto &arr()
-	{
-		return image;
-	}
-
-	const auto &arr() const
-	{
-		return image;
 	}
 
 	template <typename T>
@@ -186,37 +165,12 @@ public:
 		return points;
 	}
 
-	void line(Point p1, Point p2, Color c)
-	{
-		auto pts = line_points(std::pair{p1.x, p1.y}, std::pair{p2.x, p2.y});
-
-		for (const auto &p : pts)
-		{
-			if (at(p.first, p.second).z < std::min(p1.z, p2.z))
-			{
-				at(p.first, p.second) = Pixel(c.r, c.g, c.b, (float)std::max(p1.z, p2.z));
-			}
-		}
-	}
-	// Converts from floating point, -1 -> 1 coordinates to pixel coordinates
-	auto pixel_coords(const std::pair<float, float> &in) const
-	{
-		auto x = (std::clamp(in.first, -1.F, 1.F) + 1) * width / 2;
-		auto y = (std::clamp(in.second, -1.F, 1.F) + 1) * height / 2;
-
-		// Use short for memory efficiency
-		return std::pair<short, short>{x, y};
-	}
-
-	void horizontal_line(Point p1, Point p2, Color c)
+	void horizontal_line(Point p1, Point p2, const Color& c)
 	{
 		if (p1.x == p2.x)
 			return;
 		const auto &start = std::min(p1, p2);
 		const auto &end = std::max(p1, p2);
-#ifdef _DEBUG
-		assert(p1.x < width && p1.y < height);
-#endif // _DEBUG
 
 		double interp_z = start.z;
 		double incr = (end.z - start.z) / (end.x - start.x);
@@ -245,6 +199,7 @@ public:
 			return t1.y < t2.y;
 		});
 
+
 		Point base_pt, bottom_pt, top_pt;
 		for (short y = pts[0].y; y <= pts[1].y; y++)
 		{
@@ -264,6 +219,9 @@ public:
 
 	void triangle(const gmtl::Point4f &pt1, const gmtl::Point4f &pt2, const gmtl::Point4f &pt3, Color c)
 	{
+	    /*
+	     * Similar to triangle method, except it takes in 3 gmtl::Point4f points and a color.
+	     */
 		triangle(Point::from_Point4f(pt1), Point::from_Point4f(pt2), Point::from_Point4f(pt3), c);
 	}
 
