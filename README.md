@@ -61,6 +61,23 @@ This is after a lot of performance improvements, z-buffering, and implementing b
 
 Going retro. I tried using the ASCII renderer with this. I also spent a lot of time implementing variable font size, which was quite hard and I couldn't get it to work perfectly (notice the slight jumping when changing font size)
 
+### FXAA
+
+Hello friends, this is another person writing with another brain. So after some googling and realizing how broke both us and the program are, I decided to try some antialiasing using FXAA3. 
+
+Note that FXAA would blur small details. Doubt that’s too big of a problem given the scope of this project.
+
+#### Finding high contrast pixels
+All of our image data is in RGB, so it is math time! We’ll convert RGB to HCL to find the (human-eye perceived) luminance because computer brightness is different from human brightness. Code can be found in /source. EDIT: I'm not sure if I used the right luminance in the algorithm, but I'll assume it doesn't make too big of a difference and we'll tweak other parameters as needed.
+
+#### Identify contrast edges
+We did this by comparing the luminance of colors and setting a threshold for contrast ratio.
+
+#### Blend time
+So we first collected the luminance data of surrounding pixels to determine how much to filter the color. But now my neck hurts and I'll save the rest for tomorrow.
+
+#### Long edges? :o 
+We are currently ignoring these because our models are not that complicated yet. Might add this feature later, though. 
 
 # Project Description
 
@@ -175,6 +192,7 @@ Write-up soon.
 ## Warm vs cool, artificial vs natural lighting and shadows and hue
 
 ## std::vector<std::vector<Pixel>> vs std::vector<Pixel> for cache efficiency
+ 
 
 
 
