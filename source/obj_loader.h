@@ -164,10 +164,10 @@ public:
 
 			auto tri_normal = gmtl::makeNormal(gmtl::makeCross(gmtl::Vec3f(world_point2 - world_point1), gmtl::Vec3f(world_point3 - world_point1)));
 
-
-
 			tris[i].normal = tri_normal;
 		}
+
+		std::cout<<"Finished loading model\n";
 
 	}
 	gmtl::Matrix<float, 4, 3> get_triangle(int index) const {

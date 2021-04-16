@@ -1,17 +1,17 @@
 cmake_minimum_required (VERSION 3.16)
+set(SFML_STATIC_LIBRARIES TRUE)
+IF(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo OR CMAKE_BUILD_TYPE MATCHES Release OR TRUE)
+    set(SFML_DIR ${CMAKE_SOURCE_DIR}/extern/sfml/build/Release/lib/cmake/SFML)
+    target_compile_options(game PRIVATE -fopenmp)
+    target_link_options(game PRIVATE -fopenmp -O3)
+    # target_compile_options(game PRIVATE /O2 /Qpar /Qpar-report:1)
+    #    target_link_options(game PRIVATE /PROFILE)
+    message("building for release mode")
+ELSE()
+    target_compile_options(game PRIVATE -Og)
+    set(SFML_DIR ${CMAKE_SOURCE_DIR}/extern/sfml/build/Debug/lib/cmake/SFML)
+endif()
+find_package(SFML 2.5.1 COMPONENTS graphics system REQUIRED)
 
-add_subdirectory(zlib-1.2.11)
-
-set(ZLIB_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/zlib-1.2.11 ${CMAKE_CURRENT_SOURCE_DIR}/zlib-1.2.11)
-set(ZLIB_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/zlib-1.2.11/libz.a)
-
-set(PNG_BUILD_ZLIB ON CACHE BOOL "" FORCE)
-add_subdirectory(lpng1637)
-# target_include_directories(png_static PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/extern/zlib-1.2.11/>)
-#target_include_directories(png_static PRIVATE "zlib-1.2.11/" ${CMAKE_CURRENT_BINARY_DIR}/zlib-1.2.11/)
-#target_include_directories(png PRIVATE "zlib-1.2.11/" ${CMAKE_CURRENT_BINARY_DIR}/zlib-1.2.11/)
-
-target_link_libraries(png_static zlibstatic)
-
-message("PNG STATIC INCLUDE DIR " $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/zlib-1.2.11>)
-file(GENERATE OUTPUT debug.txt CONTENT $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/zlib-1.2.11>)
+set_target_properties(sfml-graphics PROPERTIES IMPORTED_GLOBAL TRUE)
+add_library(sfml-alias-target ALIAS sfml-graphics)

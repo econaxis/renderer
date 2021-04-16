@@ -47,29 +47,29 @@ sf::Text ASCIIDisplay::render_with_gui_text(const Image& im) {
     return text;
 }
 
-void PNGDisplay::render(const Image &im) {
-
-    const auto &pixel_data = im.get_pixels();
-
-    for (std::size_t y = 0; y < im.height; y++) {
-        for (std::size_t x = 0; x < im.width; x++) {
-
-            float value = pixel_data.at(y * im.width + x).get_darkness();
-
-            if (value == 0.0) {
-                continue;
-            }
-
-            png::byte rgb_value = value * 256;
-            pngimg.set_pixel(x, y, png::rgb_pixel(rgb_value, rgb_value, rgb_value));
-        }
-    }
-    pngimg.write("frame.png");
-
-    // Move the cursor back to the top left corner for the next write to happen.
-    // This doesn't clear the screen.
-
-};
+//void PNGDisplay::render(const Image &im) {
+//
+//    const auto &pixel_data = im.get_pixels();
+//
+//    for (std::size_t y = 0; y < im.height; y++) {
+//        for (std::size_t x = 0; x < im.width; x++) {
+//
+//            float value = pixel_data.at(y * im.width + x).get_darkness();
+//
+//            if (value == 0.0) {
+//                continue;
+//            }
+//
+//            png::byte rgb_value = value * 256;
+//            pngimg.set_pixel(x, y, png::rgb_pixel(rgb_value, rgb_value, rgb_value));
+//        }
+//    }
+//    pngimg.write("frame.png");
+//
+//    // Move the cursor back to the top left corner for the next write to happen.
+//    // This doesn't clear the screen.
+//
+//};
 
 void WindowDisplay::render(const Image &im) {
     window.clear();

@@ -3,7 +3,7 @@
 #include <iomanip>
 #include <vector>
 #include <iostream>
-#include <png++/png.hpp>
+#include <fstream>
 
 class Image;
 
@@ -21,7 +21,6 @@ class ASCIIDisplay {
     sf::Font font;
     sf::Text text;
 public:
-    float font_size_scale = 6;
     bool font_loaded = false;
     ASCIIDisplay() : ascii_file("/home/henry/renderer/display.txt"){
         const static std::string FONT_PATH = "/usr/share/fonts/TTF/FiraCode-Regular.ttf";
@@ -34,7 +33,7 @@ public:
         std::cout<<std::setprecision(2);
     }
 
-    void set_scale(float scale) {
+    void normalize_font_scaling(float scale) {
         scale /= 10;
         float font_size = 10;
         // Set font size "breakpoints" similar to CSS breakpoints.
@@ -62,18 +61,18 @@ public:
     std::stringstream render(const Image &im); // Renders the image as a stringstream, from which we push to std::cout
     sf::Text render_with_gui_text(const Image &im); // Renders the image as sf::Text, from which we push to sf::RenderWindow.
 };
-class PNGDisplay {
-	png::image<png::rgb_pixel> pngimg;
-
-public:
-	PNGDisplay(std::size_t width = 1000, std::size_t height = 1000) : pngimg(width, height) {
-		for (std::size_t i = 0; i < width * height; i++) {
-			pngimg.set_pixel(i % width, i / width, png::rgb_pixel(50, 50, 50));
-		}
-		pngimg.write("frame.png");
-	};
-	void render(const Image& im);
-};
+//class PNGDisplay {
+//	png::image<png::rgb_pixel> pngimg;
+//
+//public:
+//	PNGDisplay(std::size_t width = 1000, std::size_t height = 1000) : pngimg(width, height) {
+//		for (std::size_t i = 0; i < width * height; i++) {
+//			pngimg.set_pixel(i % width, i / width, png::rgb_pixel(50, 50, 50));
+//		}
+//		pngimg.write("frame.png");
+//	};
+//	void render(const Image& im);
+//};
 
 class WindowDisplay {
 	sf::Texture texture;
