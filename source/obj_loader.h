@@ -153,6 +153,8 @@ public:
 				std::cout << "working. " << (long)file.tellg() * 100 / length << " percent\r";
 			}
 
+
+
 		}
 
 		// Iterate through each triangle to calculate normals.
