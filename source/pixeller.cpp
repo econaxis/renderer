@@ -1,7 +1,5 @@
 #include <cmath>
-#include <iostream>
 #include <ostream>
-#include <vector>
 #include "image.h"
 #include <gmtl/Matrix.h>
 #include <gmtl/MatrixOps.h>
