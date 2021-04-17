@@ -9,11 +9,11 @@
 #include <limits>
 #include <gmtl/gmtl.h>
 
+#include "color.h"
+
 
 
 struct Point {
-
-
 	// conversion from gmtl::Point4f
 	static Point from_Point4f(const gmtl::Point4f& p4f) {
 		if (p4f[3] != 1) {
@@ -34,9 +34,8 @@ struct Point {
 	// Color
 	float r = 0, g = 0, b = 0;
 
-	Color get_color{
-		//do i need to do error handling
-		return Color(r, g, b);
+	Color get_color (){
+		return Color{r, g, b};
 	}
 
 	void set_color(Color c){
@@ -70,6 +69,7 @@ struct Point {
 	}
 
 };
+
 class Pixel
 {
 
@@ -103,9 +103,9 @@ public:
 		b = _b;
 	}
 
-	Color get_color(){
+	Color get_color() const {
 		//do i need to do error handling
-		return Color(r, g, b);
+		return Color{r, g, b};
 	}
 
 	auto get_darkness() const {

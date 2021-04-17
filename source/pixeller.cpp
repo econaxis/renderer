@@ -138,7 +138,7 @@ int start(int argc, char *argv[]) {
 
         const auto tot_triangles = model.total_triangles();
 
-//#pragma omp parallel for shared(model, tot_triangles, screen_complete_matrix_transforms)
+#pragma omp parallel for shared(model, tot_triangles, screen_complete_matrix_transforms)
         for (int i = 0; i <= tot_triangles - 3; i += 3) {
             // Render 3 triangles at a time. Why 3? Idk.
             auto model_coordinates = model.get_model_matrix() * model.get_3_triangle(i);
