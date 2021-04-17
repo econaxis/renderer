@@ -16,8 +16,9 @@ Features not yet worked out:
  - running in the web by compiling to WASM or using server/client model
 
 
-## Progression
+# Progression
 
+## Lines + Triangles
 ![image](/gifs/simple-triangle.gif)
 Rendering a filled triangle
 
@@ -37,6 +38,7 @@ Just based from visual inspection, I confirmed the cube to be perspectively corr
 
 Instead of using text, I used actual pixels to render. Therefore, I could render at much higher quality and performance, without being constrained by the terminal emulator implementation.
 
+## Importing more complex models
 ![image](/gifs/weird%20teapot.gif)
 
 Implementing a rotating teapot on 3 of Euler rotation axes, with no z-buffering. I think I implemented one of the rotation matrices wrong, hence the warping at the end of the GIF.
@@ -53,30 +55,56 @@ Implemented z-buffering. I colored each face by how close it was. The closer the
 
 Implemented z-buffering.
 
-![image](/gifs/latest.gif)
+## Basic lighting scheme
 
-This is after a lot of performance improvements, z-buffering, and implementing basic lighting scheme.
+![image](/gifs/cosine%20lighting.gif)
+
+Instead of setting color as equals to the z-coordinate, I implemented simple cosine lighting. This means the lighting is computed by how much the triangle plane faces the light. If it faces the light directly (thus, the angle is 0), then the brightness is highest.
+
+![image](/gifs/specular%20lighting.gif)
+The cosine model ignored the fact that some faces might be reflective. Thus, the angle at which one views the face changes the intensity of the light. You can see this in real life by looking at an egg under intense lighting. If you change your eye position while keeping the egg still, you can see the color (highlight) changes.
+
+I implemented specular lighting by computing dot product of the vector from the face to the camera, and the vector of the reflected light.
+
+
+### Shadows
+
+To implement shadows, I used shadow mapping. I render the scene twice, first pretending as if I was the light. Then, I mark all the faces that I can see. Those faces will be lit. Faces that I can't see are unmarked. 
+
+Then, I render the scene from the camera's perspective. For every face, I check if that face has been marked *lit* or not, and change the lighting intensity to match whether the face is in shadows.
+
+**Shadows (The sudden perspective switches are me switching between camera and light POV)**
+
+![image](/gifs/shadows.gif)
+
+
+## Final iteration
+
+![image](/gifs/latest.gif).
+
+
+### Going retro for fun
 
 ![image](/gifs/text%20size%20latest.gif)
 
-Going retro. I tried using the ASCII renderer with this. I also spent a lot of time implementing variable font size, which was quite hard and I couldn't get it to work perfectly (notice the slight jumping when changing font size)
+Because I'd split the perspective/lighting/rendering module separate from the display module (which is responsible for putting pixels on the screen, either that be through SFML, PNG, or terminal), I tried to render RGB pixels to ASCII characters instead of normal pixels. I also spent a lot of time implementing variable font size, which was quite hard and I couldn't get it to work perfectly (notice the slight jumping when changing font size).
 
-### FXAA
+# FXAA
 
 Hello friends, this is another person writing with another brain. So after some googling and realizing how broke both us and the program are, I decided to try some antialiasing using FXAA3. 
 
 Note that FXAA would blur small details. Doubt that’s too big of a problem given the scope of this project.
 
-#### Finding high contrast pixels
+## Finding high contrast pixels
 All of our image data is in RGB, so it is math time! We’ll convert RGB to HCL to find the (human-eye perceived) luminance because computer brightness is different from human brightness. Code can be found in /source. EDIT: I'm not sure if I used the right luminance in the algorithm, but I'll assume it doesn't make too big of a difference and we'll tweak other parameters as needed.
 
-#### Identify contrast edges
+## Identify contrast edges
 We did this by comparing the luminance of colors and setting a threshold for contrast ratio.
 
-#### Blend time
+## Blend time
 So we first collected the luminance data of surrounding pixels to determine how much to filter the color. But now my neck hurts and I'll save the rest for tomorrow.
 
-#### Long edges? :o 
+## Long edges? :o 
 We are currently ignoring these because our models are not that complicated yet. Might add this feature later, though. 
 
 # Project Description
