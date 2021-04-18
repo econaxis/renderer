@@ -6,15 +6,14 @@
 #include "obj_loader.h"
 #include "utils.h"
 
-
-
-class Light {
+class Light
+{
 
 	const inline static float FURTHEST_DEPTH = 100000;
 	gmtl::Matrix44f perspective_matrix, screen_matrix, screen_complete_matrix_transforms;
 	Image image;
 
-	static gmtl::Matrix44f lookAt(gmtl::Vec3f& eye, gmtl::Vec3f& target, const gmtl::Vec3f& upDir = gmtl::Vec3f{ 0, 1, 0 })
+	static gmtl::Matrix44f lookAt(gmtl::Vec3f &eye, gmtl::Vec3f &target, const gmtl::Vec3f &upDir = gmtl::Vec3f{0, 1, 0})
 	{
 		// compute the forward vector from target to eye
 		gmtl::Vec3f forward = eye - target;
@@ -25,11 +24,10 @@ class Light {
 		gmtl::normalize(left);
 
 		// recompute the orthonormal up vector
-		auto up = gmtl::makeCross(forward, left);    // cross product
+		auto up = gmtl::makeCross(forward, left); // cross product
 
 		// init 4x4 matrix
 		gmtl::Matrix44f matrix;
-
 
 		// set rotation part, inverse rotation matrix: M^-1 = M^T for Euclidean transform
 		matrix.mData[0] = left[0];
@@ -52,92 +50,75 @@ class Light {
 		return matrix;
 	}
 
-
 public:
-	gmtl::Vec3f light_pos = { -1, -1, -1 }, light_target = { 0, 0, 0 };
+	gmtl::Vec3f light_pos = {-1, -1, -1}, light_target = {0, 0, 0};
 
-	Light(std::size_t width, std::size_t height) :image(width, height) {
+	Light(std::size_t width, std::size_t height) : image(width, height)
+	{
 		screen_matrix.set(
 			(float)width / 2, 0, 0, (float)width / 2,
 			0, (float)height / 2, 0, (float)height / 2,
 			0, 0, 1, 0,
-			0, 0, 0, 1
-		);
+			0, 0, 0, 1);
 
 		const static float r = 0.8, n = 2, f = 700;
 		perspective_matrix.set(
 			n / r, 0, 0, 0,
 			0, n / r, 0, 0,
 			0, 0, -(f + n) / (f - n), -2 * f * n / (f - n),
-			0, 0, -1, 0
-		);
+			0, 0, -1, 0);
 
-		// Set this as default position and targret. 
+		// Set this as default position and targret.
 		light_pos = {200, 200, 200};
 		light_target = {0, 0, 0};
 	};
 
-	gmtl::Matrix44f get_matrix_transforms() {
+	gmtl::Matrix44f get_matrix_transforms()
+	{
 		return screen_complete_matrix_transforms;
 	}
 
-
-	// TODO: use std::optional
-	double check_closest_lit(const gmtl::Point4f& point) {
-		if (point[0] >= image.width || point[1] >= image.height || point[0] <0  || point[1]< 0) {
-			return -100000;
+	bool check_closest_lit(const gmtl::Point4f &point)
+	{
+		if (point[0] >= image.width || point[1] >= image.height || point[0] < 0 || point[1] < 0)
+		{
+			// 
+			return true;
 		}
-		return image.at((std::size_t) point[0], (std::size_t)point[1]).z;
+		return image.at((std::size_t)point[0], (std::size_t)point[1]).z < point[2] - 0.000001;
 	}
 
-	void bake_light(const Model& model) {
+	void bake_light(const Model &model)
+	{
 		// TODO: lots of repeated code with pixeller.cpp. Have to separate into a member function of Model
 		// I'm thinking "Model.render_to_image(const Image& im)"
 		image.clear();
 		const int tot_triangles = model.total_triangles();
 		screen_complete_matrix_transforms = screen_matrix * perspective_matrix * lookAt(light_pos, light_target);
-		const auto& model_matrix = model.get_model_matrix();
-#pragma omp parallel for shared(model, tot_triangles, model_matrix) default(none)
-		for (int i = 0; i <= tot_triangles - 3; i += 3) {
-			auto normal_points = model_matrix * model.get_3_triangle(i);
-			auto persp_pts = screen_complete_matrix_transforms * normal_points;
-
+		const auto &model_matrix = model.get_model_matrix();
+		for (int i = 0; i <= tot_triangles; i++)
+		{
+			auto persp_pts = screen_complete_matrix_transforms * model.get_model_transformed_triangle(i);
 
 			// Do the homogenous divide
-			for (int column = 0; column < 9; column++) {
+			for (int column = 0; column < 3; column++)
+			{
 				persp_pts(0, column) /= persp_pts(3, column);
 				persp_pts(1, column) /= persp_pts(3, column);
 				persp_pts(2, column) /= persp_pts(3, column);
 				persp_pts(3, column) = 1;
 			}
-
-			for (int tri_index = 0; tri_index <= 6; tri_index += 3) {
-			    // Repeated code with pixeller.cpp.
-			    // Maybe combine into a function.
-				gmtl::Point4f pt1{ persp_pts(0, tri_index), persp_pts(1, tri_index), persp_pts(2, tri_index), 1 };
-				gmtl::Point4f pt2{ persp_pts(0, tri_index + 1), persp_pts(1, tri_index + 1), persp_pts(2, tri_index + 1), 1 };
-				gmtl::Point4f pt3{ persp_pts(0, tri_index + 2), persp_pts(1, tri_index + 2), persp_pts(2, tri_index + 2), 1 };
-				if (
-					between_mat(persp_pts, tri_index, image) &&
-					(pt1[2] - 0.001 < image.at(pt1[0], pt1[1]).z ||
-						pt2[2] - 0.001 < image.at(pt2[0], pt2[1]).z ||
-						pt3[2] - 0.001 < image.at(pt3[0], pt3[1]).z)
-					) {
-
-
-					gmtl::Vec3f face_position { normal_points(0, tri_index), normal_points(1, tri_index), normal_points(2, tri_index) };
-					gmtl::Vec3f normal_dir = model.get_normal(i + tri_index / 3); // Automatically normalized
-					gmtl::Vec3f face_to_light = light_pos - face_position;
-					gmtl::normalize(face_to_light);
-					auto intensity = std::abs(gmtl::dot(face_to_light, normal_dir));
-
-					Color c{ intensity, intensity, intensity };
-
-					image.triangle(pt1, pt2, pt3, c);
-
-				}
+			if (
+				between_mat(persp_pts, image) &&
+				(persp_pts(2, 0) - 0.00001 < image.at(persp_pts(0, 1), persp_pts(1, 1)).z ||
+				 persp_pts(2, 1) - 0.00001 < image.at(persp_pts(0, 2), persp_pts(1, 2)).z ||
+				 persp_pts(2, 2) - 0.00001 < image.at(persp_pts(0, 3), persp_pts(1, 3)).z))
+			{
+				gmtl::Point4f pt1{persp_pts(0, 0), persp_pts(1, 0), persp_pts(2, 0), 1};
+				gmtl::Point4f pt2{persp_pts(0, 1), persp_pts(1, 1), persp_pts(2, 1), 1};
+				gmtl::Point4f pt3{persp_pts(0, 2), persp_pts(1, 2), persp_pts(2, 2), 1};
+				image.triangle(pt1, pt2, pt3, {0.5, 0.5, 0.5});
 			}
-
 		}
 	}
 };

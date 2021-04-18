@@ -1,6 +1,7 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
+#include "sfml_header.h"
+
 #include <gmtl/Matrix.h>
 
 
@@ -10,7 +11,7 @@ struct Camera {
     gmtl::Vec3f cam_position, up_direction, target, cam_direction;
     gmtl::Matrix44f camera_mat;
 
-    Camera() : cam_position(0, 0, 400), up_direction(0, 1, 0), target(0, 0, 0) {
+    Camera() : cam_position(0, 0, 10), up_direction(0, 1, 0), target(0, 0, 0) {
         reprocess_camera_mat(); // Initializes cam_direction and camera_mat
     }
 

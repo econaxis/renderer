@@ -1,10 +1,11 @@
 #include "display.h"
 #include "image.h"
-#include <SFML/Graphics/Font.hpp>
 
 // Increasing ASCII ramp of more text character.
 const std::string ASCIIDisplay::scale = " .'`^\",:;Il!i><~+_-?][}{1)(|/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
 const int ASCIIDisplay::scale_size = (int) ASCIIDisplay::scale.size() - 1;
+
+std::string buffer;
 
 std::stringstream ASCIIDisplay::render(const Image &im) {
     /*
@@ -31,21 +32,23 @@ std::stringstream ASCIIDisplay::render(const Image &im) {
         }
         screen_buffer << "\n";
     }
+    buffer = screen_buffer.str();
+    std::cout<<"STRING BUFFER ADDR: "<<(void*)(buffer.c_str())<<std::endl;
     ascii_file << screen_buffer.rdbuf();
-        return screen_buffer;
+    return screen_buffer;
 };
 
-sf::Text ASCIIDisplay::render_with_gui_text(const Image& im) {
-    /*
-     * Renders all image data in 'im' to a sf::Text object (equivalent basically to a string). That sf::Text can be rendered
-     * to any window with window.draw(sf::Text).
-     *
-     * Uses ASCIIDisplay::render function to get the stream, then converts that stream to text.
-     */
-    auto text_stream = render(im);
-    text.setString(text_stream.str());
-    return text;
-}
+//sf::Text ASCIIDisplay::render_with_gui_text(const Image& im) {
+//    /*
+//     * Renders all image data in 'im' to a sf::Text object (equivalent basically to a string). That sf::Text can be rendered
+//     * to any window with window.draw(sf::Text).
+//     *
+//     * Uses ASCIIDisplay::render function to get the stream, then converts that stream to text.
+//     */
+//    auto text_stream = render(im);
+//    text.setString(text_stream.str());
+//    return text;
+//}
 
 //void PNGDisplay::render(const Image &im) {
 //
@@ -71,27 +74,27 @@ sf::Text ASCIIDisplay::render_with_gui_text(const Image& im) {
 //
 //};
 
-void WindowDisplay::render(const Image &im) {
-    window.clear();
-    const auto *pixel_data = im.get_pixels().data();
-    auto *pixel_data_destination = pixels.data();
-
-#pragma omp parallel for default(none) shared(pixel_data, pixel_data_destination, im)
-    for (std::size_t y = 0; y < im.height; y++) {
-        std::size_t y_cache = 4 * y * texture.getSize().x;
-        for (std::size_t x = 0; x < im.width; x++) {
-            y_cache += 4;
-            const auto &pixel = pixel_data[y * im.width + x];
-            pixel_data_destination[y_cache] = (sf::Uint8) (pixel.r * 255);
-            pixel_data_destination[y_cache + 1] = (sf::Uint8) (pixel.g * 255);
-            pixel_data_destination[y_cache + 2] = (sf::Uint8) (pixel.b * 255);
-            // Alpha, we don't need to set.
-            // pixel_data_destination[y_cache + x + 3] = 255;
-
-        }
-    }
-
-    texture.update(&pixels[0]);
-    window.draw(sprite);
-    window.display();
-}
+//void WindowDisplay::render(const Image &im) {
+//    window.clear();
+//    const auto *pixel_data = im.get_pixels().data();
+//    auto *pixel_data_destination = pixels.data();
+//
+//#pragma omp parallel for default(none) shared(pixel_data, pixel_data_destination, im)
+//    for (std::size_t y = 0; y < im.height; y++) {
+//        std::size_t y_cache = 4 * y * texture.getSize().x;
+//        for (std::size_t x = 0; x < im.width; x++) {
+//            y_cache += 4;
+//            const auto &pixel = pixel_data[y * im.width + x];
+//            pixel_data_destination[y_cache] = (sf::Uint8) (pixel.r * 255);
+//            pixel_data_destination[y_cache + 1] = (sf::Uint8) (pixel.g * 255);
+//            pixel_data_destination[y_cache + 2] = (sf::Uint8) (pixel.b * 255);
+//            // Alpha, we don't need to set.
+//            // pixel_data_destination[y_cache + x + 3] = 255;
+//
+//        }
+//    }
+//
+//    texture.update(&pixels[0]);
+//    window.draw(sprite);
+//    window.display();
+//}

@@ -1,5 +1,4 @@
 #pragma once
-#include <SFML/Graphics.hpp>
 #include <iomanip>
 #include <vector>
 #include <iostream>
@@ -18,48 +17,44 @@ class ASCIIDisplay {
     static const std::string scale;
     static const int scale_size;
     std::ofstream ascii_file;
-    sf::Font font;
-    sf::Text text;
 public:
-    bool font_loaded = false;
     ASCIIDisplay() : ascii_file("/home/henry/renderer/display.txt"){
-        const static std::string FONT_PATH = "/usr/share/fonts/TTF/FiraCode-Regular.ttf";
-        if (!font.loadFromFile(FONT_PATH)) {
-            std::cout<<"Font couldn't be found. Reverting to console output.";
-        } else {
-            font_loaded = true;
-        }
+//        const static std::string FONT_PATH = "/usr/share/fonts/TTF/FiraCode-Regular.ttf";
+//        if (!font.loadFromFile(FONT_PATH)) {
+//            std::cout<<"Font couldn't be found. Reverting to console output.";
+//        } else {
+//            font_loaded = true;
+//        }
 
         std::cout<<std::setprecision(2);
     }
 
-    void normalize_font_scaling(float scale) {
-        scale /= 10;
-        float font_size = 10;
-        // Set font size "breakpoints" similar to CSS breakpoints.
-        // When the scale gets too small, we reduce the font size (from 10) and increase the scale. 
-        if (scale < 0.3) {
-            scale *= 6;
-            font_size = 1;
-            text.setScale({scale, scale * 2.12F});
-        } else if (scale < 0.5) {
-            scale *= 3;
-            font_size = 3;
-            text.setScale({scale, scale * 1.09F});
-        }else if (scale < 0.8) {
-            scale *= 1.9;
-            font_size = 5;
-            text.setScale({scale, scale * 1.03F});
-
-        }else {
-            text.setScale({scale, scale});
-        }
-        text.setFont(font);
-        text.setCharacterSize((unsigned int) font_size);
-
-    }
+//    void normalize_font_scaling(float scale) {
+//        scale /= 10;
+//        float font_size = 10;
+//        // Set font size "breakpoints" similar to CSS breakpoints.
+//        // When the scale gets too small, we reduce the font size (from 10) and increase the scale.
+//        if (scale < 0.3) {
+//            scale *= 6;
+//            font_size = 1;
+//            text.setScale({scale, scale * 2.12F});
+//        } else if (scale < 0.5) {
+//            scale *= 3;
+//            font_size = 3;
+//            text.setScale({scale, scale * 1.09F});
+//        }else if (scale < 0.8) {
+//            scale *= 1.9;
+//            font_size = 5;
+//            text.setScale({scale, scale * 1.03F});
+//
+//        }else {
+//            text.setScale({scale, scale});
+//        }
+//        text.setFont(font);
+//        text.setCharacterSize((unsigned int) font_size);
+//
+//    }
     std::stringstream render(const Image &im); // Renders the image as a stringstream, from which we push to std::cout
-    sf::Text render_with_gui_text(const Image &im); // Renders the image as sf::Text, from which we push to sf::RenderWindow.
 };
 //class PNGDisplay {
 //	png::image<png::rgb_pixel> pngimg;
@@ -74,28 +69,28 @@ public:
 //	void render(const Image& im);
 //};
 
-class WindowDisplay {
-	sf::Texture texture;
-	sf::Sprite sprite;
-	sf::RenderWindow& window;
-	std::vector<sf::Uint8> pixels;
-public:
-	WindowDisplay(sf::RenderWindow& window, std::size_t width = 800, std::size_t height = 600) : window(window) {
-		if (!texture.create(width, height)) {
-			throw std::runtime_error("texture creation failed\n");
-		}
-		sprite.setTexture(texture);
-
-		//RGBA color. 4 Uint8 per pixel
-		pixels.resize(width * height * 4);
-
-		for (std::size_t i = 3; i < pixels.size(); i += 4) {
-			pixels[i] = (sf::Uint8)255;
-		}
-	}
-	void render(const Image& im);
-
-	void draw(sf::Drawable& drawable) {
-	    window.draw(drawable);
-	}
-};
+//class WindowDisplay {
+//	sf::Texture texture;
+//	sf::Sprite sprite;
+//	sf::RenderWindow& window;
+//	std::vector<sf::Uint8> pixels;
+//public:
+//	WindowDisplay(sf::RenderWindow& window, std::size_t width = 800, std::size_t height = 600) : window(window) {
+//		if (!texture.create(width, height)) {
+//			throw std::runtime_error("texture creation failed\n");
+//		}
+//		sprite.setTexture(texture);
+//
+//		//RGBA color. 4 Uint8 per pixel
+//		pixels.resize(width * height * 4);
+//
+//		for (std::size_t i = 3; i < pixels.size(); i += 4) {
+//			pixels[i] = (sf::Uint8)255;
+//		}
+//	}
+//	void render(const Image& im);
+//
+//	void draw(sf::Drawable& drawable) {
+//	    window.draw(drawable);
+//	}
+//};

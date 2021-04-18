@@ -1,13 +1,14 @@
 #pragma once
+#include "utils.h"
+
 /*
  * TODO: write a custom SFML wrapper. When we port this to other platforms (e.g. Javascript),
  * we use different API's for handling system events, so we don't want to completely rewrite parts of code that call SFML directly scattered throughout.
  */
 
 
-//#ifdef HAS_SFML
-#include <SFML/Graphics.hpp>
-
+#ifndef HAS_SFML
+namespace sf::Keyboard {
 enum Key {
     Unknown = -1, //!< Unhandled key
     A = 0,        //!< The A key
@@ -121,12 +122,62 @@ enum Key {
     BackSlash = Backslash,    //!< \deprecated Use Backslash instead
     SemiColon = Semicolon,    //!< \deprecated Use Semicolon instead
     Return = Enter         //!< \deprecated Use Enter instead
+};
+
+static bool isKeyPressed(Key key) {
+    return false;
+}
 }
 
-bool key_pressed(Key key) {
-    auto sf_key = static_cast<sf::Keyboard::Key>(static_cast<int>(key));
-    return sf::Keyboard::isKeyPressed(sf_key);
+inline void poll_input(Image& image, gmtl::Matrix44f& screen) {
+    // do nothing.
+}
+#endif
+
+
+#ifdef HAS_SFML
+
+#include <SFML/Graphics.hpp>
+
+sf::RenderWindow& get_window() {
+    static sf::RenderWindow window (sf::VideoMode(1, 1), "My window");
+    return window;
+};
+inline void poll_input(Image& image, gmtl::Matrix44f& screen) {
+    // TODO: refactor screen matrix to be part of the image class.
+    // check all the window's events that were triggered since the last iteration of the loop
+    sf::Event event;
+    sf::RenderWindow& window = get_window();
+    while (window.pollEvent(event))
+    {
+        // "close requested" event: we close the window
+        if (event.type == sf::Event::Closed)
+        {
+            window.close();
+        }
+        else if (event.type == sf::Event::KeyPressed)
+        {
+            if (event.key.code == sf::Keyboard::Num1 && image.width < 2000)
+            {
+                // Increase the size of the image. This makes the picture clearer.
+                // We limit width to around 2000 pixels because at that level too much memoy is used.
+
+                // Clears the current image data and resizes it to specific width and height.
+                image.resize(image.width * 1.2, image.height * 1.2);
+
+                // Since we changed the width/height, the screen matrix (mapping normalized device coordinates to
+                // pixels need to be changed as well.
+                screen = create_screen_matrix(image.width, image.height);
+            }
+            else if (event.key.code == sf::Keyboard::Tilde && image.height > 10 && image.width > 10)
+            {
+                // Decrease size of the image
+                image.resize(image.width / 1.2, image.height / 1.2);
+                screen = create_screen_matrix(image.width, image.height);
+            }
+        }
+    }
 }
 
 
-//#endif
+#endif
