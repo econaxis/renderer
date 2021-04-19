@@ -3,132 +3,182 @@
 <head>
     <title>renderer or something</title>
     <meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link href="https://fonts.googleapis.com/css2?family=Jura:wght@400;700&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Chivo:wght@300&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 	<script src="index.js"></script>
 </head>
 <body onload="fetchObjs()">
-	<! idk maybe do like if width or height less than 650px we go "oopsie we dont support mobile"-- -->
-	<div id="viewer">
-	</div>
-	
-	<div id="control-panel" class="compact">
-		<div id="info">
-			<div class="info-block">
-				<div class="large secondary">camera angle</div>
-				<div class="large highlight">108°</div>
+	<! wide enough -- -->
+	<div id="page">
+		<div id="viewer">
+		</div>
+		
+		<div id="control-panel" class="compact">
+			<div id="info">
+				<div class="info-block">
+					<div class="large secondary">camera angle</div>
+					<div class="large highlight">108°</div>
+				</div>
+				
+				<div class="info-block">
+					<div class="large secondary">field of view</div>
+					<div class="large highlight">108°</div>
+				</div>
+				
+				<div class="info-block">
+					<div class="large secondary">camera position</div>
+					<div class="large highlight">(0, 0, 400)</div>
+				</div>
 			</div>
 			
-			<div class="info-block">
-				<div class="large secondary">field of view</div>
-				<div class="large highlight">108°</div>
+			<hr class=" hidden">
+			
+			<div id="select" class="light-area hidden">
+				<div id="obj-dropdown">
+					<div class="dropdown-item" id="dropdown-item-main" onclick="showDropdown()">
+						<div id="item-rendered"></div> <! this has to go into js as well, not sure how u want to do it -- -->
+						<svg class="dropdown-icon" height="5" width="10">
+							<polygon class="dropdown-icon" points="0,0 5,5 10,0"/>
+						</svg>
+					</div>
+					<div class="dropdown-list light-area" id="obj-list">
+					</div>
+				</div>
 			</div>
 			
-			<div class="info-block">
-				<div class="large secondary">camera position</div>
-				<div class="large highlight">(0, 0, 400)</div>
+			<div id="controls" class=" hidden">
+				<! set initial values as needed -- -->
+				<div class="control-label">reflectance parameter</div> <! can i just write this as "reflectance" -- -->
+				<input type="range" 
+					   min="1" max="100" value="50" 
+					   class="control slider" 
+					   id="reflectance-slider"
+					   oninput="setReflectanceParameter()">
+				
+				<! toggles probably not responding because <input is size 0, 
+					so i did it inline manually. will need to fix 
+					confused because examples from the internet work-- -->
+					   
+				<div class="control-label">shadows</div>
+				<div class="control"> 
+					<label class="toggle">
+						<input type="checkbox" id="shadow-toggle"/>
+						<div class="toggle-button" onclick="toggleShadows()"></div>
+					</label>
+				</div>
+				
+				<div class="control-label">highlights</div>
+				<div class="control"> 
+					<label class="toggle">
+						<input type="checkbox" checked id="highlights-toggle"/>
+						<div class="toggle-button" onclick="toggleHighlights()"></div>
+					</label>
+				</div>
+			</div>
+			
+			<div id="legend" class=" hidden">
+				<div class="legend-entry">
+					<div class="highlight key">W</div>
+					<div class="secondary description">camera up</div>
+				</div>
+				
+				<div class="legend-entry">
+					<div class="highlight key">S</div>
+					<div class="secondary description">camera down</div>
+				</div>
+				
+				<div class="legend-entry">
+					<div class="highlight key">A</div>
+					<div class="secondary description">camera left</div><! need to fact-check -- -->
+				</div>
+				
+				<div class="legend-entry">
+					<div class="highlight key">D</div>
+					<div class="secondary description">camera right</div><! need to fact-check -- -->
+				</div>
+				
+				<div class="legend-entry">
+					<div class="highlight key">1</div>
+					<div class="secondary description">increase up</div>
+				</div>
+				
+				<div class="legend-entry">
+					<div class="highlight key">2</div>
+					<div class="secondary description">decrease down</div>
+				</div>
+				
+				<div class="legend-entry">
+					<div class="highlight key">space</div>
+					<div class="secondary description">move target</div>
+				</div>
+				
+				<div class="legend-entry">
+					<div class="highlight key">2</div>
+					<div class="secondary description">reset</div><! dont need close in web version -- -->
+				</div>
+			</div>
+			
+			<div id="bottom-controls">
+				<div id="toggle-panel" class="lightarea closed" onclick="togglePanel()">
+					<svg class="angle-icon" 
+						 width="20" height="20" 
+						 viewBox="0 0 20 20" 
+						 fill="none" 
+						 stroke-width="3" 
+						 stroke-linecap="round" 
+						 stroke-linejoin="round">
+						<polyline points="2.5,8 10,15.5 17.5,8"/>
+					</svg>
+				</div>
 			</div>
 		</div>
 		
-		<hr class=" hidden">
+		<div id="self-promo">
 		
-		<div id="select" class="light-area hidden">
-			<div class="dropdown-item" id="dropdown-item-main" onclick="showDropdown()">
-				<div id="item-rendered">blue_face</div> <! this has to go into js as well, not sure how u want to do it -- -->
-				<svg class="dropdown-icon" height="5" width="10">
-					<polygon class="dropdown-icon" points="0,0 5,5 10,0"/>
+			<div id="toggle-fullscreen" class="ext-btn" onclick="toggleFS()">
+				<svg class="fs-icon" 
+					width="24" height="24" 
+					viewBox="0 0 24 24" 
+					fill="none" 
+					stroke-width="1.5" 
+					stroke-linecap="round" 
+					stroke-linejoin="round">
+					<polyline points=" 2, 8  2, 2  8, 2"/>
+					<polyline points=" 2,16  2,22  8,22"/>
+					<polyline points="22, 8 22, 2 16, 2"/>
+					<polyline points="22,16 22,22 16,22"/>
+				</svg>
+				
+				<svg class="fs-icon hidden" 
+					width="24" height="24" 
+					viewBox="0 0 24 24" 
+					fill="none" 
+					stroke-width="1.5" 
+					stroke-linecap="round" 
+					stroke-linejoin="round">
+					<polyline points=" 2, 8  8, 8  8, 2"/>
+					<polyline points=" 2,16  8,16  8,22"/>
+					<polyline points="22, 8 16, 8 16, 2"/>
+					<polyline points="22,16 16,16 16,22"/>
 				</svg>
 			</div>
 			
-			<div class="dropdown-list light-area" id="obj-list">
-			</div>
+			<div class="link" onclick="window.open('https://github.com/econaxis/renderer/')">Find us on github!</div>
 		</div>
-		
-		<div id="controls" class=" hidden">
-			<! set initial values as needed -- -->
-			<div class="control-label">reflectance parameter</div> <! can i just write this as "reflectance" -- -->
-			<input type="range" 
-				   min="1" max="100" value="50" 
-				   class="control slider" 
-				   id="reflectance-slider"
-				   oninput="setReflectanceParameter()">
-			
-			<! toggles probably not responding because <input is size 0, 
-				so i did it inline manually. will need to fix 
-				confused because examples from the internet work-- -->
-				   
-			<div class="control-label">shadows</div>
-			<div class="control"> 
-				<label class="toggle">
-					<input type="checkbox" id="shadow-toggle"/>
-					<div class="toggle-button" onclick="toggleShadows()"></div>
-				</label>
-			</div>
-			
-			<div class="control-label">highlights</div>
-			<div class="control"> 
-				<label class="toggle">
-					<input type="checkbox" checked id="highlights-toggle"/>
-					<div class="toggle-button" onclick="toggleHighlights()"></div>
-				</label>
-			</div>
-		</div>
-		
-		<div id="legend" class=" hidden">
-			<div class="legend-entry">
-				<div class="highlight key">W</div>
-				<div class="secondary description">camera up</div>
-			</div>
-			
-			<div class="legend-entry">
-				<div class="highlight key">S</div>
-				<div class="secondary description">camera down</div>
-			</div>
-			
-			<div class="legend-entry">
-				<div class="highlight key">A</div>
-				<div class="secondary description">camera left</div><! need to fact-check -- -->
-			</div>
-			
-			<div class="legend-entry">
-				<div class="highlight key">D</div>
-				<div class="secondary description">camera right</div><! need to fact-check -- -->
-			</div>
-			
-			<div class="legend-entry">
-				<div class="highlight key">1</div>
-				<div class="secondary description">increase up</div>
-			</div>
-			
-			<div class="legend-entry">
-				<div class="highlight key">2</div>
-				<div class="secondary description">decrease down</div>
-			</div>
-			
-			<div class="legend-entry">
-				<div class="highlight key">space</div>
-				<div class="secondary description">move target</div>
-			</div>
-			
-			<div class="legend-entry">
-				<div class="highlight key">2</div>
-				<div class="secondary description">reset</div><! dont need close in web version -- -->
-			</div>
-		</div>
-		
-		<div id="bottom-controls">
-		<div id="toggle-panel" class="lightarea closed" onclick="togglePanel()">
-			<svg class="angle-icon" 
-				 width="20" height="20" 
-				 viewBox="0 0 20 20" 
-				 fill="none" 
-				 stroke-width="3" 
-				 stroke-linecap="round" 
-				 stroke-linejoin="round">
-				<polyline points="2.5,8 10,15.5 17.5,8"/>
-			</svg>
-		</div>
-		</div>
+	</div>
+	
+	<! not wide enough -- -->
+	<div id="mobile">
+		<div>Oops!</div>
+		<div class="description">We do not support too-skinny screens. Maybe try rotating your screen or making it wider.</div>
+		<div class="link" onclick="window.open('https://github.com/econaxis/renderer/')">Find us on github! ❤</div>
+		<div class="link" onclick="window.open('please_cat.gif')">I don't wanna</div>
 	</div>
 </body>  
 </html>

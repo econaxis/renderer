@@ -3,7 +3,7 @@
 // obtains all obj files
 // !!!
 function fetchObjs(){
-	var files = ["yeetus", "feetus", "reetus", "idk", "placeholder"];
+	var files = ["yeetus", "feetus", "reetus", "idk", "placeholder", "billie", "bob", "joe", "billie", "bob", "joe"];
 	var objList = document.getElementById("obj-list");
 	document.getElementById("item-rendered").innerHTML = files[0];
 	files.forEach(function (i){
@@ -17,26 +17,44 @@ function togglePanel() {
 	var clopen = togglePanelBtn.className;
 	var controlPanel = document.getElementById("control-panel");
 	var panelState = controlPanel.className;
+	var contentList = document.querySelectorAll('#control-panel > *:not(#bottom-controls)');
 	
 	if(clopen.includes("closed")){
 		togglePanelBtn.className = clopen.replace("closed", "opened");
 		controlPanel.className = panelState.replace("compact", "expanded");
-		document.querySelectorAll('#control-panel > .hidden').forEach(function(i) {
-			i.className = i.className.replace("hidden", "shown");
+		contentList.forEach(function(i) {
+			if(!(i.id == "#bottom-controls")){
+				i.style.marginBottom = "6%";
+			}
+			if(i.classList.contains("hidden")){
+				i.className = i.className.replace("hidden", "shown");
+			}
 		});
 	} else if (clopen.includes("opened")){
 		togglePanelBtn.className = clopen.replace("opened", "closed");
 		controlPanel.className = panelState.replace("expanded", "compact");
-		document.querySelectorAll('#control-panel > .shown').forEach(function(i) {
-			i.className = i.className.replace("shown", "hidden");
+		contentList.forEach(function(i) {
+			if(!(i.id == "#bottom-controls")){
+				i.style.marginBottom = "3%";
+			}
+			if(i.classList.contains("shown")){
+				i.className = i.className.replace("shown", "hidden");
+			}
 		});
 	}
 }
 
-
 function showDropdown() {
 	document.getElementById("obj-list").classList.toggle("shown");
 }
+
+document.querySelector('.dropdown-list').addEventListener('mouseenter', function(e){
+  e.target.style.overflow = 'scroll';
+}, false);
+
+document.querySelector('.dropdown-list').addEventListener('mouseleave', function(e){
+  e.target.style.overflow = 'hidden';
+}, false);
 
 // Close the dropdown if the user clicks outside of it
 window.onclick = function(event) {
@@ -80,5 +98,13 @@ function toggleShadows(){
 function toggleHighlights(){
 	var highlightState = document.getElementById("shadow-toggle").checked;
 	// now toggle highlights
+}
+
+// Full screen handling
+function toggleFS(){
+	document.getElementById("control-panel").classList.toggle("fs");
+	document.querySelectorAll('.fs-icon').forEach(function (i){
+		i.classList.toggle("hidden");
+	});
 }
 
