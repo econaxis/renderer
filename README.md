@@ -107,15 +107,6 @@ So we first collected the luminance data of surrounding pixels to determine how 
 ### Long edges? :o 
 We are currently ignoring these because our models are not that complicated yet. Might add this feature later, though. 
 
-## UI
-
-Some more notable drafts in Figma
-![image](/ui/drafts/figmaFrames.png)
-
-A smol (coded) prototype
-![image](/ui/drafts/vid1.mp4)
-
-
 # Project Description
 
 For our capstone project, we made a renderer that converts a 3D object to a 2D image that could be displayed on the 
