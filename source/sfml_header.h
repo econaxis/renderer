@@ -142,7 +142,6 @@ inline EM_BOOL key_callback(int eventType, const EmscriptenKeyboardEvent *keyEve
         if(!strcmp(keyEvent->key, "ArrowRight")) pressed[Right] = true;
         if(!strcmp(keyEvent->key, "ArrowDown")) pressed[Down] = true;
         if(!strcmp(keyEvent->key, "ArrowUp")) pressed[Up] = true;
-        if(!strcmp(keyEvent->key, "ArrowUp")) pressed[Up] = true;
         if(!strcmp(keyEvent->key, " ")) pressed[Space] = true;
         if(!strcmp(keyEvent->key, "q")) pressed[Q] = true;
     } else if (eventType == EMSCRIPTEN_EVENT_KEYUP) {
