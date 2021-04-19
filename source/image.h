@@ -19,7 +19,7 @@ private:
     std::vector<Pixel> image;
 
 public:
-    ASCIIDisplay display;
+    CanvasDisplay display;
     std::size_t width, height;
 
     const auto &get_pixels() const {
@@ -60,8 +60,7 @@ public:
     }
 
     void render() {
-
-        std::cout << display.render(*this).str()<<std::endl;
+        display.render(*this);
     }
 
     template<typename T>

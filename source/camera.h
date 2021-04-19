@@ -11,7 +11,7 @@ struct Camera {
     gmtl::Vec3f cam_position, up_direction, target, cam_direction;
     gmtl::Matrix44f camera_mat;
 
-    Camera() : cam_position(0, 0, 10), up_direction(0, 1, 0), target(0, 0, 0) {
+    Camera() : cam_position(200, 200, 3), up_direction(0, 1, 0), target(0, 0, 0) {
         reprocess_camera_mat(); // Initializes cam_direction and camera_mat
     }
 
@@ -55,6 +55,7 @@ struct Camera {
         }
         if(cam_changed) {
             reprocess_camera_mat();
+//            std::cout<<"Cam position: "<<cam_position<<"; camera target: "<<target<<std::endl;
         }
     }
     void reprocess_camera_mat() {
@@ -62,8 +63,10 @@ struct Camera {
         cam_direction[1] = -std::sin(angle_y);
         cam_direction[2] = -std::sin(angle_x);
         gmtl::normalize(cam_direction);
-        target = cam_position + cam_direction;
+//        target = cam_position + cam_direction * 10.F;
         camera_mat = lookAt(cam_position, target);
+        cam_direction = cam_position - target;
+        gmtl::normalize(cam_direction);
     }
 
     gmtl::Matrix44f lookAt(gmtl::Vec3f &eye, gmtl::Vec3f &target, const gmtl::Vec3f &upDir = gmtl::Vec3f{0, 1, 0}) {

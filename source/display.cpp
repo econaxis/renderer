@@ -33,11 +33,30 @@ std::stringstream ASCIIDisplay::render(const Image &im) {
         screen_buffer << "\n";
     }
     buffer = screen_buffer.str();
-    std::cout<<"STRING BUFFER ADDR: "<<(void*)(buffer.c_str())<<std::endl;
+    std::cout << "STRING BUFFER ADDR: " << (void *) (buffer.c_str()) << std::endl;
     ascii_file << screen_buffer.rdbuf();
     return screen_buffer;
 };
 
+
+void CanvasDisplay::render(const Image &im) {
+    if (image_data.size() != im.height * im.width * 4) {
+        image_data.resize(im.height * im.width * 4);
+    }
+
+    const auto &pixel_data = im.get_pixels();
+    for (std::size_t y = 0; y < im.height; y++) {
+        const std::size_t y_cache = 4 * y * im.width;
+        for (std::size_t x = 0; x < im.width; x ++) {
+            image_data[y_cache + x*4] = (uint8_t) (pixel_data[y * im.width + x].r * 255);
+            image_data[y_cache + x*4 + 1] = (uint8_t) (pixel_data[y * im.width + x].g * 255);
+            image_data[y_cache + x*4 + 2] = (uint8_t) (pixel_data[y * im.width + x].b * 255);
+            image_data[y_cache + x*4 + 3] = (uint8_t) 255;
+        }
+    }
+
+    image_data_loc = pixel_data.data();
+}
 //sf::Text ASCIIDisplay::render_with_gui_text(const Image& im) {
 //    /*
 //     * Renders all image data in 'im' to a sf::Text object (equivalent basically to a string). That sf::Text can be rendered

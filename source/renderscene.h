@@ -15,6 +15,13 @@ struct RenderScene {
     int specular_selectivity;
     gmtl::Matrix44f screen_persp;
 
+    void handle_input() {
+        if (model.check_rotated())
+            light.bake_light(model);
+
+        camera.handle_keyboard_input();
+
+    }
 
     void main_render_code() { // Handle keyboard input events for the frame, and if the model has rotated,
         // that means the shadow map has also changed. We need to update the light shadow
@@ -29,8 +36,9 @@ struct RenderScene {
         gmtl::Matrix44f screen_complete_matrix_transforms = screen_persp * camera.camera_mat;
 
         const auto tot_triangles = model.total_triangles();
+        int tris_rendererd = 0;
 
-#pragma omp parallel for shared(model, tot_triangles, screen_complete_matrix_transforms) default(none)
+//#pragma omp parallel for shared(model, tot_triangles, screen_complete_matrix_transforms) default(none)
         for (int i = 0; i <= tot_triangles; i++) {
             auto model_coordinates = model.get_model_transformed_triangle(i);
             auto persp_pts = screen_complete_matrix_transforms * model_coordinates;
@@ -59,6 +67,7 @@ struct RenderScene {
                     between_mat(persp_pts, image) &&
                     // Points are in front of the current z-buffer.
                     check_z_buffer(pt1, pt2, pt3, image)) {
+                tris_rendererd++;
                 gmtl::Vec3f normal_dir = model.get_normal(i); // Automatically normalized
                 gmtl::Vec3f face_position = {pt1_world[0], pt1_world[1], pt1_world[2]};
 
@@ -98,6 +107,8 @@ struct RenderScene {
                 image.triangle(pt1, pt2, pt3, c);
             }
         }
+
+//        std::cout<<"Triangles rendered: "<<tris_rendererd;
         image.render();
     }
 };

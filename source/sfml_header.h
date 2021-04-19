@@ -8,6 +8,9 @@
 
 
 #ifndef HAS_SFML
+#include <emscripten/html5.h>
+#include <cstring>
+#include <iostream>
 namespace sf::Keyboard {
 enum Key {
     Unknown = -1, //!< Unhandled key
@@ -124,8 +127,43 @@ enum Key {
     Return = Enter         //!< \deprecated Use Enter instead
 };
 
-static bool isKeyPressed(Key key) {
-    return false;
+inline bool pressed[KeyCount] = {0};
+
+inline bool isKeyPressed(Key key) {
+    return pressed[key];
+}
+inline EM_BOOL key_callback(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData) {
+    if(eventType == EMSCRIPTEN_EVENT_KEYDOWN) {
+        if(!strcmp(keyEvent->key, "a")) pressed[A] = true;
+        if(!strcmp(keyEvent->key, "s")) pressed[S] = true;
+        if(!strcmp(keyEvent->key, "d")) pressed[D] = true;
+        if(!strcmp(keyEvent->key, "w")) pressed[W] = true;
+        if(!strcmp(keyEvent->key, "ArrowLeft")) pressed[Left] = true;
+        if(!strcmp(keyEvent->key, "ArrowRight")) pressed[Right] = true;
+        if(!strcmp(keyEvent->key, "ArrowDown")) pressed[Down] = true;
+        if(!strcmp(keyEvent->key, "ArrowUp")) pressed[Up] = true;
+        if(!strcmp(keyEvent->key, "ArrowUp")) pressed[Up] = true;
+        if(!strcmp(keyEvent->key, " ")) pressed[Space] = true;
+        if(!strcmp(keyEvent->key, "q")) pressed[Q] = true;
+    } else if (eventType == EMSCRIPTEN_EVENT_KEYUP) {
+        if(!strcmp(keyEvent->key, "a")) pressed[A] = false;
+        if(!strcmp(keyEvent->key, "s")) pressed[S] = false;
+        if(!strcmp(keyEvent->key, "d")) pressed[D] = false;
+        if(!strcmp(keyEvent->key, "w")) pressed[W] = false;
+        if(!strcmp(keyEvent->key, "ArrowLeft")) pressed[Left] = false;
+        if(!strcmp(keyEvent->key, "ArrowRight")) pressed[Right] = false;
+        if(!strcmp(keyEvent->key, "ArrowDown")) pressed[Down] = false;
+        if(!strcmp(keyEvent->key, "ArrowUp")) pressed[Up] = false;
+        if(!strcmp(keyEvent->key, " ")) pressed[Space] = false;
+        if(!strcmp(keyEvent->key, "q")) pressed[Q] = false;
+
+    }
+    return true;
+};
+
+inline void setup_callbacks() {
+    emscripten_set_keyup_callback("canvas", nullptr, false, key_callback);
+    emscripten_set_keydown_callback("canvas", nullptr, false, key_callback);
 }
 }
 
@@ -133,10 +171,7 @@ inline void poll_input(Image& image, gmtl::Matrix44f& screen) {
     // do nothing.
 }
 #endif
-
-
 #ifdef HAS_SFML
-
 #include <SFML/Graphics.hpp>
 
 sf::RenderWindow& get_window() {

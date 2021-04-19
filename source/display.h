@@ -56,6 +56,16 @@ public:
 //    }
     std::stringstream render(const Image &im); // Renders the image as a stringstream, from which we push to std::cout
 };
+
+
+class CanvasDisplay {
+public:
+    const void* image_data_loc;
+    std::vector<uint8_t> image_data;
+
+    void render(const Image& im);
+};
+
 //class PNGDisplay {
 //	png::image<png::rgb_pixel> pngimg;
 //

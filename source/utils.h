@@ -45,8 +45,7 @@ inline gmtl::Matrix44f create_screen_matrix(std::size_t pixel_width, std::size_t
         0, 0, 0, 1);
     return screen;
 }
-
-inline gmtl::Matrix44f create_perspective_transform_matrix(float r = 1.4, float n = 2, float f = 300)
+inline gmtl::Matrix44f create_perspective_transform_matrix(float r = 0.5, float n = 1, float f = 700)
 {
     gmtl::Matrix44f persp;
     persp.set(
