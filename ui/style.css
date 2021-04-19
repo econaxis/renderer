@@ -1,0 +1,398 @@
+:root {
+    --primary-light: #EEEEEE;
+    --primary-dark: #202020;
+    --primary-shadow: rgba(0, 0, 0, 0.7);
+	--secondary-light: #C0C0C0;
+	--secondary-dark: #333333;
+	--ternary-light: #909090;
+	--ternary-dark: #666666;
+}
+
+body {
+	margin: 0px;
+	font-size: 14px;
+	font-family: Jura;
+	font-weight: 400;
+	color: var(--primary-light);
+	text-align: left;
+	-webkit-transition: .4s;
+	transition: .4s;
+}
+
+#viewer {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	right: 0px;
+	top: 0px;
+	
+	background-color: #000000;
+}
+
+#control-panel {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: stretch;
+
+	position: absolute;
+	max-width: 400px;
+	max-height: 600px;
+	width: 50%;
+	right: 60px;
+	
+	padding-top:25px;
+	padding-bottom:25px;
+	
+	background-color: var(--primary-dark);
+	box-shadow: 0px 4px 40px var(--primary-shadow);
+	-webkit-transition: .4s; /* height transition still abrupt */
+	transition: .4s;
+}
+
+#control-panel.compact {
+	top: 0px;
+	
+	padding-top:25px;
+	padding-bottom:25px;
+	
+	border-radius: 0px 0px 25px 25px;
+	
+}
+
+#control-panel.expanded {
+	top: 60px; /* to keep or not to keep? */
+	
+	padding-top:25px;
+	padding-bottom:25px;
+	
+	border-radius: 25px;
+}
+
+#control-panel > * {
+	margin-bottom: 6%;
+}
+
+/* main containers/elements */
+#info {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	padding-left: 7.5%;
+	padding-right: 7.5%;
+	text-align: center;
+}
+
+hr {
+	width: 70%;
+	border-width: 1px;
+	border-color: var(--ternary-dark);
+}
+
+#select {
+	margin-left: 8%;
+	margin-right: 8%;
+	
+	border-radius: 5px;
+	cursor: pointer;
+}
+
+.dropdown-list {
+	display: none;
+	border-radius: 0px 0px 5px 5px;
+}
+
+.dropdown-item {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	padding: 5px 10px;
+}
+
+#select:hover{
+	box-shadow: 0px 0px 4px var(--primary-shadow);
+}
+
+.dropdown-item:hover {
+	background-color: var(--ternary-dark);
+	border-radius: 5px;
+}
+
+#controls {
+    display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+    flex-wrap: wrap;
+	
+	padding-left: 8%;
+	padding-right: 8%;
+}
+
+#legend { /* probably need to force increased height when width is small */
+    display: flex;
+	flex-direction: column;
+	justify-content: left;
+	align-items: flex-start;
+	
+    flex-wrap: wrap;
+	
+	min-height: 100px;
+	height: 120px;
+	
+	padding-left: 8%;
+	padding-right: 8%;
+}
+
+#bottom-controls {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	margin: 0px auto;
+}
+
+#toggle-panel {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	width: 50px;
+	height: 50px;
+	
+	background-color: var(--secondary-dark);
+	border-radius: 25px;
+	
+	cursor: pointer;
+}
+
+#toggle-panel:hover {
+	background-color: var(--ternary-dark);
+}
+
+/* types of containers & labels */
+.info-block {
+	width: 95px;
+}
+
+.info-block > .highlight {
+	margin-top: 10px;
+}
+
+.light-area{
+	background-color: var(--secondary-dark);
+}
+
+#controls > * {
+	margin: 5px 0px;
+}
+
+input {
+	float: right;
+}
+
+.control-label {
+	width: 35%;
+}
+
+.control {
+	width: 60%;
+}
+
+.legend-entry {
+	min-width: 120px;
+	width: 50%;
+	margin: 2px;
+}
+
+.key {
+	display: inline-block;
+	width: 32%;
+	min-width: 50px;
+}
+
+.description {
+	display: inline-block;
+	width: 65%;
+}
+
+
+#toggle-panel.closed {
+	box-shadow: 0px 0px 10px var(--primary-shadow);
+	position: absolute;
+	bottom: -25px;
+}
+
+#toggle-panel.opened {
+	box-shadow: none;
+	transform: rotate(180deg); /* todo: animate */
+}
+
+/* slider */
+.slider {
+	-webkit-appearance: none;
+	align-self: center;
+	height: 5px;
+	
+	background: var(--ternary-dark);
+	outline: none;
+	border-radius: 2.5px;
+	-webkit-transition: .2s;
+}
+
+.slider:hover {
+	background: var(--ternary-light);
+}
+
+.slider::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 13px;
+	height: 13px;
+	border-radius: 6.5px;
+	background: var(--ternary-dark);
+	cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+	width: 12px;
+	height: 12px;
+	border-radius: 6px;
+	background: var(--ternary-dark);
+	cursor: pointer;
+}
+
+.slider:hover::-webkit-slider-thumb {
+	background: var(--ternary-light);
+	box-shadow: 0px 0px 4px var(--primary-shadow);
+}
+
+.slider:hover::-moz-range-thumb {
+	background: var(--ternary-light);
+	box-shadow: 0px 0px 4px var(--primary-shadow);
+}
+
+/* toggle */
+.toggle {
+	position: relative;
+	display: inline-block;
+	float: right;
+	width: 30px;
+	height: 17px;
+}
+
+.toggle > input { 
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+
+.toggle-button {
+	position: absolute;
+	cursor: pointer;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: var(--ternary-dark);
+	-webkit-transition: .2s;
+	transition: .2s;
+	border-radius: 34px;
+}
+
+.toggle-button:hover {
+	background-color: var(--ternary-light);
+}
+
+.toggle-button:before {
+	position: absolute;
+	content: "";
+	height: 13px;
+	width: 13px;
+	left: 2px;
+	bottom: 2px;
+	background-color: var(--primary-dark);
+	-webkit-transition: .2s;
+	transition: .2s;
+	border-radius: 50%;
+}
+
+.toggle-button:hover:before {
+	box-shadow: 0px 0px 4px var(--primary-shadow);
+}
+
+input:checked + .toggle-button {
+  background-color: var(--primary-light);
+}
+
+input:checked + .toggle-button:before {
+  -webkit-transform: translateX(13px);
+  -ms-transform: translateX(13px);
+  transform: translateX(13px);
+}
+
+/* text styles */
+.highlight {
+	font-weight: 700;
+}
+
+.secondary {
+	color: var(--secondary-light);
+}
+
+.large {
+	font-size: 18px;
+}
+
+::selection {
+    background-color: var(--ternary-dark);
+    color: var(--primary-light);
+}
+
+/*** Mozilla based browsers ***/
+::-moz-selection {
+    background-color: var(--ternary-dark);
+    color: var(--primary-light);
+}
+
+/***For Other Browsers ***/
+::-o-selection {
+    background-color: var(--ternary-dark);
+    color: var(--primary-light);
+}
+
+::-ms-selection {
+    background-color: var(--ternary-dark);
+    color: var(--primary-light);
+}
+
+/*** For Webkit ***/
+::-webkit-selection {
+    background-color: var(--ternary-dark);
+    color: var(--primary-light);
+}
+
+/* graphics styles */
+
+.dropdown-icon {
+	fill: var(--primary-light); /* would this be too bright */
+}
+
+.angle-icon {
+	stroke: var(--primary-light); 
+	/*stroke-width: 3px;
+	fill: none;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	padding-bottom: 1px;*/
+}
+
+/* hidden */
+.hidden {
+	display: none !important; 
+}
+
+.shown {
+	display: block; 
+}
