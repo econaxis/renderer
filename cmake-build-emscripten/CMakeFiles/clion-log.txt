@@ -1,14 +1,7 @@
 /opt/clion-2020.3.3/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_TOOLCHAIN_FILE=/home/henry/.local/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake -G "CodeBlocks - Unix Makefiles" /home/henry/renderer
 building for release mode
-CMake Error at extern/CMakeLists.txt:14 (find_package):
-  Could not find a configuration file for package "SFML" that is compatible
-  with requested version "2.5.1".
-
-  The following configuration files were considered but not accepted:
-
-    /home/henry/renderer/extern/sfml/build/Release/lib/cmake/SFML/SFMLConfig.cmake, version: 2.5.1 (64bit)
-
-
-
--- Configuring incomplete, errors occurred!
-See also "/home/henry/renderer/cmake-build-emscripten/CMakeFiles/CMakeOutput.log".
+sfml not found
+no sfml found
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/henry/renderer/cmake-build-emscripten

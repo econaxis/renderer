@@ -107,8 +107,8 @@ struct RenderScene {
             }
         }
 
-        auto x = sf::Mouse::getPosition(get_window());
-        std::cout<<x.x<<x.y<<" "<<image.get_face_id(x.x, x.y);
+//        auto x = sf::Mouse::getPosition(get_window());
+//        std::cout<<x.x<<x.y<<" "<<image.get_face_id(x.x, x.y);
 
 //        std::cout<<"Triangles rendered: "<<tris_rendererd;
         image.render();

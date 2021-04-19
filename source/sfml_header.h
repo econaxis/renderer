@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #pragma once
 #include "utils.h"
 
@@ -165,8 +164,8 @@ inline EM_BOOL key_callback(int eventType, const EmscriptenKeyboardEvent *keyEve
 
 }
 inline void setup_callbacks() {
-    emscripten_set_keyup_callback("canvas", nullptr, false, key_callback);
-    emscripten_set_keydown_callback("canvas", nullptr, false, key_callback);
+    emscripten_set_keyup_callback("canvas", nullptr, false, sf::Keyboard::key_callback);
+    emscripten_set_keydown_callback("canvas", nullptr, false, sf::Keyboard::key_callback);
 }
 
 inline void poll_input(Image& image, gmtl::Matrix44f& screen) {

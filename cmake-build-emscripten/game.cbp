@@ -5,7 +5,7 @@
 		<Option title="game"/>
 		<Option makefile_is_custom="1"/>
 		<Option compiler="clang"/>
-		<Option virtualFolders="CMake Files\;CMake Files\..\;CMake Files\..\.local\;CMake Files\..\.local\emsdk\;CMake Files\..\.local\emsdk\upstream\;CMake Files\..\.local\emsdk\upstream\emscripten\;CMake Files\..\.local\emsdk\upstream\emscripten\cmake\;CMake Files\..\.local\emsdk\upstream\emscripten\cmake\Modules\;CMake Files\..\.local\emsdk\upstream\emscripten\cmake\Modules\Platform\;"/>
+		<Option virtualFolders="CMake Files\;CMake Files\..\;CMake Files\..\.local\;CMake Files\..\.local\emsdk\;CMake Files\..\.local\emsdk\upstream\;CMake Files\..\.local\emsdk\upstream\emscripten\;CMake Files\..\.local\emsdk\upstream\emscripten\cmake\;CMake Files\..\.local\emsdk\upstream\emscripten\cmake\Modules\;CMake Files\..\.local\emsdk\upstream\emscripten\cmake\Modules\Platform\;CMake Files\extern\;"/>
 		<Build>
 			<Target title="all">
 				<Option working_dir="/home/henry/renderer/cmake-build-emscripten"/>
@@ -130,6 +130,9 @@
 		<Unit filename="/home/henry/renderer/source/sfml_header.h">
 			<Option target="game"/>
 		</Unit>
+		<Unit filename="/home/henry/renderer/source/utils.cpp">
+			<Option target="game"/>
+		</Unit>
 		<Unit filename="/home/henry/renderer/source/utils.h">
 			<Option target="game"/>
 		</Unit>
@@ -141,6 +144,9 @@
 		</Unit>
 		<Unit filename="/home/henry/renderer/../.local/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake">
 			<Option virtualFolder="CMake Files\..\.local\emsdk\upstream\emscripten\cmake\Modules\Platform\"/>
+		</Unit>
+		<Unit filename="/home/henry/renderer/extern/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\extern\"/>
 		</Unit>
 	</Project>
 </CodeBlocks_project_file>

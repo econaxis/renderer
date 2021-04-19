@@ -6,6 +6,7 @@ file(REMOVE_RECURSE
   "CMakeFiles/game.dir/source/obj_loader.cpp.o"
   "CMakeFiles/game.dir/source/pixel.cpp.o"
   "CMakeFiles/game.dir/source/pixeller.cpp.o"
+  "CMakeFiles/game.dir/source/utils.cpp.o"
   "game.html"
   "game.pdb"
 )

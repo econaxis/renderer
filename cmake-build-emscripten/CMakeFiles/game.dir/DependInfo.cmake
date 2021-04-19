@@ -11,6 +11,7 @@ set(CMAKE_DEPENDS_CHECK_CXX
   "/home/henry/renderer/source/obj_loader.cpp" "/home/henry/renderer/cmake-build-emscripten/CMakeFiles/game.dir/source/obj_loader.cpp.o"
   "/home/henry/renderer/source/pixel.cpp" "/home/henry/renderer/cmake-build-emscripten/CMakeFiles/game.dir/source/pixel.cpp.o"
   "/home/henry/renderer/source/pixeller.cpp" "/home/henry/renderer/cmake-build-emscripten/CMakeFiles/game.dir/source/pixeller.cpp.o"
+  "/home/henry/renderer/source/utils.cpp" "/home/henry/renderer/cmake-build-emscripten/CMakeFiles/game.dir/source/utils.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "Clang")
 

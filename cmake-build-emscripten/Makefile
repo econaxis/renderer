@@ -332,6 +332,33 @@ source/pixeller.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/source/pixeller.cpp.s
 .PHONY : source/pixeller.cpp.s
 
+source/utils.o: source/utils.cpp.o
+
+.PHONY : source/utils.o
+
+# target to build an object file
+source/utils.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/source/utils.cpp.o
+.PHONY : source/utils.cpp.o
+
+source/utils.i: source/utils.cpp.i
+
+.PHONY : source/utils.i
+
+# target to preprocess a source file
+source/utils.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/source/utils.cpp.i
+.PHONY : source/utils.cpp.i
+
+source/utils.s: source/utils.cpp.s
+
+.PHONY : source/utils.s
+
+# target to generate assembly for a file
+source/utils.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/source/utils.cpp.s
+.PHONY : source/utils.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -362,6 +389,9 @@ help:
 	@echo "... source/pixeller.o"
 	@echo "... source/pixeller.i"
 	@echo "... source/pixeller.s"
+	@echo "... source/utils.o"
+	@echo "... source/utils.i"
+	@echo "... source/utils.s"
 .PHONY : help
 
 

@@ -54,12 +54,12 @@ int main(int argc, char *argv[]) {
 
     main_scene = new RenderScene{*model, *light, camera, *image, k_reflectivity, specular_selectivity, screen_persp};
     setup_callbacks();
-
-    int r = 2000;
-    while(true) {
-        std::this_thread::sleep_for(30ms);
-        main_scene->main_render_code();
-    }
+//
+//    int r = 2000;
+//    while(true) {
+//        std::this_thread::sleep_for(30ms);
+//        main_scene->main_render_code();
+//    }
 
     std::cout<<"done\n";
     return 0;
