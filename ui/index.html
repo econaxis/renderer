@@ -13,10 +13,11 @@
     <link rel="stylesheet" href="style.css">
 	<script src="index.js"></script>
 </head>
-<body onload="fetchObjs()">
+<body onload="fetchObjs(); getLegend();">
 	<! wide enough -- -->
 	<div id="page">
 		<div id="viewer">
+			<canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
 		</div>
 		
 		<div id="control-panel" class="compact">
@@ -81,45 +82,6 @@
 			</div>
 			
 			<div id="legend" class=" hidden">
-				<div class="legend-entry">
-					<div class="highlight key">W</div>
-					<div class="secondary description">camera up</div>
-				</div>
-				
-				<div class="legend-entry">
-					<div class="highlight key">S</div>
-					<div class="secondary description">camera down</div>
-				</div>
-				
-				<div class="legend-entry">
-					<div class="highlight key">A</div>
-					<div class="secondary description">camera left</div><! need to fact-check -- -->
-				</div>
-				
-				<div class="legend-entry">
-					<div class="highlight key">D</div>
-					<div class="secondary description">camera right</div><! need to fact-check -- -->
-				</div>
-				
-				<div class="legend-entry">
-					<div class="highlight key">1</div>
-					<div class="secondary description">increase up</div>
-				</div>
-				
-				<div class="legend-entry">
-					<div class="highlight key">2</div>
-					<div class="secondary description">decrease down</div>
-				</div>
-				
-				<div class="legend-entry">
-					<div class="highlight key">space</div>
-					<div class="secondary description">move target</div>
-				</div>
-				
-				<div class="legend-entry">
-					<div class="highlight key">2</div>
-					<div class="secondary description">reset</div><! dont need close in web version -- -->
-				</div>
 			</div>
 			
 			<div id="bottom-controls">

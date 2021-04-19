@@ -25,6 +25,36 @@ window.onmouseover = function(event) {
 	}
 }
 
+// keyEvents
+// !!!
+var keyEvents = new Map();
+keyEvents.set("W", "position up"); // writing "position" because its the longest word, fix as needed
+keyEvents.set("S", "position down");
+keyEvents.set("A", "position left");
+keyEvents.set("D", "position right");
+keyEvents.set("up", "position right");
+keyEvents.set("down", "position right");
+keyEvents.set("left", "position right");
+keyEvents.set("right", "position right");
+keyEvents.set("spc", "position right");
+keyEvents.set("Q", "position right");
+keyEvents.set("~", "bigger");
+keyEvents.set("1", "smaller");
+keyEvents.set("esc", "close");
+
+
+function getLegend(){
+	console.log(keyEvents);
+	var leg = document.getElementById("legend");
+	keyEvents.forEach(function (key, value) {
+		leg.innerHTML += 
+			"<div class='legend-entry'> \
+				<div class='highlight key'>" + value + "</div> \
+				<div class='secondary description'>" + key + "</div> \
+			</div>";
+	});
+}
+
 // ACTIONS
 function togglePanel() {
 	var togglePanelBtn = document.getElementById('toggle-panel');

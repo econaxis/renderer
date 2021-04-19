@@ -72,6 +72,14 @@ body {
 	top: 0px;
 }
 
+canvas {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	right: 0px;
+	top: 0px;
+}
+
 #control-panel {
 	display: flex;
 	flex-direction: column;
@@ -167,8 +175,7 @@ hr {
 	
     flex-wrap: wrap;
 	
-	min-height: 100px;
-	height: 120px;
+	height: 155px;
 }
 
 #bottom-controls {
@@ -236,7 +243,7 @@ input {
 
 .key {
 	display: inline-block;
-	width: 32%;
+	width: 22%;
 	min-width: 50px;
 }
 
