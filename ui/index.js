@@ -11,6 +11,20 @@ function fetchObjs(){
 	});
 }
 
+// control tooltips
+var tooltips = {
+	"reflectance parameter": "define reflectance parameter for users",
+	"shadows": "toggle object shadows on/off",
+	"highlights": "toggle object highlights on/off"
+}
+
+window.onmouseover = function(event) {
+	if(event.target.matches('.has-tooltip')){
+		let key = event.target.innerHTML;
+		event.target.innerHTML = "<span class='tooltiptext'>" + tooltips[key] + "</span>" + key;
+	}
+}
+
 // ACTIONS
 function togglePanel() {
 	var togglePanelBtn = document.getElementById('toggle-panel');
@@ -47,14 +61,6 @@ function togglePanel() {
 function showDropdown() {
 	document.getElementById("obj-list").classList.toggle("shown");
 }
-
-document.querySelector('.dropdown-list').addEventListener('mouseenter', function(e){
-  e.target.style.overflow = 'scroll';
-}, false);
-
-document.querySelector('.dropdown-list').addEventListener('mouseleave', function(e){
-  e.target.style.overflow = 'hidden';
-}, false);
 
 // Close the dropdown if the user clicks outside of it
 window.onclick = function(event) {
@@ -108,3 +114,12 @@ function toggleFS(){
 	});
 }
 
+// mobile begging
+function prettyPrettyPlease(){
+	let cats = document.getElementsByClassName("hidden cat");
+	if (cats.length > 0){
+		cats[0].classList.remove("hidden");
+	} else {
+		window.open('https://github.com/econaxis/renderer/');
+	}
+}

@@ -5,6 +5,7 @@
     --primary-glow: rgba(192, 192, 192, 0.7); /* c0c0c0 */
 	--secondary-light: #C0C0C0;
 	--secondary-dark: #333333;
+    --secondary-glow: rgba(144, 144, 144, 0.4);
 	--ternary-light: #909090;
 	--ternary-dark: #666666;
 	--heading: Jura;
@@ -78,13 +79,12 @@ body {
 	align-items: stretch;
 
 	position: absolute;
-	max-width: 400px;
-	max-height: 700px;
+	max-width: 350px;
+	max-height: 80%;
 	width: 50%;
 	right: 60px;
 	
-	padding-top:25px;
-	padding-bottom:25px;
+	padding: 25px min(32px, 4%);
 	
 	background-color: var(--primary-dark);
 	box-shadow: 0px 4px 40px var(--primary-shadow);
@@ -95,18 +95,12 @@ body {
 #control-panel.compact {
 	top: 0px;
 	
-	padding-top:25px;
-	padding-bottom:25px;
-	
 	border-radius: 0px 0px 25px 25px;
 	
 }
 
 #control-panel.expanded {
 	top: 60px; /* to keep or not to keep? */
-	
-	padding-top:25px;
-	padding-bottom:25px;
 	
 	border-radius: 25px;
 }
@@ -140,8 +134,6 @@ body {
 	flex-direction: row;
 	justify-content: space-between;
 	align-items: center;
-	padding-left: 7.5%;
-	padding-right: 7.5%;
 	text-align: center;
 }
 
@@ -152,9 +144,6 @@ hr {
 }
 
 #select {
-	margin-left: 8%;
-	margin-right: 8%;
-	
 	border-radius: 5px;
 	cursor: pointer;
 }
@@ -168,9 +157,6 @@ hr {
 	flex-direction: row;
 	justify-content: space-between;
     flex-wrap: wrap;
-	
-	padding-left: 8%;
-	padding-right: 8%;
 }
 
 #legend { /* probably need to force increased height when width is small */
@@ -183,9 +169,6 @@ hr {
 	
 	min-height: 100px;
 	height: 120px;
-	
-	padding-left: 8%;
-	padding-right: 8%;
 }
 
 #bottom-controls {
@@ -410,7 +393,17 @@ input:checked + .toggle-button:before {
 	width: 84%;*/
 	transition: height 1s ease;
 	max-height: 200px;
+	min-width: 100%;
+	margin: 0px;
+	padding: 0px;
 	overflow: hidden;
+}
+
+.dropdown-list:hover {
+	overflow-y: overlay;
+	overflow-x: hidden;
+	-webkit-transition: .4s;
+	transition: .4s;
 }
 
 .dropdown-item {
@@ -440,34 +433,6 @@ input:checked + .toggle-button:before {
 	font-size: 18px;
 }
 
-::selection {
-    background-color: var(--ternary-dark);
-    color: var(--primary-light);
-}
-
-/*** Mozilla based browsers ***/
-::-moz-selection {
-    background-color: var(--ternary-dark);
-    color: var(--primary-light);
-}
-
-/***For Other Browsers ***/
-::-o-selection {
-    background-color: var(--ternary-dark);
-    color: var(--primary-light);
-}
-
-::-ms-selection {
-    background-color: var(--ternary-dark);
-    color: var(--primary-light);
-}
-
-/*** For Webkit ***/
-::-webkit-selection {
-    background-color: var(--ternary-dark);
-    color: var(--primary-light);
-}
-
 /* graphics styles */
 
 .dropdown-icon {
@@ -494,4 +459,75 @@ input:checked + .toggle-button:before {
 
 .shown {
 	display: block; 
+}
+
+/* global */
+/* scrollbar */
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var(--secondary-glow) none;
+}
+
+*::-webkit-scrollbar {
+    width: 15px;
+}
+
+*::-webkit-scrollbar-track {
+	background: none;
+}
+
+*::-webkit-scrollbar-thumb {
+	border-radius: 20px;
+    border: 5px solid rgba(0, 0, 0, 0);
+	background-clip: padding-box;
+	background-color: var(--secondary-glow);
+}
+
+/* selection */
+::selection {
+    background-color: var(--ternary-dark);
+    color: var(--primary-light);
+}
+
+::-moz-selection {
+    background-color: var(--ternary-dark);
+    color: var(--primary-light);
+}
+
+::-o-selection {
+    background-color: var(--ternary-dark);
+    color: var(--primary-light);
+}
+
+::-ms-selection {
+    background-color: var(--ternary-dark);
+    color: var(--primary-light);
+}
+
+::-webkit-selection {
+    background-color: var(--ternary-dark);
+    color: var(--primary-light);
+}
+
+/* tooltips */
+.has-tooltip .tooltiptext {
+	visibility: hidden;
+	text-align: left;
+	font-size: 12px;
+	
+	background-color: var(--secondary-dark);
+	color: var(--secondary-light);
+	box-shadow: 0px 0px 4px var(--primary-shadow);
+	
+	width: 120px;
+	
+	border-radius: 5px;
+	padding: 5px;
+  
+	position: absolute;
+	right: 97%;
+}
+
+.has-tooltip:hover .tooltiptext {
+	visibility: visible;
 }
