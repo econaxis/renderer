@@ -89,23 +89,31 @@ Then, I render the scene from the camera's perspective. For every face, I check 
 
 Because I'd split the perspective/lighting/rendering module separate from the display module (which is responsible for putting pixels on the screen, either that be through SFML, PNG, or terminal), I tried to render RGB pixels to ASCII characters instead of normal pixels. I also spent a lot of time implementing variable font size, which was quite hard and I couldn't get it to work perfectly (notice the slight jumping when changing font size).
 
-# FXAA
+## FXAA
 
 Hello friends, this is another person writing with another brain. So after some googling and realizing how broke both us and the program are, I decided to try some antialiasing using FXAA3. 
 
 Note that FXAA would blur small details. Doubt that’s too big of a problem given the scope of this project.
 
-## Finding high contrast pixels
+### Finding high contrast pixels
 All of our image data is in RGB, so it is math time! We’ll convert RGB to HCL to find the (human-eye perceived) luminance because computer brightness is different from human brightness. Code can be found in /source. EDIT: I'm not sure if I used the right luminance in the algorithm, but I'll assume it doesn't make too big of a difference and we'll tweak other parameters as needed.
 
-## Identify contrast edges
+### Identify contrast edges
 We did this by comparing the luminance of colors and setting a threshold for contrast ratio.
 
-## Blend time
+### Blend time
 So we first collected the luminance data of surrounding pixels to determine how much to filter the color. But now my neck hurts and I'll save the rest for tomorrow.
 
-## Long edges? :o 
+### Long edges? :o 
 We are currently ignoring these because our models are not that complicated yet. Might add this feature later, though. 
+
+## UI
+
+Some more notable drafts in Figma
+![image](/ui/drafts/figmaFrames.png)
+
+A smol (coded) prototype
+![image](/ui/drafts/vid1.mp4)
 
 # Project Description
 
