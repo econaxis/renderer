@@ -45,17 +45,17 @@ void CanvasDisplay::render(const Image &im) {
     }
 
     const auto &pixel_data = im.get_pixels();
-    for (std::size_t y = 0; y < im.height; y++) {
-        const std::size_t y_cache = 4 * y * im.width;
-        for (std::size_t x = 0; x < im.width; x ++) {
-            image_data[y_cache + x*4] = (uint8_t) (pixel_data[y * im.width + x].r * 255);
-            image_data[y_cache + x*4 + 1] = (uint8_t) (pixel_data[y * im.width + x].g * 255);
-            image_data[y_cache + x*4 + 2] = (uint8_t) (pixel_data[y * im.width + x].b * 255);
-            image_data[y_cache + x*4 + 3] = (uint8_t) 255;
-        }
-    }
-
     image_data_loc = pixel_data.data();
+//    for (std::size_t y = 0; y < im.height; y++) {
+//        const std::size_t y_cache = 4 * y * im.width;
+//        for (std::size_t x = 0; x < im.width; x ++) {
+//            image_data[y_cache + x*4] = (uint8_t) (pixel_data[y * im.width + x].r * 255);
+//            image_data[y_cache + x*4 + 1] = (uint8_t) (pixel_data[y * im.width + x].g * 255);
+//            image_data[y_cache + x*4 + 2] = (uint8_t) (pixel_data[y * im.width + x].b * 255);
+//            image_data[y_cache + x*4 + 3] = (uint8_t) 255;
+//        }
+//    }
+
 }
 //sf::Text ASCIIDisplay::render_with_gui_text(const Image& im) {
 //    /*
@@ -93,27 +93,14 @@ void CanvasDisplay::render(const Image &im) {
 //
 //};
 
-//void WindowDisplay::render(const Image &im) {
-//    window.clear();
-//    const auto *pixel_data = im.get_pixels().data();
-//    auto *pixel_data_destination = pixels.data();
-//
-//#pragma omp parallel for default(none) shared(pixel_data, pixel_data_destination, im)
-//    for (std::size_t y = 0; y < im.height; y++) {
-//        std::size_t y_cache = 4 * y * texture.getSize().x;
-//        for (std::size_t x = 0; x < im.width; x++) {
-//            y_cache += 4;
-//            const auto &pixel = pixel_data[y * im.width + x];
-//            pixel_data_destination[y_cache] = (sf::Uint8) (pixel.r * 255);
-//            pixel_data_destination[y_cache + 1] = (sf::Uint8) (pixel.g * 255);
-//            pixel_data_destination[y_cache + 2] = (sf::Uint8) (pixel.b * 255);
-//            // Alpha, we don't need to set.
-//            // pixel_data_destination[y_cache + x + 3] = 255;
-//
-//        }
-//    }
-//
-//    texture.update(&pixels[0]);
-//    window.draw(sprite);
-//    window.display();
-//}
+#ifdef HAS_SFML
+void WindowDisplay::render(const Image &im) {
+    get_window().clear();
+    const auto *pixel_data = im.get_pixels().data();
+
+    texture.update(reinterpret_cast<const sf::Uint8*>(pixel_data));
+    get_window().draw(sprite);
+    get_window().display();
+}
+
+#endif

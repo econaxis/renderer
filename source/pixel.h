@@ -10,7 +10,7 @@
 #include <gmtl/gmtl.h>
 
 #include "color.h"
-
+#include <gmtl/gmtl.h>
 
 
 struct Point {
@@ -23,17 +23,16 @@ struct Point {
 			return Point(p4f[0], p4f[1], p4f[2]);
 		}
 	}
-	static gmtl::Vec3f find_normal(const Point& p1, const Point& p2, const Point& p3)  {
-		gmtl::Vec3f v1(p2.x - p1.x, p2.y - p1.y, p2.z - p1.z), v2(p3.x - p1.x, p3.y - p1.y, p3.z - p1.z);
-		return gmtl::makeNormal(gmtl::makeCross(v1, v2));
+    gmtl::Point4f to_Point4f() const {
+	    return gmtl::Point4f{(float) x, (float) y, (float) z, 1};
 	}
-
 	short x = 0, y = 0;
 	double z = 0; // Double precision used for z buffering
 
 	// Color
 	float r = 0, g = 0, b = 0;
 
+	unsigned int face_id = 0;
 	Color get_color (){
 		return Color{r, g, b};
 	}
@@ -73,14 +72,12 @@ struct Point {
 class Pixel
 {
 
-	// Used for the z buffer
-	static std::ofstream debug;
-
 public:
-	float r = 0, g = 0, b = 0;
-	double z = 100000;
+	uint8_t r = 0, g = 0, b = 0, alpha = 255;
 
-	Pixel(float r, float g, float b, double z) : r(r), g(g), b(b), z(z) {};
+    explicit Pixel(float r, float g, float b) : r(r * 255), g(g * 255), b(b * 255){};
+//    Pixel(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b){};
+    explicit Pixel(const Color& p1) : r(p1.r * 255), g(p1.g * 255), b(p1.b * 255) {};
 	Pixel() = default;
 
 
@@ -105,15 +102,15 @@ public:
 
 	Color get_color() const {
 		//do i need to do error handling
-		return Color{r, g, b};
+		return Color{(float) (r/255),(float)(g/255), (float)(b/255)};
 	}
 
 	auto get_darkness() const {
-		return (r + g + b) / 3;
+		return (r + g + b) / (255 * 3);
 	}
 
-	void replace(float _r, float _g, float _b, double _z) {
-		r = _r; g = _g; b = _b; z = _z;
+	void replace(float _r, float _g, float _b) {
+		r = _r; g = _g; b = _b;
 	}
 
 };

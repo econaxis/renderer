@@ -17,25 +17,43 @@
 class Image {
 private:
     std::vector<Pixel> image;
-
+    std::vector<double> z_buffer;
+    std::vector<unsigned int> face_id;
 public:
+#ifdef HAS_SFML
+    WindowDisplay display;
+#else
     CanvasDisplay display;
+#endif
     std::size_t width, height;
 
     const auto &get_pixels() const {
         return image;
     }
 
-    Image(std::size_t width = 50, std::size_t height = 25) : width(width), height(height) {
+    double get_z(std::size_t x, std::size_t y) const {
+        return z_buffer[y * width + x];
+    }
+
+    void set_z(std::size_t x, std::size_t y, double new_val) {
+        z_buffer[y * width + x] = new_val;
+    }
+
+    Image(std::size_t width, std::size_t height) : width(width), height(height), display(width, height) {
         // In case we somehow overflow, make the image vector 1 bigger.
         image.resize(width * height + 1);
+        z_buffer.resize(width * height + 1, 100000000000);
+        face_id.resize(width * height + 1);
         clear();
     }
 
     void resize(std::size_t new_width, std::size_t new_height) {
-        image.resize(new_width * new_height + 1);
         width = new_width;
         height = new_height;
+        image.resize(width * height + 1);
+        z_buffer.resize(width * height + 1, 100000000000);
+        face_id.resize(width * height + 1);
+
         clear();
         std::cout << "Resized to " << new_width << " " << new_height << "\n";
     }
@@ -57,6 +75,7 @@ public:
 
     void clear() {
         std::fill(image.begin(), image.end(), Pixel{});
+        std::fill(z_buffer.begin(), z_buffer.end(), 100000000000);
     }
 
     void render() {
@@ -136,9 +155,15 @@ public:
         return points;
     }
 
-    void horizontal_line(Point p1, Point p2, const Color &c) {
-        if (p1.x == p2.x)
-            return;
+    void set_face_id(std::size_t x, std::size_t y, unsigned int val_face_id) {
+        face_id[y * width + x] = val_face_id;
+    }
+
+    unsigned int get_face_id(std::size_t x, std::size_t y) const {
+        return face_id[y * width + x];
+    }
+
+    void horizontal_line(Point p1, Point p2, const Color &c, unsigned int face_id = 0) {
         const auto &start = std::min(p1, p2);
         const auto &end = std::max(p1, p2);
 
@@ -149,9 +174,11 @@ public:
             auto &target_pixel = at(x, p1.y);
 
             // Check z buffer.
-            if (target_pixel.z >= interp_z) {
+            if (get_z(x, p1.y) >= interp_z) {
                 // Yes, can overwrite.
-                target_pixel.replace(c.r, c.g, c.b, interp_z);
+                target_pixel = Pixel{c};
+                set_z(x, p1.y, interp_z);
+                set_face_id(x, p1.y, face_id);
             }
         }
     }
@@ -159,6 +186,7 @@ public:
     //TODO: fill triangles horizontally for cache efficiency. Do write-up on this choice.
     // Renders a triangle given three points on the image.
     void triangle(Point pt1, Point pt2, Point pt3, Color c) {
+        auto face_idval = pt1.face_id;
 
         auto pts = std::array<Point, 3>{pt1, pt2, pt3};
 
@@ -172,13 +200,13 @@ public:
             base_pt = Point::interp_all(pts[0], pts[2], y);
             // Left line + base line
             bottom_pt = Point::interp_all(pts[0], pts[1], y);
-            horizontal_line(base_pt, bottom_pt, c);
+            horizontal_line(base_pt, bottom_pt, c, face_idval);
         }
         for (short y = pts[1].y; y <= pts[2].y; y++) {
             base_pt = Point::interp_all(pts[0], pts[2], y);
             // Right line + base line
             top_pt = Point::interp_all(pts[1], pts[2], y);
-            horizontal_line(base_pt, top_pt, c);
+            horizontal_line(base_pt, top_pt, c, face_idval);
         }
     }
 

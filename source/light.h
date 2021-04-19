@@ -51,7 +51,10 @@ class Light
 	}
 
 public:
-	gmtl::Vec3f light_pos = {-1, -1, -1}, light_target = {0, 0, 0};
+    const Image& get_image() {
+	    return image;
+	}
+	gmtl::Vec3f light_pos = {-1, 1, 3}, light_target = {0, 0, 0};
 
 	Light(std::size_t width, std::size_t height) : image(width, height)
 	{
@@ -85,7 +88,7 @@ public:
 			// 
 			return true;
 		}
-		return image.at((std::size_t)point[0], (std::size_t)point[1]).z < point[2] - 0.000001;
+		return image.get_z((std::size_t)point[0], (std::size_t)point[1]) < point[2] - 0.001;
 	}
 
 	void bake_light(const Model &model)
@@ -96,7 +99,7 @@ public:
 		const int tot_triangles = model.total_triangles();
 		screen_complete_matrix_transforms = screen_matrix * perspective_matrix * lookAt(light_pos, light_target);
 		const auto &model_matrix = model.get_model_matrix();
-		for (int i = 0; i <= tot_triangles; i++)
+		for (int i = 0; i < tot_triangles; i++)
 		{
 			auto persp_pts = screen_complete_matrix_transforms * model.get_model_transformed_triangle(i);
 
@@ -110,14 +113,14 @@ public:
 			}
 			if (
 				between_mat(persp_pts, image) &&
-				(persp_pts(2, 0) - 0.00001 < image.at(persp_pts(0, 1), persp_pts(1, 1)).z ||
-				 persp_pts(2, 1) - 0.00001 < image.at(persp_pts(0, 2), persp_pts(1, 2)).z ||
-				 persp_pts(2, 2) - 0.00001 < image.at(persp_pts(0, 3), persp_pts(1, 3)).z))
+				(persp_pts(2, 0) - 0.00001 < image.get_z(persp_pts(0, 1), persp_pts(1, 1)) ||
+				 persp_pts(2, 1) - 0.00001 < image.get_z(persp_pts(0, 2), persp_pts(1, 2)) ||
+				 persp_pts(2, 2) - 0.00001 < image.get_z(persp_pts(0, 3), persp_pts(1, 3))))
 			{
 				gmtl::Point4f pt1{persp_pts(0, 0), persp_pts(1, 0), persp_pts(2, 0), 1};
 				gmtl::Point4f pt2{persp_pts(0, 1), persp_pts(1, 1), persp_pts(2, 1), 1};
 				gmtl::Point4f pt3{persp_pts(0, 2), persp_pts(1, 2), persp_pts(2, 2), 1};
-				image.triangle(pt1, pt2, pt3, {0.5, 0.5, 0.5});
+				image.triangle(pt1, pt2, pt3, {(pt3[2] + 1)/2, 0.5, 0.5});
 			}
 		}
 	}

@@ -36,7 +36,7 @@ class Model {
     mutable gmtl::Matrix44f total_model_mat;
     mutable bool model_changed = true;
 
-    float angle_a = 1.537F, angle_b = 0.F, angle_c = -0.5F;
+    float angle_a = 1.537F, angle_b = 0.F, angle_c = 0.F;
 
 public:
 
@@ -46,51 +46,56 @@ public:
 
 
     const gmtl::Matrix44f &get_model_matrix() const {
-        if (model_changed) {
-            total_model_mat = rotate * model_mat;
-            model_changed = false;
-        }
+
         return total_model_mat;
     }
 
     bool check_rotated() {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-            angle_b -= 0.2F;
+            angle_b -= 0.08F;
             model_changed = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-            angle_b += 0.2F;
+            angle_b += 0.08F;
             model_changed = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
-            angle_a += 0.2F;
+            angle_a += 0.08F;
             model_changed = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
-            angle_a -= 0.2F;
+            angle_a -= 0.08F;
             model_changed = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::PageUp)) {
-            angle_c -= 0.2F;
+            angle_c -= 0.08F;
             model_changed = true;
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::PageDown)) {
-            angle_c += 0.2F;
-            model_changed = true;
-        }
-        float cosa = std::cos(angle_a);
-        float sina = std::sin(angle_a);
-        float cosb = std::cos(angle_b);
-        float sinb = std::sin(angle_b);
-        float cosy = std::cos(angle_c);
-        float siny = std::sin(angle_c);
-        rotate.set(
-                cosa * cosb, cosa * sinb * siny - sina * cosy, cosa * sinb * cosy + sina * siny, 0,
-                sina * cosb, sina * sinb * siny + cosa * cosy, sina * sinb * cosy - cosa * siny, 0,
-                -sinb, cosb * siny, cosb * cosy, 0,
-                0, 0, 0, 1);
 
-        return model_changed;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::PageDown)) {
+            angle_c += 0.08F;
+            model_changed = true;
+        }
+        if (model_changed) {
+            float cosa = std::cos(angle_a);
+            float sina = std::sin(angle_a);
+            float cosb = std::cos(angle_b);
+            float sinb = std::sin(angle_b);
+            float cosy = std::cos(angle_c);
+            float siny = std::sin(angle_c);
+            rotate.set(
+                    cosa * cosb, cosa * sinb * siny - sina * cosy, cosa * sinb * cosy + sina * siny, 0,
+                    sina * cosb, sina * sinb * siny + cosa * cosy, sina * sinb * cosy - cosa * siny, 0,
+                    -sinb, cosb * siny, cosb * cosy, 0,
+                    0, 0, 0, 1);
+            total_model_mat = rotate * model_mat;
+            model_changed = false;
+            return true;
+        } else {
+            return false;
+        }
+
+
     }
 
     void load_from_file(const std::string &filename) {

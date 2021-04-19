@@ -1,4 +1,5 @@
 #pragma once
+
 #include <iomanip>
 #include <vector>
 #include <iostream>
@@ -60,6 +61,7 @@ public:
 
 class CanvasDisplay {
 public:
+    CanvasDisplay(std::size_t width, std::size_t height) {};
     const void* image_data_loc;
     std::vector<uint8_t> image_data;
 
@@ -79,28 +81,27 @@ public:
 //	void render(const Image& im);
 //};
 
-//class WindowDisplay {
-//	sf::Texture texture;
-//	sf::Sprite sprite;
-//	sf::RenderWindow& window;
-//	std::vector<sf::Uint8> pixels;
-//public:
-//	WindowDisplay(sf::RenderWindow& window, std::size_t width = 800, std::size_t height = 600) : window(window) {
-//		if (!texture.create(width, height)) {
-//			throw std::runtime_error("texture creation failed\n");
-//		}
-//		sprite.setTexture(texture);
-//
-//		//RGBA color. 4 Uint8 per pixel
-//		pixels.resize(width * height * 4);
-//
-//		for (std::size_t i = 3; i < pixels.size(); i += 4) {
-//			pixels[i] = (sf::Uint8)255;
-//		}
-//	}
-//	void render(const Image& im);
-//
+#ifdef HAS_SFML
+#include <SFML/Graphics.hpp>
+#include "sfml_header.h"
+class WindowDisplay {
+	sf::Texture texture;
+	sf::Sprite sprite;
+public:
+	WindowDisplay(std::size_t width = 1000, std::size_t height = 800) {
+		if (!texture.create(width, height)) {
+			throw std::runtime_error("texture creation failed\n");
+		}
+		sprite.setTexture(texture);
+	}
+	void render(const Image& im);
+    ~WindowDisplay() {
+        sf::Uint8 bogus[] = {4, 2};
+        texture.update(bogus);
+        sprite.setTexture(texture);
+    }
 //	void draw(sf::Drawable& drawable) {
 //	    window.draw(drawable);
 //	}
-//};
+};
+#endif

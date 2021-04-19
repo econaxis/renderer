@@ -1,0 +1,3 @@
+/home/henry/renderer/cmake-build-emscripten/CMakeFiles/edit_cache.dir
+/home/henry/renderer/cmake-build-emscripten/CMakeFiles/rebuild_cache.dir
+/home/henry/renderer/cmake-build-emscripten/CMakeFiles/game.dir

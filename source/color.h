@@ -13,6 +13,8 @@ struct Color {
     }
 
 
+
+
     Color operator + (const Color&);
     Color operator * (float);
 

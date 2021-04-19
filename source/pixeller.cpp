@@ -1,10 +1,8 @@
-#include <cmath>
 #include <ostream>
 #include "image.h"
 #include <gmtl/Matrix.h>
 #include <gmtl/MatrixOps.h>
 
-#include <iomanip>
 
 #include "sfml_header.h"
 
@@ -12,10 +10,9 @@
 
 #include "utils.h"
 #include "light.h"
-
+#include <thread>
 #include "renderscene.h"
 #include "camera.h"
-#include <emscripten.h>
 #include <cstdint>
 
 using namespace std::chrono_literals;
@@ -23,7 +20,7 @@ using namespace std::chrono_literals;
 RenderScene *main_scene = nullptr;
 std::unique_ptr<Image> image;
 Camera camera;
-Model* model = new Model("/teddy.obj");
+Model* model = new Model("../head.obj");
 Light *light;
 extern "C" int do_render();
 
@@ -48,7 +45,7 @@ int main(int argc, char *argv[]) {
 
 
     light = new Light(image->width, image->height);
-    light->bake_light(*model);
+//    light->bake_light(*model);
 
 
     // Lighting constants. Changing it changes the specific properties of the object (e.g. rubber/plastic/metal/wood...)
@@ -56,15 +53,22 @@ int main(int argc, char *argv[]) {
     double k_reflectivity = 0.2;
 
     main_scene = new RenderScene{*model, *light, camera, *image, k_reflectivity, specular_selectivity, screen_persp};
-    sf::Keyboard::setup_callbacks();
+    setup_callbacks();
 
+    int r = 2000;
+    while(true) {
+        std::this_thread::sleep_for(30ms);
+        main_scene->main_render_code();
+    }
+
+    std::cout<<"done\n";
     return 0;
 }
-
+#ifndef HAS_SFML
 extern "C" {
 EMSCRIPTEN_KEEPALIVE
 std::uintptr_t image_data_loc() {
-    return (std::uintptr_t) image->display.image_data.data();
+    return (std::uintptr_t) image->display.image_data_loc;
 }
 
 
@@ -80,9 +84,18 @@ int do_render() {
 }
 
 EMSCRIPTEN_KEEPALIVE
+void render_light_view() {
+    light->bake_light(main_scene->model);
+    main_scene->image.display.render(main_scene->light.get_image());
+}
+
+
+EMSCRIPTEN_KEEPALIVE
 void input() {
     main_scene->handle_input();
 }
 
 
+
 }
+#endif

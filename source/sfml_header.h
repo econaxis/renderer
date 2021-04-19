@@ -11,6 +11,7 @@
 #include <emscripten/html5.h>
 #include <cstring>
 #include <iostream>
+#include <emscripten.h>
 namespace sf::Keyboard {
 enum Key {
     Unknown = -1, //!< Unhandled key
@@ -161,21 +162,29 @@ inline EM_BOOL key_callback(int eventType, const EmscriptenKeyboardEvent *keyEve
     return true;
 };
 
+}
 inline void setup_callbacks() {
     emscripten_set_keyup_callback("canvas", nullptr, false, key_callback);
     emscripten_set_keydown_callback("canvas", nullptr, false, key_callback);
-}
 }
 
 inline void poll_input(Image& image, gmtl::Matrix44f& screen) {
     // do nothing.
 }
 #endif
+
+
 #ifdef HAS_SFML
 #include <SFML/Graphics.hpp>
 
-sf::RenderWindow& get_window() {
-    static sf::RenderWindow window (sf::VideoMode(1, 1), "My window");
+inline int window_width = 1000, window_height = 800;
+
+inline void setup_callbacks() {
+
+}
+
+inline sf::RenderWindow& get_window() {
+    static sf::RenderWindow window (sf::VideoMode(window_width, window_height), "My window");
     return window;
 };
 inline void poll_input(Image& image, gmtl::Matrix44f& screen) {
@@ -192,24 +201,24 @@ inline void poll_input(Image& image, gmtl::Matrix44f& screen) {
         }
         else if (event.type == sf::Event::KeyPressed)
         {
-            if (event.key.code == sf::Keyboard::Num1 && image.width < 2000)
-            {
-                // Increase the size of the image. This makes the picture clearer.
-                // We limit width to around 2000 pixels because at that level too much memoy is used.
-
-                // Clears the current image data and resizes it to specific width and height.
-                image.resize(image.width * 1.2, image.height * 1.2);
-
-                // Since we changed the width/height, the screen matrix (mapping normalized device coordinates to
-                // pixels need to be changed as well.
-                screen = create_screen_matrix(image.width, image.height);
-            }
-            else if (event.key.code == sf::Keyboard::Tilde && image.height > 10 && image.width > 10)
-            {
-                // Decrease size of the image
-                image.resize(image.width / 1.2, image.height / 1.2);
-                screen = create_screen_matrix(image.width, image.height);
-            }
+//            if (event.key.code == sf::Keyboard::Num1 && image.width < 2000)
+//            {
+//                // Increase the size of the image. This makes the picture clearer.
+//                // We limit width to around 2000 pixels because at that level too much memoy is used.
+//
+//                // Clears the current image data and resizes it to specific width and height.
+//                image.resize(image.width * 1.2, image.height * 1.2);
+//
+//                // Since we changed the width/height, the screen matrix (mapping normalized device coordinates to
+//                // pixels need to be changed as well.
+//                screen = create_screen_matrix(image.width, image.height);
+//            }
+//            else if (event.key.code == sf::Keyboard::Tilde && image.height > 10 && image.width > 10)
+//            {
+//                // Decrease size of the image
+//                image.resize(image.width / 1.2, image.height / 1.2);
+//                screen = create_screen_matrix(image.width, image.height);
+//            }
         }
     }
 }

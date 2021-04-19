@@ -26,11 +26,8 @@ struct RenderScene {
     void main_render_code() { // Handle keyboard input events for the frame, and if the model has rotated,
         // that means the shadow map has also changed. We need to update the light shadow
         // mapping everytime the model changes.
-
-        if (model.check_rotated())
-            light.bake_light(model);
-
-        camera.handle_keyboard_input();
+        image.clear();
+        handle_input();
 
         // This matrix transforms world coordinates -> camera coordinates -> perspective transform -> screen.
         gmtl::Matrix44f screen_complete_matrix_transforms = screen_persp * camera.camera_mat;
@@ -55,12 +52,14 @@ struct RenderScene {
 
             // We'll just use the location of the first point for lighting and shadow calculations.
             // Approximate the shadows/lighting/reflectance that applies to point 1 also applies equally to the other points.
-            gmtl::Point4f pt1_world = mat_to_point(model_coordinates, 0);
+            gmtl::Point4f pt1_world = mat_to_point(model_coordinates, 0).to_Point4f();
 
             // Screen coordinates
-            gmtl::Point4f pt1 = mat_to_point(persp_pts, 0);
-            gmtl::Point4f pt2 = mat_to_point(persp_pts, 1);
-            gmtl::Point4f pt3 = mat_to_point(persp_pts, 2);
+            Point pt1 = mat_to_point(persp_pts, 0);
+            pt1.face_id = i;
+            Point pt2 = mat_to_point(persp_pts, 1);
+            Point pt3 = mat_to_point(persp_pts, 2);
+
             if (
                 // Do some simple bounds checking.
                 // Points are inside the viewport (not behind/clipped/far away)
@@ -73,7 +72,7 @@ struct RenderScene {
 
                 // Light intensity changes to how the plane faces the light
                 auto simple_cosine_lighting =
-                        std::max(gmtl::dot(gmtl::makeNormal(light.light_pos), normal_dir), 0.F) * 0.5F;
+                        std::abs(gmtl::dot(gmtl::makeNormal(light.light_pos), normal_dir)) * 0.5F;
                 gmtl::Vec3f incident_light = face_position - light.light_pos;
                 gmtl::Vec3f face_to_camera = camera.cam_position - face_position;
                 gmtl::normalize(incident_light);
@@ -83,8 +82,8 @@ struct RenderScene {
                         incident_light - 2 * gmtl::dot(normal_dir, incident_light) * normal_dir;
 
                 float specular_intensity =
-                        (float) std::pow(std::max(gmtl::dot(reflected_light, face_to_camera), 0.F),
-                                         specular_selectivity) *
+                        std::pow(std::max(gmtl::dot(reflected_light, face_to_camera), 0.F),
+                                 specular_selectivity) *
                         k_reflectivity;
                 float ambient_light = 0.3F;
 
@@ -107,6 +106,9 @@ struct RenderScene {
                 image.triangle(pt1, pt2, pt3, c);
             }
         }
+
+        auto x = sf::Mouse::getPosition(get_window());
+        std::cout<<x.x<<x.y<<" "<<image.get_face_id(x.x, x.y);
 
 //        std::cout<<"Triangles rendered: "<<tris_rendererd;
         image.render();
