@@ -76,9 +76,13 @@ body {
 canvas {
 	position: absolute;
 	width: 1920px;
-	height: 975px;
+	height: 974px;
 	right: 0px;
 	top: 0px;
+}
+
+canvas:focus {
+	outline: none;
 }
 
 #control-panel {
