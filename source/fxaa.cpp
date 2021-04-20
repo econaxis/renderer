@@ -1,5 +1,5 @@
 #include <cmath>
-#include <image.h>
+#include "image.h"
 
 // hmm ideally obtain the line segment and its adjacent colors
 // @henry u can do that, or i can if u want
@@ -9,6 +9,9 @@
 // identifying high contrast edges
 
 // Finding luminance of c1 and c2
+
+
+
 
 double t1 = 6.0 / 29.0;
 double t2 = 3.0 * t1 * t1;
@@ -53,23 +56,23 @@ struct LumaData {
 };
 
 // collects luminance of surroudning pixels
-LumaData sample(Point p){
+LumaData sample(const Image& im, int i){
+    // Need to get the image for light shadow mapping data as well.
     LumaData l;
-    l.m = get_luminance(Image.at(p.first, p.second).get_color());
+    l.m = get_luminance(im[i].get_color());
 
-    l.n = get_luminance(Image.at(p.first, p.second - 1).get_color());
-    l.s = get_luminance(Image.at(p.first, p.second + 1).get_color());
-    l.e = get_luminance(Image.at(p.first + 1, p.second).get_color());
-    l.w = get_luminance(Image.at(p.first - 1, p.second).get_color());
+    l.n = get_luminance(im[i-im.width].get_color());
+    l.s = get_luminance(im[i+im.width].get_color());
+    l.e = get_luminance(im[i+1].get_color());
+    l.w = get_luminance(im[i-1]].get_color());
 
-    l.ne = get_luminance(Image.at(p.first + 1, p.second - 1).get_color());
-    l.nw = get_luminance(Image.at(p.first - 1, p.second - 1).get_color());
-    l.se = get_luminance(Image.at(p.first + 1, p.second + 1).get_color());
-    l.sw = get_luminance(Image.at(p.first - 1, p.second + 1).get_color());
+    l.n = get_luminance(im[i-im.width + 1].get_color());
+    l.n = get_luminance(im[i-im.width - 1].get_color());
+    l.s = get_luminance(im[i+im.width + 1].get_color());
+    l.s = get_luminance(im[i+im.width - 1].get_color());
     
-    
-    l.highest = max(max(max(max(l.m, l.n), l.e), l.s), l.w);
-	l.lowest = min(min(min(min(l.m, l.n), l.e), l.s), l.w);
+    l.highest = std::max(std::max(std::max(std::max(l.m, l.n), l.e), l.s), l.w);
+	l.lowest = std::min(std::min(std::min(std::min(l.m, l.n), l.e), l.s), l.w);
 	l.range = l.highest - l.lowest;
     
     return l;
@@ -79,7 +82,7 @@ LumaData sample(Point p){
 struct Edge {
     bool is_horizontal;
     double pixel_factor;
-}
+};
 
 Edge get_edge(LumaData l){
     Edge ed;
@@ -107,52 +110,10 @@ Edge get_edge(LumaData l){
     return ed;
 }
 
+
 // ???
 double get_pf() {return 1.0}
 
-// Let the set of these edges be S, with each edge containing the info pt1, pt2, c1, c2
-
-// FOR EACH object in S:
-//   -  points = line_points(pt1, pt2) or something to obtain all the points we need to use
-//   -  NOW IS THE EXPERIMENTAL PART I CANT EVEN TEST THIS SO LMK HOW IT GOES
-//      because i'm not sure if the luminance we used here is same as the one in FXAA
-//      but uh we can adjust as we go?
-
-auto fxaa_line(Point pt1, Point pt2, Color c1, Color c2) {
-    auto points = line_points(pt1, pt2);
-    // yo do these guys have a color, if not i'll shoot them a default color???
-    // let c1 be the "left" color and c2 be the "right" color (or bottom/top, if horizontal)
-    for (Point p: points){
-    //    p.set_color(c1 or c2 idek); // needed if no predetermined color
-        LumaData ld = sample(p);
-        double b_factor = blend_factor(ld);
-        Edge e = get_edge(ld);
-
-        // blendddddddddddddddd
-        // because everything at the moment is monochromatic
-        // I need to do a little more math to figure what to do here. Let's save that till tmrw
-        
-        // it is now tomorrow
-        //this chunk should assign a color to p
-        Point p0 = p; // am i supposed to have a pointer thingy here
-        if (e.is_horizontal) {
-		    p0.second += b_factor * e.pixel_factor; //offsets vertically
-	    }
-	    else {
-		    p0.first += b_factor * e.pixel_factor; //offsets horizontally
-	    }
-
-        // gets the color of the offset point and assigns it to the original point
-        // HOLD UP POINT IS 3D?!?!?!?!?!?!?!?!?!?!
-        p.set_color(get_blended_color(p0););
-
-        // i am absolutely not sure whether this syntax is correct
-    }
-
-    return points; //this will be the vector/array/list of p's with their corresponding colors
-}
-
-//  END FOR
 
 // ================================================
 // finds how much to blend
@@ -161,8 +122,8 @@ double blend_factor(LumaData ld){
     double filter = 2.0 * (ld.n + ld.e + ld.s + ld.w) + ld.ne + ld.nw + ld.se + ld.sw;
     filter *= 1.0/12.0;
     filter = saturate(filter / l.range);
-    filter = smoothstep (0,1,filter); 
-    
+    filter = smoothstep (0,1,filter);
+
     return filter*filter;
 }
 
@@ -180,27 +141,28 @@ double smoothstep(double a, double b, double x){
 // ================================================
 // finds blend direction
 bool get_direction (LumaData l) {
-	float horizontal =
-		2.0 * abs(l.n + l.s - 2.0 * l.m) +
-		abs(l.ne + l.se - 2.0 * l.e) +
-		abs(l.nw + l.sw - 2.0 * l.w);
-	float vertical =
-		2.0 * abs(l.e + l.w - 2.0 * l.m) +
-		abs(l.ne + l.nw - 2.0 * l.n) +
-		abs(l.se + l.sw - 2.0 * l.s);
-	return horizontal >= vertical;
+    float horizontal =
+            2.0 * abs(l.n + l.s - 2.0 * l.m) +
+            abs(l.ne + l.se - 2.0 * l.e) +
+            abs(l.nw + l.sw - 2.0 * l.w);
+    float vertical =
+            2.0 * abs(l.e + l.w - 2.0 * l.m) +
+            abs(l.ne + l.nw - 2.0 * l.n) +
+            abs(l.se + l.sw - 2.0 * l.s);
+    return horizontal >= vertical;
 }
 
 // ================================================
 // finds color of partial pixel
 // are points always int coordinates
-Color get_blended_color(Point p){
-    int x0 = ceil(p.first);
-    int y0 = ceil(p.second);
-    float x1 = x0 - p.first;
-    float y1 = y0 - p.second;
+Color get_blended_color(double x, double y){
+    int x0 = ceil(x);
+    int y0 = ceil(y);
+    float x1 = x0 - x;
+    float y1 = y0 - y;
     float x2 = 1.0-x1;
     float y2 = 1.0-y1;
+    // opacity - separate
 
     // will "average" colors by using proportion area as weight
     // algo: taking the squareroot of the average of squares
@@ -215,4 +177,83 @@ Color get_blended_color(Point p){
     // average time
     return squareroot(val_nw + val_ne + val_sw + val_se);
 }
+
+
+// Let the set of these edges be S, with each edge containing the info pt1, pt2, c1, c2
+
+// FOR EACH object in S:
+//   -  points = line_points(pt1, pt2) or something to obtain all the points we need to use
+//   -  NOW IS THE EXPERIMENTAL PART I CANT EVEN TEST THIS SO LMK HOW IT GOES
+//      because i'm not sure if the luminance we used here is same as the one in FXAA
+//      but uh we can adjust as we go?
+
+
+auto fxaa_line(Point pt1, Point pt2, Color c1, Color c2) {
+    auto points = line_points(pt1, pt2); // add image to act upon
+    // yo do these guys have a color, if not i'll shoot them a default color???
+    // let c1 be the "left" color and c2 be the "right" color (or bottom/top, if horizontal)
+    for (Point p: points){
+    //    p.set_color(c1 or c2 idek); // needed if no predetermined color
+        LumaData ld = sample(p);
+        double b_factor = blend_factor(ld);
+        Edge e = get_edge(ld);
+
+        // blendddddddddddddddd
+        // because everything at the moment is monochromatic
+        // I need to do a little more math to figure what to do here. Let's save that till tmrw
+        
+        // it is now tomorrow
+        //this chunk should assign a color to p
+        Point p0 = p; // am i supposed to have a pointer thingy here
+        if (e.is_horizontal) {
+		    p0.y += b_factor * e.pixel_factor; //offsets vertically
+	    }
+	    else {
+		    p0.x += b_factor * e.pixel_factor; //offsets horizontally
+	    }
+
+        // gets the color of the offset point and assigns it to the original point
+        // HOLD UP POINT IS 3D?!?!?!?!?!?!?!?!?!?!
+        p.set_color(get_blended_color(p0););
+
+        // i am absolutely not sure whether this syntax is correct
+    }
+
+    return points; //this will be the vector/array/list of p's with their corresponding colors
+}
+
+//  END FOR
+
+bool is_contrasting (double l1, double l1){
+    double contrast_threshold = 1.05; // decrease towards 1 to increase precision, generally keep it <= 1.1
+    double ratio = (l1 + 5.0)/(l2 + 5.0);
+    bool b = (ratio > contrast_threshold) || (1.0/ratio > contrast_threshold);
+    return b;
+}
+
+void fxaa(Image im) {
+    std::vector<Pixel> pixels = im.get_pixels();
+    Pixel p;
+    double x = i % im.width;
+    double y = floor(i / width);
+    for(int i = 0; i < pixels.size(); i++){
+        p = pixels.at(i);
+        double pLum = get_direction(p.get_color());
+        LumaData ld = sample(im, i);
+        if (is_contrasting(ld.highest, ld.lowest)){
+            double b_factor = blend_factor(ld);
+
+            Edge e = get_edge(ld);
+            if (e.is_horizontal) {
+                y += b_factor * e.pixel_factor; //offsets vertically
+            }
+            else {
+                x += b_factor * e.pixel_factor; //offsets horizontally
+            }
+
+            p.set_color(get_blended_color(x, y););
+        }
+    }
+}
+
 
