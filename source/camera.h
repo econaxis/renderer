@@ -28,8 +28,8 @@ struct Camera {
         bool cam_changed = false;
         // Camera angle changing not supported yet.
         if (sf::Keyboard::Dragged()) {
-            angle_x -= sf::Keyboard::movementX / 300.F;
-            angle_y += sf::Keyboard::movementY / 100.F;
+            angle_x -= sf::Keyboard::movementX / 900.F;
+            angle_y += sf::Keyboard::movementY / 600.F;
             cam_changed = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
