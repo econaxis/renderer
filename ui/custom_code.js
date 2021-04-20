@@ -27,24 +27,29 @@ function render() {
 }
 
 function render_light_view() {
-    for (const i of intervals) clearInterval(i);
+    clearInterval(job_handler);
 
     Module._render_light_view();
     addr = Module._image_data_loc();
     const t = Module.HEAPU8.slice(addr, addr + 960 * 540 * 4);
     meas();
     u8 = new Uint8ClampedArray(t);
-    imagedata1 = new ImageData(u8, 1000, 800);
+    imagedata1 = new ImageData(u8, 960, 540);
     meas();
     const ctx = document.getElementById('canvas').getContext('2d');
     ctx.putImageData(imagedata1, 0, 0);
     meas();
 }
-var intervals = [];
-Module.onRuntimeInitialized = () => {
-    intervals[1] = setInterval(() => {
+
+var job_handler;
+function set_render_interval(interv = 75) {
+    clearInterval(job_handler);
+    job_handler = setInterval(() => {
         render();
-    }, 150);
+    }, interv);
+}
+Module.onRuntimeInitialized = () => {
+    set_render_interval(75)
 }
 
 document.addEventListener('keydown', (e) => {
