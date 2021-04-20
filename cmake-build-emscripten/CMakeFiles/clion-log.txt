@@ -1,7 +1,0 @@
-/opt/clion-2020.3.3/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_TOOLCHAIN_FILE=/home/henry/.local/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake -G "CodeBlocks - Unix Makefiles" /home/henry/renderer
-building for release mode
-sfml not found
-no sfml found
--- Configuring done
--- Generating done
--- Build files have been written to: /home/henry/renderer/cmake-build-emscripten
