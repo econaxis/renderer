@@ -37,3 +37,4 @@ build
 .idea
 
 cmake-*
+/cmake-build-emscripten/
