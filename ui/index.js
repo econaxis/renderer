@@ -3,7 +3,7 @@
 // obtains all obj files
 // !!!
 function fetchObjs(){
-	var files = ["yeetus", "feetus", "reetus", "idk", "placeholder", "billie", "bob", "joe", "billie", "bob", "joe"];
+	var files = ["head", "teapot", "teddy"];
 	var objList = document.getElementById("obj-list");
 	document.getElementById("item-rendered").innerHTML = files[0];
 	files.forEach(function (i){
@@ -13,7 +13,7 @@ function fetchObjs(){
 
 // control tooltips
 var tooltips = {
-	"reflectance parameter": "define reflectance parameter for users",
+	"reflectance": "how reflective the object is",
 	"shadows": "toggle object shadows on/off",
 	"highlights": "toggle object highlights on/off"
 }
@@ -28,19 +28,17 @@ window.onmouseover = function(event) {
 // keyEvents
 // !!!
 var keyEvents = new Map();
-keyEvents.set("W", "position up"); // writing "position" because its the longest word, fix as needed
-keyEvents.set("S", "position down");
-keyEvents.set("A", "position left");
-keyEvents.set("D", "position right");
-keyEvents.set("up", "position right");
-keyEvents.set("down", "position right");
-keyEvents.set("left", "position right");
-keyEvents.set("right", "position right");
-keyEvents.set("spc", "position right");
-keyEvents.set("Q", "position right");
-keyEvents.set("~", "bigger");
-keyEvents.set("1", "smaller");
-keyEvents.set("esc", "close");
+keyEvents.set("W", "camera back"); // writing "position" because its the longest word, fix as needed
+keyEvents.set("S", "camera forwards");
+keyEvents.set("A", "rotate camera");
+keyEvents.set("D", "rotate camera");
+keyEvents.set("spc", "rotate camera");
+keyEvents.set("Q", "rotate camera");
+keyEvents.set("up", "rotate object");
+keyEvents.set("down", "rotate object");
+keyEvents.set("left", "rotate object");
+keyEvents.set("right", "rotate object");
+keyEvents.set("shift Q", "stop rendering");
 
 
 function getLegend(){
@@ -111,6 +109,7 @@ window.onclick = function(event) {
 
 // changes obj to be rendered
 // !!!	
+// @henry
 function swapObject(name){
 	var previous = document.getElementById("item-rendered").innerHTML;
 	document.getElementById("item-rendered").innerHTML = name;
