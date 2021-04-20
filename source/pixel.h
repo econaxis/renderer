@@ -50,7 +50,7 @@ struct Point {
 
 
 	static Point interp_all(const Point& p1, const Point& p2, short y) {
-		if (std::abs(p2.y - p1.y) < 0.00001) {
+		if (std::abs(p2.y - p1.y) < 0.01) {
 			// Division by zero scary
 			// TODO bug prone? Cannot interp for vertical line, so we just output this bogus answer.
 			return Point(p1.x, y, p1.z);
@@ -60,7 +60,7 @@ struct Point {
 		auto calculated_x = cache1 * (p2.x - p1.x) / cache2 + p1.x;
 		auto calculated_z = (p2.z * cache1 + p1.z * (p2.y - y)) / cache2;
 
-		return Point((short)calculated_x, (short)y, calculated_z);
+		return Point((short) calculated_x, (short) y, calculated_z);
 	}
 
 	friend bool operator<(const Point& comp1, const Point& comp2) {
@@ -86,7 +86,7 @@ public:
 	{
 		if (v < 0 || v > 1)
 		{
-			throw std::runtime_error("invalid value");
+			std::cout<<"invalid value";
 		}
 		auto value = static_cast<double>(v);
 		r = value;

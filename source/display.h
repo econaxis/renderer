@@ -90,7 +90,7 @@ class WindowDisplay {
 public:
 	WindowDisplay(std::size_t width = 1000, std::size_t height = 800) {
 		if (!texture.create(width, height)) {
-			throw std::runtime_error("texture creation failed\n");
+			std::cout<<"texture creation failed\n";
 		}
 		sprite.setTexture(texture);
 	}

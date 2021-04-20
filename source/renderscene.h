@@ -60,6 +60,7 @@ struct RenderScene {
             Point pt2 = mat_to_point(persp_pts, 1);
             Point pt3 = mat_to_point(persp_pts, 2);
 
+
             if (
                 // Do some simple bounds checking.
                 // Points are inside the viewport (not behind/clipped/far away)
@@ -81,10 +82,10 @@ struct RenderScene {
                 gmtl::Vec3f reflected_light =
                         incident_light - 2 * gmtl::dot(normal_dir, incident_light) * normal_dir;
 
-                float specular_intensity =
-                        std::pow(std::max(gmtl::dot(reflected_light, face_to_camera), 0.F),
-                                 specular_selectivity) *
-                        k_reflectivity;
+                float specular_intensity_temp = std::max(gmtl::dot(reflected_light, face_to_camera), 0.F);
+
+                float specular_intensity = specular_intensity_temp * specular_intensity_temp * specular_intensity_temp *
+                                           specular_intensity_temp * k_reflectivity;
                 float ambient_light = 0.3F;
 
                 // First, convert point 1 world coords into the coordinates of the light reference frame.
@@ -103,6 +104,7 @@ struct RenderScene {
                 Color c = Color::clamp(specular_intensity + simple_cosine_lighting + ambient_light + 0.15,
                                        specular_intensity + simple_cosine_lighting + ambient_light,
                                        specular_intensity + simple_cosine_lighting + ambient_light);
+
                 image.triangle(pt1, pt2, pt3, c);
             }
         }

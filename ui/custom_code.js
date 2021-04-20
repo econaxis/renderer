@@ -42,12 +42,9 @@ function render_light_view() {
 }
 var intervals = [];
 Module.onRuntimeInitialized = () => {
-    intervals[0] = setInterval(() => {
-        Module.ccall('input', 'null', [null], [null]);
-    }, 50);
     intervals[1] = setInterval(() => {
         render();
-    }, 150)
+    }, 150);
 }
 
 document.addEventListener('keydown', (e) => {

@@ -60,7 +60,7 @@ public:
 
     auto &operator[](std::size_t idx) {
         if (idx >= height) {
-            throw std::runtime_error("invalid index");
+            std::cout<<"invalid index";
         }
         return image[idx];
     }

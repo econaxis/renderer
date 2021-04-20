@@ -138,30 +138,27 @@ namespace sf::Keyboard {
     }
 
     inline EM_BOOL key_callback(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData) {
-        std::cout<<"key: "<<keyEvent->key<<std::endl;
+        std::cout << "key: " << keyEvent->key << std::endl;
+        bool to_set;
         if (eventType == EMSCRIPTEN_EVENT_KEYDOWN) {
-            if (!strcmp(keyEvent->key, "a")) pressed[A] = true;
-            if (!strcmp(keyEvent->key, "s")) pressed[S] = true;
-            if (!strcmp(keyEvent->key, "d")) pressed[D] = true;
-            if (!strcmp(keyEvent->key, "w")) pressed[W] = true;
-            if (!strcmp(keyEvent->key, "ArrowLeft")) pressed[Left] = true;
-            if (!strcmp(keyEvent->key, "ArrowRight")) pressed[Right] = true;
-            if (!strcmp(keyEvent->key, "ArrowDown")) pressed[Down] = true;
-            if (!strcmp(keyEvent->key, "ArrowUp")) pressed[Up] = true;
-            if (!strcmp(keyEvent->key, "ArrowUp")) pressed[Up] = true;
-            if (!strcmp(keyEvent->key, " ")) pressed[Space] = true;
-            if (!strcmp(keyEvent->key, "q")) pressed[Q] = true;
+            to_set = true;
         } else if (eventType == EMSCRIPTEN_EVENT_KEYUP) {
-            if (!strcmp(keyEvent->key, "a")) pressed[A] = false;
-            if (!strcmp(keyEvent->key, "s")) pressed[S] = false;
-            if (!strcmp(keyEvent->key, "d")) pressed[D] = false;
-            if (!strcmp(keyEvent->key, "w")) pressed[W] = false;
-            if (!strcmp(keyEvent->key, "ArrowLeft")) pressed[Left] = false;
-            if (!strcmp(keyEvent->key, "ArrowRight")) pressed[Right] = false;
-            if (!strcmp(keyEvent->key, "ArrowDown")) pressed[Down] = false;
-            if (!strcmp(keyEvent->key, "ArrowUp")) pressed[Up] = false;
-            if (!strcmp(keyEvent->key, " ")) pressed[Space] = false;
-            if (!strcmp(keyEvent->key, "q")) pressed[Q] = false;
+            to_set = false;
+        }
+        if (eventType == EMSCRIPTEN_EVENT_KEYDOWN || eventType == EMSCRIPTEN_EVENT_KEYUP) {
+            if (!strcmp(keyEvent->key, "a")) pressed[A] = to_set;
+            if (!strcmp(keyEvent->key, "s")) pressed[S] = to_set;
+            if (!strcmp(keyEvent->key, "d")) pressed[D] = to_set;
+            if (!strcmp(keyEvent->key, "w")) pressed[W] = to_set;
+            if (!strcmp(keyEvent->key, "ArrowLeft")) pressed[Left] = to_set;
+            if (!strcmp(keyEvent->key, "ArrowRight")) pressed[Right] = to_set;
+            if (!strcmp(keyEvent->key, "ArrowDown")) pressed[Down] = to_set;
+            if (!strcmp(keyEvent->key, "ArrowUp")) pressed[Up] = to_set;
+            if (!strcmp(keyEvent->key, "ArrowUp")) pressed[Up] = to_set;
+            if (!strcmp(keyEvent->key, "PageUp")) pressed[PageUp] = to_set;
+            if (!strcmp(keyEvent->key, "PageDown")) pressed[PageDown] = to_set;
+            if (!strcmp(keyEvent->key, " ")) pressed[Space] = to_set;
+            if (!strcmp(keyEvent->key, "q")) pressed[Q] = to_set;
         }
         return false;
     };
@@ -176,7 +173,7 @@ namespace sf::Keyboard {
             currently_dragging = false;
         }
 
-        if(currently_dragging) {
+        if (currently_dragging) {
             movementX = event->movementX;
             movementY = event->movementY;
 //            std::cout << "Mouse movement: " << movementX << " " << movementY << std::endl;
@@ -191,7 +188,7 @@ namespace sf::Keyboard {
 }
 
 inline void setup_callbacks() {
-    std::cout<<"registering callbacks\n";
+    std::cout << "registering callbacks\n";
     emscripten_set_keyup_callback("canvas", nullptr, false, sf::Keyboard::key_callback);
     emscripten_set_keydown_callback("canvas", nullptr, false, sf::Keyboard::key_callback);
 

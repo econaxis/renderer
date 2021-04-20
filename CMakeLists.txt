@@ -36,7 +36,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 if (EMSCRIPTEN)
 
     IF (CMAKE_BUILD_TYPE MATCHES RelWithDebInfo OR CMAKE_BUILD_TYPE MATCHES Release)
-        target_compile_options(game PRIVATE -O3)
+        target_compile_options(game PRIVATE -O3 -ffast-math -fno-exceptions)
         target_link_options(game PRIVATE -O3)
     ELSE ()
         target_compile_options(game PRIVATE -gsource-map -g4)

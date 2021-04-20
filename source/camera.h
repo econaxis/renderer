@@ -15,12 +15,12 @@ struct Camera {
         cam_direction = cam_position - target;
         gmtl::normalize(cam_direction);
 
-        angle_y = 0.5869;
-        angle_x = 0.60348;
+        angle_x = 0.39398;
+        angle_y = 0.6969;
 
         std::cout << "angle x: " << angle_x << " angle_y:" << angle_y << std::endl;
         std::cout << "cam_direction: " << cam_direction << std::endl;
-//        reprocess_camera_mat();
+        reprocess_camera_mat();
 
     }
 
@@ -28,33 +28,32 @@ struct Camera {
         bool cam_changed = false;
         // Camera angle changing not supported yet.
         if (sf::Keyboard::Dragged()) {
-            angle_x -= sf::Keyboard::movementX / 2000.F;
-            angle_y += sf::Keyboard::movementY / 400.F;
+            angle_x -= sf::Keyboard::movementX / 300.F;
+            angle_y += sf::Keyboard::movementY / 100.F;
             cam_changed = true;
-            std::cout<<angle_x<<" "<<angle_y<<std::endl;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-            cam_position += cam_direction;
+            cam_position += cam_direction * 10.F;
             cam_changed = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-            cam_position -= cam_direction;
+            cam_position -= cam_direction * 10.F;
             cam_changed = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) {
-            cam_position += up_direction;
+            cam_position += up_direction * 10.F;
             cam_changed = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-            cam_position -= up_direction;
+            cam_position -= up_direction * 10.F;
             cam_changed = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-            cam_position -= gmtl::makeCross(cam_direction, up_direction);
+            cam_position -= gmtl::makeCross(cam_direction, up_direction) * 10.F;
             cam_changed = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-            cam_position += gmtl::makeCross(cam_direction, up_direction);
+            cam_position += gmtl::makeCross(cam_direction, up_direction) * 10.F;
             cam_changed = true;
         }
 
