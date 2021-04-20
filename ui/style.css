@@ -70,12 +70,13 @@ body {
 	height: 100%;
 	right: 0px;
 	top: 0px;
+	overflow: hidden;
 }
 
 canvas {
 	position: absolute;
-	width: 100%;
-	height: 100%;
+	width: 1920px;
+	height: 975px;
 	right: 0px;
 	top: 0px;
 }
@@ -399,7 +400,7 @@ input:checked + .toggle-button:before {
 	/*position: absolute; idk why this doesnt work 
 	width: 84%;*/
 	transition: height 1s ease;
-	max-height: 200px;
+	max-height: 150px;
 	min-width: 100%;
 	margin: 0px;
 	padding: 0px;
@@ -411,6 +412,12 @@ input:checked + .toggle-button:before {
 	overflow-x: hidden;
 	-webkit-transition: .4s;
 	transition: .4s;
+}
+
+@-moz-document url-prefix() {
+	.dropdown-list:hover  {
+		overflow-y: scroll;
+	}
 }
 
 .dropdown-item {

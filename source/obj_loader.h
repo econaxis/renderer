@@ -36,11 +36,11 @@ class Model {
     mutable gmtl::Matrix44f total_model_mat;
     mutable bool model_changed = true;
 
-    float angle_a = 1.537F, angle_b = 0.F, angle_c = 0.F;
+    float angle_a = 3.F, angle_b = -2.F, angle_c = 0.F;
 
 public:
 
-    Model(std::string filename) : angle_a(1.54F), angle_b(0.F), angle_c(-0.5F) {
+    Model(std::string filename) : angle_a(4.18F), angle_b(-1.04F), angle_c(-0.5F) {
         load_from_file(filename);
     };
 
@@ -77,6 +77,7 @@ public:
             model_changed = true;
         }
         if (model_changed) {
+            std::cout<<angle_a<<" "<<angle_b<<" "<<angle_c<<std::endl;
             float cosa = std::cos(angle_a);
             float sina = std::sin(angle_a);
             float cosb = std::cos(angle_b);

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="game"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="clang"/>
+		<Option virtualFolders="CMake Files\;CMake Files\..\;CMake Files\..\.local\;CMake Files\..\.local\emsdk\;CMake Files\..\.local\emsdk\upstream\;CMake Files\..\.local\emsdk\upstream\emscripten\;CMake Files\..\.local\emsdk\upstream\emscripten\cmake\;CMake Files\..\.local\emsdk\upstream\emscripten\cmake\Modules\;CMake Files\..\.local\emsdk\upstream\emscripten\cmake\Modules\Platform\;CMake Files\extern\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/henry/renderer/cmake-build-emscripten"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/henry/renderer/cmake-build-emscripten/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/henry/renderer/cmake-build-emscripten/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/henry/renderer/cmake-build-emscripten/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/henry/renderer/cmake-build-emscripten/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/home/henry/renderer/cmake-build-emscripten"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/henry/renderer/cmake-build-emscripten/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/henry/renderer/cmake-build-emscripten/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/henry/renderer/cmake-build-emscripten/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/henry/renderer/cmake-build-emscripten/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/home/henry/renderer/cmake-build-emscripten"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/henry/renderer/cmake-build-emscripten/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/henry/renderer/cmake-build-emscripten/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/henry/renderer/cmake-build-emscripten/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/henry/renderer/cmake-build-emscripten/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="game">
+				<Option output="/home/henry/renderer/cmake-build-emscripten/game.html" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/henry/renderer/cmake-build-emscripten"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/home/henry/renderer/source"/>
+					<Add directory="/home/henry/renderer/extern/gmtl"/>
+					<Add directory="/home/henry/.local/emsdk/upstream/emscripten/cache/sysroot/include/SDL"/>
+					<Add directory="/home/henry/.local/emsdk/upstream/emscripten/cache/sysroot/include/compat"/>
+					<Add directory="/home/henry/.local/emsdk/upstream/emscripten/cache/sysroot/include/c++/v1"/>
+					<Add directory="/home/henry/.local/emsdk/upstream/lib/clang/13.0.0/include"/>
+					<Add directory="/home/henry/.local/emsdk/upstream/emscripten/cache/sysroot/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/henry/renderer/cmake-build-emscripten/Makefile&quot;  VERBOSE=1 game"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/henry/renderer/cmake-build-emscripten/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/henry/renderer/cmake-build-emscripten/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/henry/renderer/cmake-build-emscripten/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="game/fast">
+				<Option output="/home/henry/renderer/cmake-build-emscripten/game.html" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/henry/renderer/cmake-build-emscripten"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/home/henry/renderer/source"/>
+					<Add directory="/home/henry/renderer/extern/gmtl"/>
+					<Add directory="/home/henry/.local/emsdk/upstream/emscripten/cache/sysroot/include/SDL"/>
+					<Add directory="/home/henry/.local/emsdk/upstream/emscripten/cache/sysroot/include/compat"/>
+					<Add directory="/home/henry/.local/emsdk/upstream/emscripten/cache/sysroot/include/c++/v1"/>
+					<Add directory="/home/henry/.local/emsdk/upstream/lib/clang/13.0.0/include"/>
+					<Add directory="/home/henry/.local/emsdk/upstream/emscripten/cache/sysroot/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/henry/renderer/cmake-build-emscripten/Makefile&quot;  VERBOSE=1 game/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/henry/renderer/cmake-build-emscripten/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/henry/renderer/cmake-build-emscripten/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/henry/renderer/cmake-build-emscripten/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/henry/renderer/source/camera.h">
+			<Option target="game"/>
+		</Unit>
+		<Unit filename="/home/henry/renderer/source/color.cpp">
+			<Option target="game"/>
+		</Unit>
+		<Unit filename="/home/henry/renderer/source/color.h">
+			<Option target="game"/>
+		</Unit>
+		<Unit filename="/home/henry/renderer/source/display.cpp">
+			<Option target="game"/>
+		</Unit>
+		<Unit filename="/home/henry/renderer/source/display.h">
+			<Option target="game"/>
+		</Unit>
+		<Unit filename="/home/henry/renderer/source/image.cpp">
+			<Option target="game"/>
+		</Unit>
+		<Unit filename="/home/henry/renderer/source/image.h">
+			<Option target="game"/>
+		</Unit>
+		<Unit filename="/home/henry/renderer/source/light.cpp">
+			<Option target="game"/>
+		</Unit>
+		<Unit filename="/home/henry/renderer/source/light.h">
+			<Option target="game"/>
+		</Unit>
+		<Unit filename="/home/henry/renderer/source/obj_loader.cpp">
+			<Option target="game"/>
+		</Unit>
+		<Unit filename="/home/henry/renderer/source/obj_loader.h">
+			<Option target="game"/>
+		</Unit>
+		<Unit filename="/home/henry/renderer/source/pixel.cpp">
+			<Option target="game"/>
+		</Unit>
+		<Unit filename="/home/henry/renderer/source/pixel.h">
+			<Option target="game"/>
+		</Unit>
+		<Unit filename="/home/henry/renderer/source/pixeller.cpp">
+			<Option target="game"/>
+		</Unit>
+		<Unit filename="/home/henry/renderer/source/renderscene.h">
+			<Option target="game"/>
+		</Unit>
+		<Unit filename="/home/henry/renderer/source/sfml_header.h">
+			<Option target="game"/>
+		</Unit>
+		<Unit filename="/home/henry/renderer/source/utils.cpp">
+			<Option target="game"/>
+		</Unit>
+		<Unit filename="/home/henry/renderer/source/utils.h">
+			<Option target="game"/>
+		</Unit>
+		<Unit filename="/home/henry/renderer/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/henry/renderer/../.local/emsdk/upstream/emscripten/cmake/Modules/CMakeSystemSpecificInformation.cmake">
+			<Option virtualFolder="CMake Files\..\.local\emsdk\upstream\emscripten\cmake\Modules\"/>
+		</Unit>
+		<Unit filename="/home/henry/renderer/../.local/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake">
+			<Option virtualFolder="CMake Files\..\.local\emsdk\upstream\emscripten\cmake\Modules\Platform\"/>
+		</Unit>
+		<Unit filename="/home/henry/renderer/extern/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\extern\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

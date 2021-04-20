@@ -40,11 +40,11 @@ gmtl::Matrix44f create_screen_matrix(std::size_t pixel_width, std::size_t pixel_
     return screen;
 }
 
-gmtl::Matrix44f create_perspective_transform_matrix(float r, float n, float f) {
+gmtl::Matrix44f create_perspective_transform_matrix(float r, float b, float n, float f) {
     gmtl::Matrix44f persp;
     persp.set(
             n / r, 0, 0, 0,
-            0, n / r, 0, 0,
+            0, n / b, 0, 0,
             0, 0, -(f + n) / (f - n), -2 * f * n / (f - n),
             0, 0, -1, 0);
     return persp;

@@ -38,7 +38,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="game">
-				<Option output="/home/henry/renderer/cmake-build-emscripten/game.html" prefix_auto="0" extension_auto="0"/>
+				<Option output="/home/henry/renderer/ui/game.js" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="/home/henry/renderer/cmake-build-emscripten"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
@@ -60,7 +60,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="game/fast">
-				<Option output="/home/henry/renderer/cmake-build-emscripten/game.html" prefix_auto="0" extension_auto="0"/>
+				<Option output="/home/henry/renderer/ui/game.js" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="/home/henry/renderer/cmake-build-emscripten"/>
 				<Option object_output="./"/>
 				<Option type="1"/>

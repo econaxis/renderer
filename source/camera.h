@@ -5,25 +5,34 @@
 #include <gmtl/Matrix.h>
 
 
-
 struct Camera {
     float angle_x = 1.542F, angle_y = 0.F;
     gmtl::Vec3f cam_position, up_direction, target, cam_direction;
     gmtl::Matrix44f camera_mat;
 
-    Camera() : cam_position(200, 200, 3), up_direction(0, 1, 0), target(0, 0, 0) {
-        reprocess_camera_mat(); // Initializes cam_direction and camera_mat
+    Camera() : cam_position(750, 750, 750), up_direction(0, 1, 0), target(0, 0, 0) {
+        camera_mat = lookAt(cam_position, target);
+        cam_direction = cam_position - target;
+        gmtl::normalize(cam_direction);
+
+        angle_y = 0.5869;
+        angle_x = 0.60348;
+
+        std::cout << "angle x: " << angle_x << " angle_y:" << angle_y << std::endl;
+        std::cout << "cam_direction: " << cam_direction << std::endl;
+//        reprocess_camera_mat();
+
     }
 
     void handle_keyboard_input() {
         bool cam_changed = false;
         // Camera angle changing not supported yet.
-        // if (sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt)) {
-        //     angle_x -= 2 * (float) (sf::Mouse::getPosition(window).x - prev_mouse_pos.x) / window.getSize().x;
-        //     angle_y += 2 * (float) (sf::Mouse::getPosition(window).y - prev_mouse_pos.y) / window.getSize().y;
-        //     prev_mouse_pos = sf::Mouse::getPosition(window);
-        //     cam_changed = true;
-        // }
+        if (sf::Keyboard::Dragged()) {
+            angle_x -= sf::Keyboard::movementX / 2000.F;
+            angle_y += sf::Keyboard::movementY / 400.F;
+            cam_changed = true;
+            std::cout<<angle_x<<" "<<angle_y<<std::endl;
+        }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
             cam_position += cam_direction;
             cam_changed = true;
@@ -48,25 +57,23 @@ struct Camera {
             cam_position += gmtl::makeCross(cam_direction, up_direction);
             cam_changed = true;
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) {
-            angle_x = 1.542F;
-            angle_y = 0.F;
-            cam_changed = true;
-        }
-        if(cam_changed) {
+
+        if (cam_changed) {
             reprocess_camera_mat();
 //            std::cout<<"Cam position: "<<cam_position<<"; camera target: "<<target<<std::endl;
         }
     }
+
     void reprocess_camera_mat() {
         cam_direction[0] = -std::cos(angle_x);
         cam_direction[1] = -std::sin(angle_y);
         cam_direction[2] = -std::sin(angle_x);
         gmtl::normalize(cam_direction);
-//        target = cam_position + cam_direction * 10.F;
+
+        target = cam_position + cam_direction * 10.F;
         camera_mat = lookAt(cam_position, target);
-        cam_direction = cam_position - target;
-        gmtl::normalize(cam_direction);
+//        std::cout<<"cam position: "<<cam_position<<" cam target"<<target<<" cam direction: "<<cam_direction
+//            <<" "<<angle_x<<" "<<angle_y<<std::endl;
     }
 
     gmtl::Matrix44f lookAt(gmtl::Vec3f &eye, gmtl::Vec3f &target, const gmtl::Vec3f &upDir = gmtl::Vec3f{0, 1, 0}) {

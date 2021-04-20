@@ -23,11 +23,10 @@ Camera camera;
 Model* model = new Model("../head.obj");
 Light *light;
 extern "C" int do_render();
-
 int main(int argc, char *argv[]) {
     std::cout << "Script starting\n" << std::endl;
 
-    std::size_t width = 1000, height = 800;
+    std::size_t width = 960, height = 540;
     std::string filename = "teddy.obj";
 
     if (argc == 4) {

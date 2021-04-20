@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Emscripten-Generated Code</title>
+    <style>
+        .emscripten {
+            padding-right: 0;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+        }
+
+        textarea.emscripten {
+            font-family: monospace;
+            width: 80%;
+        }
+
+        div.emscripten {
+            text-align: center;
+        }
+
+        div.emscripten_border {
+            border: 1px solid black;
+        }
+
+        /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
+        canvas.emscripten {
+            border: 0px none;
+            background-color: black;
+        }
+
+        .spinner {
+            height: 50px;
+            width: 50px;
+            margin: 0px auto;
+            -webkit-animation: rotation .8s linear infinite;
+            -moz-animation: rotation .8s linear infinite;
+            -o-animation: rotation .8s linear infinite;
+            animation: rotation 0.8s linear infinite;
+            border-left: 10px solid rgb(0, 150, 240);
+            border-right: 10px solid rgb(0, 150, 240);
+            border-bottom: 10px solid rgb(0, 150, 240);
+            border-top: 10px solid rgb(100, 0, 200);
+            border-radius: 100%;
+            background-color: rgb(200, 100, 250);
+        }
+
+        @-webkit-keyframes rotation {
+            from {
+                -webkit-transform: rotate(0deg);
+            }
+            to {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @-moz-keyframes rotation {
+            from {
+                -moz-transform: rotate(0deg);
+            }
+            to {
+                -moz-transform: rotate(360deg);
+            }
+        }
+
+        @-o-keyframes rotation {
+            from {
+                -o-transform: rotate(0deg);
+            }
+            to {
+                -o-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes rotation {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+    </style>
+</head>
+<body>
+<hr/>
+<figure style="overflow:visible;" id="spinner">
+    <div class="spinner"></div>
+    <center style="margin-top:0.5em"><strong>emscripten</strong></center>
+</figure>
+<div class="emscripten" id="status">Downloading...</div>
+<div class="emscripten">
+    <progress value="0" max="100" id="progress" hidden=1></progress>
+</div>
+<div class="emscripten_border">
+    <canvas class="emscripten" id="canvas" width=1000 height=800 oncontextmenu="event.preventDefault()"
+            tabindex=-1></canvas>
+</div>
+<hr/>
+<div class="emscripten">
+    <input type="checkbox" id="resize">Resize canvas
+    <input type="checkbox" id="pointerLock" checked>Lock/hide mouse pointer
+    &nbsp;&nbsp;&nbsp;
+    <input type="button" value="Fullscreen" onclick="Module.requestFullscreen(document.getElementById('pointerLock').checked,
+                                                                                document.getElementById('resize').checked)">
+</div>
+
+<hr/>
+<textarea class="emscripten" id="output" rows="8"></textarea>
+<hr>
+<script type="text/javascript">
+
+</script>
+<script type='text/javascript'>
+    var Module = {}
+
+    var addr = 0x2c84f90;
+    var imagedata1 = null, u8, start = performance.now();
+
+    function getaddr() {
+        return Module.ccall('image_data_loc', 'number', [null], [null]);
+    }
+
+    function meas() {
+        var ret = performance.now() - start;
+        start = performance.now();
+        console.debug(ret);
+    }
+
+    function render() {
+        start = performance.now();
+        Module._do_render();
+        meas();
+        addr = Module._image_data_loc();
+        const t = Module.HEAPU8.slice(addr, addr + 3200000);
+        meas();
+        u8 = new Uint8ClampedArray(t);
+        imagedata1 = new ImageData(u8, 1000, 800);
+        meas();
+        const ctx = document.getElementById('canvas').getContext('2d');
+        ctx.putImageData(imagedata1, 0, 0);
+        meas();
+    }
+
+    function render_light_view() {
+        for (const i of intervals) clearInterval(i);
+
+        Module._render_light_view();
+        addr = Module._image_data_loc();
+        const t = Module.HEAPU8.slice(addr, addr + 3200000);
+        meas();
+        u8 = new Uint8ClampedArray(t);
+        imagedata1 = new ImageData(u8, 1000, 800);
+        meas();
+        const ctx = document.getElementById('canvas').getContext('2d');
+        ctx.putImageData(imagedata1, 0, 0);
+        meas();
+    }
+    var intervals = [];
+    Module.onRuntimeInitialized = () => {
+        intervals[0] = setInterval(() => {
+            Module.ccall('input', 'null', [null], [null]);
+        }, 50);
+        intervals[1] = setInterval(() => {
+            render();
+        }, 300)
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if(e.key==="Q") {
+            for (const i of intervals) clearInterval(i);
+        }
+    })
+</script>
+
+<script async type="text/javascript" src="game.js"></script>
+</body>
+</html>
+

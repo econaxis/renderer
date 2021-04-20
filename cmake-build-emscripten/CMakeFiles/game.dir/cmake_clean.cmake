@@ -1,4 +1,6 @@
 file(REMOVE_RECURSE
+  "../ui/game.js"
+  "../ui/game.pdb"
   "CMakeFiles/game.dir/source/color.cpp.o"
   "CMakeFiles/game.dir/source/display.cpp.o"
   "CMakeFiles/game.dir/source/image.cpp.o"
@@ -7,8 +9,6 @@ file(REMOVE_RECURSE
   "CMakeFiles/game.dir/source/pixel.cpp.o"
   "CMakeFiles/game.dir/source/pixeller.cpp.o"
   "CMakeFiles/game.dir/source/utils.cpp.o"
-  "game.html"
-  "game.pdb"
 )
 
 # Per-language clean rules from dependency scanning.
