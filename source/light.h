@@ -120,7 +120,14 @@ public:
 				gmtl::Point4f pt1{persp_pts(0, 0), persp_pts(1, 0), persp_pts(2, 0), 1};
 				gmtl::Point4f pt2{persp_pts(0, 1), persp_pts(1, 1), persp_pts(2, 1), 1};
 				gmtl::Point4f pt3{persp_pts(0, 2), persp_pts(1, 2), persp_pts(2, 2), 1};
-				image.triangle(pt1, pt2, pt3, {(pt3[2] + 1)/2, 0.5, 0.5});
+
+                gmtl::Vec3f normal_dir = model.get_normal(i); // Automatically normalized
+
+                // Light intensity changes to how the plane faces the light
+                auto simple_cosine_lighting =
+                        std::abs(gmtl::dot(gmtl::makeNormal(light_pos), normal_dir));
+
+				image.triangle(pt1, pt2, pt3, Color::clamp(simple_cosine_lighting, 0.5, 0.5));
 			}
 		}
 	}
