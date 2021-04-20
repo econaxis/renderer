@@ -94,7 +94,8 @@ Because I'd split the perspective/lighting/rendering module separate from the di
 
 ## FXAA
 
-Hello friends, this is another person writing with another brain. So after some googling and realizing how broke both us and the program are, I decided to try some antialiasing using FXAA3. 
+Hello friends, this is another person writing with another brain. So after some googling and realizing how broke both us and the program are, I decided to try some antialiasing using FXAA3. This is what antialising looks like:
+![image](/gifs/antialiasingDiagram.jpg)
 
 Note that FXAA would blur small details. Doubt that’s too big of a problem given the scope of this project.
 
