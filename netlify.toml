@@ -1,5 +1,5 @@
 [[headers]]
-for = "/"
+for = "/ui/index.html"
 [headers.values]
 Cross-Origin-Embedder-Policy = "require-corp"
 Cross-Origin-Opener-Policy = "same-origin"
@@ -7,5 +7,5 @@ Cross-Origin-Opener-Policy = "same-origin"
 [[redirects]]
 from = "/"
 to = "/ui/index.html"
-status = 200
+status = 301
 force = false

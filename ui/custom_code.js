@@ -6,7 +6,7 @@ if (typeof SharedArrayBuffer !== 'function') {
 var Module = {}
 
 
-var addr = 0x2c84f90;
+var addr = 0x2c84f90
 var imagedata1 = null, u8, start = performance.now();
 
 function getaddr() {
