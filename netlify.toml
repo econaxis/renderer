@@ -4,13 +4,6 @@ for = "/ui/index.html"
 Cross-Origin-Embedder-Policy = "require-corp"
 Cross-Origin-Opener-Policy = "same-origin"
 
-[[headers]]
-for = "/"
-[headers.values]
-Cross-Origin-Embedder-Policy = "require-corp"
-Cross-Origin-Opener-Policy = "same-origin"
-
-
 [[redirects]]
 from = "/"
 to = "/ui/index.html"
