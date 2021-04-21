@@ -4,6 +4,12 @@ for = "/ui/index.html"
 Cross-Origin-Embedder-Policy = "require-corp"
 Cross-Origin-Opener-Policy = "same-origin"
 
+[[headers]]
+for = "/ui/game.worker.js"
+[headers.values]
+Cross-Origin-Embedder-Policy = "require-corp"
+
+
 [[redirects]]
 from = "/"
 to = "/ui/index.html"
