@@ -163,30 +163,31 @@ public:
         return face_id[y * width + x];
     }
 
-    void horizontal_line(Point p1, Point p2, const Color &c, unsigned int face_id = 0) {
+    void horizontal_line(const Point& p1, const Point& p2, const Color &c) {
         const auto &start = std::min(p1, p2);
         const auto &end = std::max(p1, p2);
 
         double interp_z = start.z;
         double incr = (end.z - start.z) / (end.x - start.x);
+
+        bool check_z_buffer = true;
+        if(get_z(start.x, p1.y) - interp_z > 0.2) check_z_buffer = false;
+        else if (get_z(start.x, p1.y) - interp_z < -0.2) return; // No hope. Just return.
         for (auto x = start.x; x < end.x; x++) {
             interp_z += incr;
             auto &target_pixel = at(x, p1.y);
             // Check z buffer.
-            if (get_z(x, p1.y) >= interp_z) {
+            if (!check_z_buffer || get_z(x, p1.y) >= interp_z) {
                 // Yes, can overwrite.
                 target_pixel = Pixel{c};
                 set_z(x, p1.y, interp_z);
-                set_face_id(x, p1.y, face_id);
             }
         }
     }
 
     //TODO: fill triangles horizontally for cache efficiency. Do write-up on this choice.
     // Renders a triangle given three points on the image.
-    void triangle(Point pt1, Point pt2, Point pt3, Color c) {
-        auto face_idval = pt1.face_id;
-
+    void triangle(const Point& pt1, const Point& pt2, const Point& pt3, Color c) {
         auto pts = std::array<Point, 3>{pt1, pt2, pt3};
 
         std::sort(pts.begin(), pts.end(), [](const auto &t1, const auto &t2) -> bool {
@@ -194,18 +195,17 @@ public:
         });
 
 
-        Point base_pt, bottom_pt, top_pt;
         for (short y = pts[0].y; y <= pts[1].y; y++) {
-            base_pt = Point::interp_all(pts[0], pts[2], y);
+            Point base_pt = Point::interp_all(pts[0], pts[2], y);
             // Left line + base line
-            bottom_pt = Point::interp_all(pts[0], pts[1], y);
-            horizontal_line(base_pt, bottom_pt, c, face_idval);
+            Point bottom_pt = Point::interp_all(pts[0], pts[1], y);
+            horizontal_line(base_pt, bottom_pt, c);
         }
         for (short y = pts[1].y; y <= pts[2].y; y++) {
-            base_pt = Point::interp_all(pts[0], pts[2], y);
+            Point base_pt = Point::interp_all(pts[0], pts[2], y);
             // Right line + base line
-            top_pt = Point::interp_all(pts[1], pts[2], y);
-            horizontal_line(base_pt, top_pt, c, face_idval);
+            Point top_pt = Point::interp_all(pts[1], pts[2], y);
+            horizontal_line(base_pt, top_pt, c);
         }
     }
 

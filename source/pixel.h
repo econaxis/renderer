@@ -29,19 +29,6 @@ struct Point {
 	short x = 0, y = 0;
 	double z = 0; // Double precision used for z buffering
 
-	// Color
-	float r = 0, g = 0, b = 0;
-
-	unsigned int face_id = 0;
-	Color get_color (){
-		return Color{r, g, b};
-	}
-
-	void set_color(Color c){
-		r = c.r;
-		g = c.g;
-		b = c.b;
-	}
 
 	template<typename T>
 	Point(T x, T y, double z = std::numeric_limits<double>::max()) :x(x), y(y), z(z) {};

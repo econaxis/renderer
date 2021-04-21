@@ -45,20 +45,14 @@ if (EMSCRIPTEN)
     endif ()
 
 
-#    set_target_properties(game PROPERTIES LINK_DEPENDS ${CMAKE_SOURCE_DIR}/shell-file.html)
-
-
-#    target_compile_options(game PRIVATE --shell-file=../shell-file.html)
     target_compile_options(game PRIVATE -fno-rtti -pthread)
 
     target_link_options(game PRIVATE --preload-file /home/henry/renderer/head.obj@/head.obj -pthread -sPTHREAD_POOL_SIZE=5)
     target_link_options(game PRIVATE -sNO_EXIT_RUNTIME=1)
     target_link_options(game PRIVATE -sEXTRA_EXPORTED_RUNTIME_METHODS=['ccall','cwrap','UTF8ToString'])
-#    target_link_options(game PRIVATE --shell-file ${CMAKE_SOURCE_DIR}/shell-file.html)
     target_link_options(game PRIVATE --source-map-base=http://localhost:4000/cmake-build-emscripten/)
-    target_link_options(game PRIVATE -sALLOW_MEMORY_GROWTH=1)
+    target_link_options(game PRIVATE -sTOTAL_MEMORY=50MB)
 
     set(CMAKE_EXECUTABLE_SUFFIX ".js")
     set_target_properties (game PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/ui)
-#    set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/ui)
 endif ()

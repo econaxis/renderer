@@ -52,18 +52,19 @@ int main(int argc, char *argv[]) {
 
     main_scene = new RenderScene{*model, *light, camera, *image, k_reflectivity, screen_persp};
     setup_callbacks();
+#ifdef HAS_SFML
+    int r = 1;
+    while(r++) {
+        std::this_thread::sleep_for(10ms);
+        main_scene->main_render_code();
 
-//    int r = 1;
-//    while(r++) {
-//        std::this_thread::sleep_for(10ms);
-//        main_scene->main_render_code();
-//
-//        if(r%100==0) {
-//            main_scene->display_time();
-//        }
-//
-//        //17.16
-//    }
+        if(r%100==0) {
+            main_scene->display_time();
+        }
+
+        //17.16
+    }
+#endif
 
     std::cout<<"done\n";
     return 0;

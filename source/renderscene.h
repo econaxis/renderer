@@ -47,7 +47,6 @@ struct RenderScene {
 
             // Screen coordinates
             Point pt1 = mat_to_point(persp_pts, 0);
-            pt1.face_id = i;
             Point pt2 = mat_to_point(persp_pts, 1);
             Point pt3 = mat_to_point(persp_pts, 2);
 
