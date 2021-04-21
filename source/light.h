@@ -113,9 +113,9 @@ public:
 			}
 			if (
 				between_mat(persp_pts, image) &&
-				(persp_pts(2, 0) - 0.00001 < image.get_z(persp_pts(0, 1), persp_pts(1, 1)) ||
-				 persp_pts(2, 1) - 0.00001 < image.get_z(persp_pts(0, 2), persp_pts(1, 2)) ||
-				 persp_pts(2, 2) - 0.00001 < image.get_z(persp_pts(0, 3), persp_pts(1, 3))))
+				(persp_pts(2, 0) - 0.0001 < image.get_z(persp_pts(0, 0), persp_pts(1, 0)) ||
+				 persp_pts(2, 1) - 0.0001 < image.get_z(persp_pts(0, 1), persp_pts(1, 1)) ||
+				 persp_pts(2, 2) - 0.0001 < image.get_z(persp_pts(0, 2), persp_pts(1, 2))))
 			{
 				gmtl::Point4f pt1{persp_pts(0, 0), persp_pts(1, 0), persp_pts(2, 0), 1};
 				gmtl::Point4f pt2{persp_pts(0, 1), persp_pts(1, 1), persp_pts(2, 1), 1};
@@ -126,7 +126,6 @@ public:
                 // Light intensity changes to how the plane faces the light
                 auto simple_cosine_lighting =
                         std::abs(gmtl::dot(gmtl::makeNormal(light_pos), normal_dir));
-
 				image.triangle(pt1, pt2, pt3, Color::clamp(simple_cosine_lighting, 0.5, 0.5));
 			}
 		}

@@ -3,142 +3,149 @@
 <head>
     <title>renderer or something</title>
     <meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link href="https://fonts.googleapis.com/css2?family=Jura:wght@400;700&display=swap" rel="stylesheet">
-	<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Jura:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-	<script src="index.js"></script>
+    <script src="index.js"></script>
 
 </head>
 <body onload="fetchObjs(); getLegend();">
-	<! wide enough -- -->
-	<div id="page">
-		<div id="viewer">
-			<canvas class="emscripten" id="canvas" width=960 height=487 oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
-		</div>
-		
-		<div id="control-panel" class="compact">
-			<div id="info">
-				<div class="info-block">
-					<div class="large secondary">camera angle</div>
-					<div class="large highlight">108°</div>
-				</div>
-				
-				<div class="info-block">
-					<div class="large secondary">field of view</div>
-					<div class="large highlight">108°</div>
-				</div>
-				
-				<div class="info-block">
-					<div class="large secondary">camera position</div>
-					<div class="large highlight">(0, 0, 400)</div>
-				</div>
-			</div>
-			
-			<hr class=" hidden">
-			
-			<div id="select" class="light-area hidden">
-				<div class="dropdown-item" id="dropdown-item-main" onclick="showDropdown()">
-					<div id="item-rendered"></div>
-					<svg class="dropdown-icon" height="5" width="10">
-						<polygon class="dropdown-icon" points="0,0 5,5 10,0"/>
-					</svg>
-				</div>
-				<div class="dropdown-list light-area" id="obj-list">
-				</div>
-			</div>
-			
-			<div id="controls" class=" hidden">
-				<! set initial values as needed -- -->
-				<div class="control-label has-tooltip">reflectance</div>
-				<input type="range" 
-					   min="1" max="100" value="50" 
-					   class="control slider" 
-					   id="reflectance-slider"
-					   oninput="setReflectanceParameter()">
-				
-				<! toggles probably not responding because <input is size 0, 
-					so i did it inline manually. will need to fix 
-					confused because examples from the internet work-- -->
-					   
-				<div class="control-label has-tooltip">shadows</div>
-				<div class="control"> 
-					<label class="toggle">
-						<input type="checkbox" id="shadow-toggle"/>
-						<div class="toggle-button" onclick="toggleShadows()"></div>
-					</label>
-				</div>
-				
-				<div class="control-label has-tooltip">highlights</div>
-				<div class="control"> 
-					<label class="toggle">
-						<input type="checkbox" checked id="highlights-toggle"/>
-						<div class="toggle-button" onclick="toggleHighlights()"></div>
-					</label>
-				</div>
-			</div>
-			
-			<div id="legend" class=" hidden">
-			</div>
-			
-			<div id="bottom-controls">
-				<div id="toggle-panel" class="lightarea closed" onclick="togglePanel()">
-					<svg class="angle-icon" 
-						 width="20" height="20" 
-						 viewBox="0 0 20 20" 
-						 fill="none" 
-						 stroke-width="3" 
-						 stroke-linecap="round" 
-						 stroke-linejoin="round">
-						<polyline points="2.5,8 10,15.5 17.5,8"/>
-					</svg>
-				</div>
-			</div>
-		</div>
-		
-		<div id="self-promo">
-		
-			<div id="toggle-fullscreen" class="ext-btn" onclick="toggleFS()">
-				<svg class="fs-icon" 
-					width="24" height="24" 
-					viewBox="0 0 24 24" 
-					fill="none" 
-					stroke-width="1.5" 
-					stroke-linecap="round" 
-					stroke-linejoin="round">
-					<polyline points=" 2, 8  2, 2  8, 2"/>
-					<polyline points=" 2,16  2,22  8,22"/>
-					<polyline points="22, 8 22, 2 16, 2"/>
-					<polyline points="22,16 22,22 16,22"/>
-				</svg>
-				
-				<svg class="fs-icon hidden" 
-					width="24" height="24" 
-					viewBox="0 0 24 24" 
-					fill="none" 
-					stroke-width="1.5" 
-					stroke-linecap="round" 
-					stroke-linejoin="round">
-					<polyline points=" 2, 8  8, 8  8, 2"/>
-					<polyline points=" 2,16  8,16  8,22"/>
-					<polyline points="22, 8 16, 8 16, 2"/>
-					<polyline points="22,16 16,16 16,22"/>
-				</svg>
-			</div>
-			
-			<div class="link" onclick="window.open('https://github.com/econaxis/renderer/')">Find us on github!</div>
-		</div>
-	</div>
-	
-	<! not wide enough -- -->
-	<div id="mobile">
-		<div>Oops!</div>
-		<div class="description">We do not support too-skinny screens. Maybe try rotating your screen or making it wider.</div>
-		<div class="link" onclick="window.open('https://github.com/econaxis/renderer/')">Find us on github! ❤</div>
-		<div class="link" onclick="prettyPrettyPlease()">I don't wanna</div>
-		<img class="hidden cat" src='please_cat.gif' alt="pretty pretty please" width=200/>
-		<img class="hidden cat" src='please_cat.gif' alt="pretty pretty please" width=200/>
-	</div>
+<noscript>
+	<span style="position: absolute; top: 30%; padding-left: 1em; font-size: 50px; z-index: 10">
+	Javascript must be enabled on this browser.
+	</span>
+</noscript>
+<! wide enough -- -->
+<div id="page">
+    <div id="viewer">
+        <canvas class="emscripten" id="canvas" width=960 height=487 oncontextmenu="event.preventDefault()"
+                tabindex=-1></canvas>
+    </div>
+
+    <div id="control-panel" class="compact">
+        <div id="info">
+            <div class="info-block">
+                <div class="large secondary">camera angle</div>
+                <div class="large highlight">108°</div>
+            </div>
+
+            <div class="info-block">
+                <div class="large secondary">field of view</div>
+                <div class="large highlight">108°</div>
+            </div>
+
+            <div class="info-block">
+                <div class="large secondary">camera position</div>
+                <div class="large highlight">(0, 0, 400)</div>
+            </div>
+        </div>
+
+        <hr class=" hidden">
+
+        <div id="select" class="light-area hidden">
+            <div class="dropdown-item" id="dropdown-item-main" onclick="showDropdown()">
+                <div id="item-rendered"></div>
+                <svg class="dropdown-icon" height="5" width="10">
+                    <polygon class="dropdown-icon" points="0,0 5,5 10,0"/>
+                </svg>
+            </div>
+            <div class="dropdown-list light-area" id="obj-list">
+            </div>
+        </div>
+
+        <div id="controls" class=" hidden">
+            <! set initial values as needed -- -->
+            <div class="control-label has-tooltip">reflectance</div>
+            <input type="range"
+                   min="1" max="100" value="50"
+                   class="control slider"
+                   id="reflectance-slider"
+                   oninput="setReflectanceParameter()">
+
+            <! toggles probably not responding because <input is size 0,
+                                                              so i did it inline manually. will need to fix
+                                                              confused because examples from the internet work-- -->
+
+            <div class="control-label has-tooltip">shadows</div>
+            <div class="control">
+                <label class="toggle">
+                    <input type="checkbox" id="shadow-toggle"/>
+                    <div class="toggle-button" onclick="toggleShadows()"></div>
+                </label>
+            </div>
+
+            <div class="control-label has-tooltip">highlights</div>
+            <div class="control">
+                <label class="toggle">
+                    <input type="checkbox" checked id="highlights-toggle"/>
+                    <div class="toggle-button" onclick="toggleHighlights()"></div>
+                </label>
+            </div>
+        </div>
+
+        <div id="legend" class=" hidden">
+        </div>
+
+        <div id="bottom-controls">
+            <div id="toggle-panel" class="lightarea closed" onclick="togglePanel()">
+                <svg class="angle-icon"
+                     width="20" height="20"
+                     viewBox="0 0 20 20"
+                     fill="none"
+                     stroke-width="3"
+                     stroke-linecap="round"
+                     stroke-linejoin="round">
+                    <polyline points="2.5,8 10,15.5 17.5,8"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div id="self-promo">
+
+        <div id="toggle-fullscreen" class="ext-btn" onclick="toggleFS()">
+            <svg class="fs-icon"
+                 width="24" height="24"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke-width="1.5"
+                 stroke-linecap="round"
+                 stroke-linejoin="round">
+                <polyline points=" 2, 8  2, 2  8, 2"/>
+                <polyline points=" 2,16  2,22  8,22"/>
+                <polyline points="22, 8 22, 2 16, 2"/>
+                <polyline points="22,16 22,22 16,22"/>
+            </svg>
+
+            <svg class="fs-icon hidden"
+                 width="24" height="24"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke-width="1.5"
+                 stroke-linecap="round"
+                 stroke-linejoin="round">
+                <polyline points=" 2, 8  8, 8  8, 2"/>
+                <polyline points=" 2,16  8,16  8,22"/>
+                <polyline points="22, 8 16, 8 16, 2"/>
+                <polyline points="22,16 16,16 16,22"/>
+            </svg>
+        </div>
+
+        <div class="link" onclick="window.open('https://github.com/econaxis/renderer/')">Find us on github!</div>
+    </div>
+</div>
+
+<! not wide enough -- -->
+<div id="mobile">
+    <div>Oops!</div>
+    <div class="description">We do not support too-skinny screens. Maybe try rotating your screen or making it wider.
+    </div>
+    <div class="link" onclick="window.open('https://github.com/econaxis/renderer/')">Find us on github! ❤</div>
+    <div class="link" onclick="prettyPrettyPlease()">I don't wanna</div>
+    <img class="hidden cat" src='please_cat.gif' alt="pretty pretty please" width=200/>
+    <img class="hidden cat" src='please_cat.gif' alt="pretty pretty please" width=200/>
+</div>
 
 <script async="" type="text/javascript" src="game.js"></script>
 <script type="text/javascript" src="custom_code.js"></script>

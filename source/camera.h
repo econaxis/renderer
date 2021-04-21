@@ -27,11 +27,13 @@ struct Camera {
     void handle_keyboard_input() {
         bool cam_changed = false;
         // Camera angle changing not supported yet.
+#ifndef HAS_SFML
         if (sf::Keyboard::Dragged()) {
             angle_x -= sf::Keyboard::movementX / 900.F;
             angle_y += sf::Keyboard::movementY / 600.F;
             cam_changed = true;
         }
+#endif
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
             cam_position += cam_direction * 10.F;
             cam_changed = true;

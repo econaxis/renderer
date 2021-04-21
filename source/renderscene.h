@@ -5,6 +5,8 @@
 #include "camera.h"
 #include "image.h"
 #include <gmtl/Matrix.h>
+#include <thread>
+#include <chrono>
 
 struct RenderScene {
     Model &model;
@@ -12,31 +14,20 @@ struct RenderScene {
     Camera &camera;
     Image &image;
     double k_reflectivity;
-    int specular_selectivity;
     gmtl::Matrix44f screen_persp;
+
+    std::vector<long double> times;
 
     void handle_input() {
         if (model.check_rotated())
             light.bake_light(model);
 
         camera.handle_keyboard_input();
-
     }
 
-    void main_render_code() { // Handle keyboard input events for the frame, and if the model has rotated,
-        // that means the shadow map has also changed. We need to update the light shadow
-        // mapping everytime the model changes.
-        image.clear();
-        handle_input();
-
-        // This matrix transforms world coordinates -> camera coordinates -> perspective transform -> screen.
-        gmtl::Matrix44f screen_complete_matrix_transforms = screen_persp * camera.camera_mat;
-
-        const auto tot_triangles = model.total_triangles();
-        int tris_rendererd = 0;
-
-//#pragma omp parallel for shared(model, tot_triangles, screen_complete_matrix_transforms) default(none)
-        for (int i = 0; i <= tot_triangles; i++) {
+    void render_some_triangles(const gmtl::Matrix44f &screen_complete_matrix_transforms, int start, int end) {
+//        std::cout<<"Thread running on "<<sched_getcpu()<<"\n";
+        for (int i = start; i < end; i++) {
             auto model_coordinates = model.get_model_transformed_triangle(i);
             auto persp_pts = screen_complete_matrix_transforms * model_coordinates;
 
@@ -67,13 +58,12 @@ struct RenderScene {
                     between_mat(persp_pts, image) &&
                     // Points are in front of the current z-buffer.
                     check_z_buffer(pt1, pt2, pt3, image)) {
-                tris_rendererd++;
                 gmtl::Vec3f normal_dir = model.get_normal(i); // Automatically normalized
                 gmtl::Vec3f face_position = {pt1_world[0], pt1_world[1], pt1_world[2]};
 
                 // Light intensity changes to how the plane faces the light
                 auto simple_cosine_lighting =
-                        std::abs(gmtl::dot(gmtl::makeNormal(light.light_pos), normal_dir)) * 0.5F;
+                        gmtl::dot(gmtl::makeNormal(light.light_pos), normal_dir) * 0.5F;
                 gmtl::Vec3f incident_light = face_position - light.light_pos;
                 gmtl::Vec3f face_to_camera = camera.cam_position - face_position;
                 gmtl::normalize(incident_light);
@@ -108,6 +98,37 @@ struct RenderScene {
                 image.triangle(pt1, pt2, pt3, c);
             }
         }
+    }
+
+    void main_render_code() { // Handle keyboard input events for the frame, and if the model has rotated,
+        // that means the shadow map has also changed. We need to update the light shadow
+        // mapping everytime the model changes.
+        image.clear();
+        handle_input();
+
+        // This matrix transforms world coordinates -> camera coordinates -> perspective transform -> screen.
+        gmtl::Matrix44f screen_complete_matrix_transforms = screen_persp * camera.camera_mat;
+
+        const int tot_triangles = model.total_triangles();
+        const int work_interval = tot_triangles / 4;
+        const int work_intervals[] = {0, work_interval, work_interval * 2, work_interval * 3, tot_triangles};
+
+        auto start_time = std::chrono::high_resolution_clock::now();
+
+//        render_some_triangles(screen_complete_matrix_transforms, 0, tot_triangles);
+        std::thread t1(&RenderScene::render_some_triangles, this, std::ref(screen_complete_matrix_transforms), work_intervals[0], work_intervals[1]);
+        std::thread t2(&RenderScene::render_some_triangles, this, std::ref(screen_complete_matrix_transforms), work_intervals[1], work_intervals[2]);
+        std::thread t3(&RenderScene::render_some_triangles, this, std::ref(screen_complete_matrix_transforms), work_intervals[2], work_intervals[3]);
+        std::thread t4(&RenderScene::render_some_triangles, this, std::ref(screen_complete_matrix_transforms), work_intervals[3], work_intervals[4]);
+        t1.join();
+        t2.join();
+        t3.join();
+        t4.join();
+        auto end_time = std::chrono::high_resolution_clock::now();
+        times.push_back(std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(
+                end_time - start_time).count());
+//#pragma omp parallel for shared(model, tot_triangles, screen_complete_matrix_transforms) default(none)
+
 
 //        auto x = sf::Mouse::getPosition(get_window());
 //        std::cout<<x.x<<x.y<<" "<<image.get_face_id(x.x, x.y);
@@ -115,4 +136,13 @@ struct RenderScene {
 //        std::cout<<"Triangles rendered: "<<tris_rendererd;
         image.render();
     }
+
+    void display_time() {
+        long double a = 0;
+        for (const auto &t : times) {
+            a += t;
+        }
+        std::cout << a / times.size() << std::endl;
+    }
 };
+

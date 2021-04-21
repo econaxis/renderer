@@ -39,8 +39,8 @@ if (EMSCRIPTEN)
         target_compile_options(game PRIVATE -O3 -ffast-math -fno-exceptions)
         target_link_options(game PRIVATE -O3)
     ELSE ()
-        target_compile_options(game PRIVATE -gsource-map -g4)
-        target_link_options(game PRIVATE -gsource-map -g4)
+        target_compile_options(game PRIVATE -gsource-map -g3)
+        target_link_options(game PRIVATE -gsource-map -g3 -sASSERTIONS=1)
         message("compiling for debug")
     endif ()
 
@@ -49,9 +49,9 @@ if (EMSCRIPTEN)
 
 
 #    target_compile_options(game PRIVATE --shell-file=../shell-file.html)
-    target_compile_options(game PRIVATE -fno-rtti)
+    target_compile_options(game PRIVATE -fno-rtti -pthread)
 
-    target_link_options(game PRIVATE --preload-file /home/henry/renderer/head.obj@/head.obj)
+    target_link_options(game PRIVATE --preload-file /home/henry/renderer/head.obj@/head.obj -pthread -sPTHREAD_POOL_SIZE=5)
     target_link_options(game PRIVATE -sNO_EXIT_RUNTIME=1)
     target_link_options(game PRIVATE -sEXTRA_EXPORTED_RUNTIME_METHODS=['ccall','cwrap','UTF8ToString'])
 #    target_link_options(game PRIVATE --shell-file ${CMAKE_SOURCE_DIR}/shell-file.html)

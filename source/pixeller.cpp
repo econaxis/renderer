@@ -48,16 +48,21 @@ int main(int argc, char *argv[]) {
 
 
     // Lighting constants. Changing it changes the specific properties of the object (e.g. rubber/plastic/metal/wood...)
-    int specular_selectivity = 5;
     double k_reflectivity = 0.2;
 
-    main_scene = new RenderScene{*model, *light, camera, *image, k_reflectivity, specular_selectivity, screen_persp};
+    main_scene = new RenderScene{*model, *light, camera, *image, k_reflectivity, screen_persp};
     setup_callbacks();
-//
-//    int r = 2000;
-//    while(true) {
-//        std::this_thread::sleep_for(30ms);
+
+//    int r = 1;
+//    while(r++) {
+//        std::this_thread::sleep_for(10ms);
 //        main_scene->main_render_code();
+//
+//        if(r%100==0) {
+//            main_scene->display_time();
+//        }
+//
+//        //17.16
 //    }
 
     std::cout<<"done\n";
@@ -92,6 +97,12 @@ void render_light_view() {
 EMSCRIPTEN_KEEPALIVE
 void input() {
     main_scene->handle_input();
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+void display_time() {
+    main_scene->display_time();
 }
 
 

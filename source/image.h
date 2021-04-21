@@ -42,7 +42,7 @@ public:
     Image(std::size_t width, std::size_t height) : width(width), height(height), display(width, height) {
         // In case we somehow overflow, make the image vector 1 bigger.
         image.resize(width * height + 1);
-        z_buffer.resize(width * height + 1, 100000000000);
+        z_buffer.resize(width * height + 1, 1000000);
         face_id.resize(width * height + 1);
         clear();
     }
@@ -51,7 +51,7 @@ public:
         width = new_width;
         height = new_height;
         image.resize(width * height + 1);
-        z_buffer.resize(width * height + 1, 100000000000);
+        z_buffer.resize(width * height + 1, 1000000);
         face_id.resize(width * height + 1);
 
         clear();
@@ -66,7 +66,7 @@ public:
     }
 
     auto &at(std::size_t x, std::size_t y) {
-        return image[y * width + x];
+        return image.at(y * width + x);
     }
 
     const auto &at(std::size_t x, std::size_t y) const {
@@ -172,7 +172,6 @@ public:
         for (auto x = start.x; x < end.x; x++) {
             interp_z += incr;
             auto &target_pixel = at(x, p1.y);
-
             // Check z buffer.
             if (get_z(x, p1.y) >= interp_z) {
                 // Yes, can overwrite.
