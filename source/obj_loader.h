@@ -185,17 +185,20 @@ public:
 
     gmtl::Matrix<float, 4, 3> get_triangle(int index) const {
         gmtl::Matrix<float, 4, 3> res;
-        res(0, 0) = points[tris[index][0]][0];
-        res(1, 0) = points[tris[index][0]][1];
-        res(2, 0) = points[tris[index][0]][2];
+        const auto& tri_pt_0 = tris[index][0];
+        const auto& tri_pt_1 = tris[index][1];
+        const auto& tri_pt_2 = tris[index][2];
+        res(0, 0) = points[tri_pt_0][0];
+        res(1, 0) = points[tri_pt_0][1];
+        res(2, 0) = points[tri_pt_0][2];
         res(3, 0) = 1;
-        res(0, 1) = points[tris[index][1]][0];
-        res(1, 1) = points[tris[index][1]][1];
-        res(2, 1) = points[tris[index][1]][2];
+        res(0, 1) = points[tri_pt_1][0];
+        res(1, 1) = points[tri_pt_1][1];
+        res(2, 1) = points[tri_pt_1][2];
         res(3, 1) = 1;
-        res(0, 2) = points[tris[index][2]][0];
-        res(1, 2) = points[tris[index][2]][1];
-        res(2, 2) = points[tris[index][2]][2];
+        res(0, 2) = points[tri_pt_2][0];
+        res(1, 2) = points[tri_pt_2][1];
+        res(2, 2) = points[tri_pt_2][2];
         res(3, 2) = 1;
         return res;
     }

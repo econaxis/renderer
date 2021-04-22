@@ -8,12 +8,16 @@
 #include <thread>
 #include <chrono>
 
+inline float pow10(float val) {
+    return val * val * val * val * val * val * val * val * val * val;
+};
+
 struct RenderScene {
     Model &model;
     Light &light;
     Camera &camera;
     Image &image;
-    double k_reflectivity;
+    float k_reflectivity;
     gmtl::Matrix44f screen_persp;
 
     std::vector<long double> times;
@@ -60,9 +64,11 @@ struct RenderScene {
                 gmtl::Vec3f normal_dir = model.get_normal(i); // Automatically normalized
                 gmtl::Vec3f face_position = {pt1_world[0], pt1_world[1], pt1_world[2]};
 
+                gmtl::Vec3f light_angle = light.light_pos - face_position;
                 // Light intensity changes to how the plane faces the light
                 auto simple_cosine_lighting =
-                        gmtl::dot(gmtl::makeNormal(light.light_pos), normal_dir) * 0.5F;
+                        std::max(gmtl::dot(gmtl::makeNormal(light_angle), normal_dir) * 0.7F, 0.F);
+                simple_cosine_lighting *= simple_cosine_lighting;
                 gmtl::Vec3f incident_light = face_position - light.light_pos;
                 gmtl::Vec3f face_to_camera = camera.cam_position - face_position;
                 gmtl::normalize(incident_light);
@@ -71,11 +77,10 @@ struct RenderScene {
                 gmtl::Vec3f reflected_light =
                         incident_light - 2 * gmtl::dot(normal_dir, incident_light) * normal_dir;
 
-                float specular_intensity_temp = std::max(gmtl::dot(reflected_light, face_to_camera), 0.F);
+                float specular_intensity_temp = std::clamp(gmtl::dot(reflected_light, face_to_camera), 0.F, 1.F);
 
-                float specular_intensity = specular_intensity_temp * specular_intensity_temp * specular_intensity_temp *
-                                           specular_intensity_temp * k_reflectivity;
-                float ambient_light = 0.3F;
+                float specular_intensity = pow10(specular_intensity_temp) * k_reflectivity;
+                float ambient_light = 0.2F;
 
                 // First, convert point 1 world coords into the coordinates of the light reference frame.
                 auto light_reference_frame = light.get_matrix_transforms() * pt1_world;
@@ -86,9 +91,9 @@ struct RenderScene {
                 // Then, we check if the point1 in light reference frame is seen by the light
                 if (light.check_closest_lit(light_reference_frame)) {
                     // If coordinate is in light reference frame, then we decrease the lighting for it.
-                    specular_intensity = 0;
-                    simple_cosine_lighting /= 2;
-                    ambient_light = 0.1F; // Contradicts the meaning of "ambient" light but this method looks better..
+                    specular_intensity /= 5;
+                    simple_cosine_lighting /= 1.5;
+                    ambient_light /= 2; // Contradicts the meaning of "ambient" light but this method looks better.
                 }
                 Color c = Color::clamp(specular_intensity + simple_cosine_lighting + ambient_light + 0.15,
                                        specular_intensity + simple_cosine_lighting + ambient_light,
@@ -114,11 +119,14 @@ struct RenderScene {
 
         auto start_time = std::chrono::high_resolution_clock::now();
 
-//        render_some_triangles(screen_complete_matrix_transforms, 0, tot_triangles);
-        std::thread t1(&RenderScene::render_some_triangles, this, std::ref(screen_complete_matrix_transforms), work_intervals[0], work_intervals[1]);
-        std::thread t2(&RenderScene::render_some_triangles, this, std::ref(screen_complete_matrix_transforms), work_intervals[1], work_intervals[2]);
-        std::thread t3(&RenderScene::render_some_triangles, this, std::ref(screen_complete_matrix_transforms), work_intervals[2], work_intervals[3]);
-        std::thread t4(&RenderScene::render_some_triangles, this, std::ref(screen_complete_matrix_transforms), work_intervals[3], work_intervals[4]);
+        std::thread t1(&RenderScene::render_some_triangles, this, std::ref(screen_complete_matrix_transforms),
+                       work_intervals[0], work_intervals[1]);
+        std::thread t2(&RenderScene::render_some_triangles, this, std::ref(screen_complete_matrix_transforms),
+                       work_intervals[1], work_intervals[2]);
+        std::thread t3(&RenderScene::render_some_triangles, this, std::ref(screen_complete_matrix_transforms),
+                       work_intervals[2], work_intervals[3]);
+        std::thread t4(&RenderScene::render_some_triangles, this, std::ref(screen_complete_matrix_transforms),
+                       work_intervals[3], work_intervals[4]);
         t1.join();
         t2.join();
         t3.join();
@@ -127,12 +135,6 @@ struct RenderScene {
         times.push_back(std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(
                 end_time - start_time).count());
 //#pragma omp parallel for shared(model, tot_triangles, screen_complete_matrix_transforms) default(none)
-
-
-//        auto x = sf::Mouse::getPosition(get_window());
-//        std::cout<<x.x<<x.y<<" "<<image.get_face_id(x.x, x.y);
-
-//        std::cout<<"Triangles rendered: "<<tris_rendererd;
         image.render();
     }
 

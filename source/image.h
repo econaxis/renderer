@@ -59,14 +59,11 @@ public:
     }
 
     auto &operator[](std::size_t idx) {
-        if (idx >= height) {
-            std::cout<<"invalid index";
-        }
         return image[idx];
     }
 
     auto &at(std::size_t x, std::size_t y) {
-        return image.at(y * width + x);
+        return image[y * width + x];
     }
 
     const auto &at(std::size_t x, std::size_t y) const {
@@ -75,7 +72,7 @@ public:
 
     void clear() {
         std::fill(image.begin(), image.end(), Pixel{});
-        std::fill(z_buffer.begin(), z_buffer.end(), 100000000000);
+        std::fill(z_buffer.begin(), z_buffer.end(), 1000000);
     }
 
     void render() {
@@ -155,13 +152,13 @@ public:
         return points;
     }
 
-    void set_face_id(std::size_t x, std::size_t y, unsigned int val_face_id) {
-        face_id[y * width + x] = val_face_id;
-    }
-
-    unsigned int get_face_id(std::size_t x, std::size_t y) const {
-        return face_id[y * width + x];
-    }
+//    void set_face_id(std::size_t x, std::size_t y, unsigned int val_face_id) {
+//        face_id[y * width + x] = val_face_id;
+//    }
+//
+//    unsigned int get_face_id(std::size_t x, std::size_t y) const {
+//        return face_id[y * width + x];
+//    }
 
     void horizontal_line(const Point& p1, const Point& p2, const Color &c) {
         const auto &start = std::min(p1, p2);
@@ -171,8 +168,10 @@ public:
         double incr = (end.z - start.z) / (end.x - start.x);
 
         bool check_z_buffer = true;
-        if(get_z(start.x, p1.y) - interp_z > 0.2) check_z_buffer = false;
-        else if (get_z(start.x, p1.y) - interp_z < -0.2) return; // No hope. Just return.
+        if(get_z(start.x, p1.y) - interp_z > 0.035 && get_z(end.x, p1.y) - interp_z > 0.035) check_z_buffer = false;
+        else if (get_z(start.x, p1.y) - interp_z < -0.035 && get_z(end.x, p1.y) - interp_z < -0.035) return; // No hope. Just return.
+
+
         for (auto x = start.x; x < end.x; x++) {
             interp_z += incr;
             auto &target_pixel = at(x, p1.y);

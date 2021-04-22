@@ -54,7 +54,7 @@ public:
     const Image& get_image() {
 	    return image;
 	}
-	gmtl::Vec3f light_pos = {-1, 1, 3}, light_target = {0, 0, 0};
+	gmtl::Vec3f light_pos = {-10, 10, 30}, light_target = {0, 0, 0};
 
 	Light(std::size_t width, std::size_t height) : image(width, height)
 	{
