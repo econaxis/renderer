@@ -40,9 +40,8 @@ std::stringstream ASCIIDisplay::render(const Image &im) {
 
 
 void CanvasDisplay::render(const Image &im) {
-    if (image_data.size() != im.height * im.width * 4) {
-        image_data.resize(im.height * im.width * 4);
-    }
+    // Since the memory layout of the Image::image vector is the same as that of the Canvas, we just have to
+    // get Canvas to use the memory of the image, thus avoiding any copying.
 
     const auto &pixel_data = im.get_pixels();
     image_data_loc = pixel_data.data();

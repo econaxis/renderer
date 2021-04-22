@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
 
 
     // Lighting constants. Changing it changes the specific properties of the object (e.g. rubber/plastic/metal/wood...)
-    double k_reflectivity = 0.2;
+    float k_reflectivity = 0.20;
 
     main_scene = new RenderScene{*model, *light, camera, *image, k_reflectivity, screen_persp};
     setup_callbacks();
@@ -73,6 +73,7 @@ int main(int argc, char *argv[]) {
 extern "C" {
 EMSCRIPTEN_KEEPALIVE
 std::uintptr_t image_data_loc() {
+    // See CanvasDisplay::display function.
     return (std::uintptr_t) image->display.image_data_loc;
 }
 
