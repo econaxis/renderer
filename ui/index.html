@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Jura:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <script src="index.js"></script>
 
 </head>
 <body onload="fetchObjs(); getLegend();">
@@ -21,6 +20,10 @@
     <div id="viewer">
         <canvas class="emscripten" id="canvas" width=960 height=487 oncontextmenu="event.preventDefault()"
                 tabindex=-1></canvas>
+
+        <div style="
+        font-size: 50px; padding-top: 10em; text-align: center; z-index: 10;
+        animation: blink 1.5s ease-in-out infinite;" id="loading-identifier">Loading...</div>
     </div>
 
     <div id="control-panel" class="compact">
@@ -147,8 +150,9 @@
     <img class="hidden cat" src='please_cat.gif' alt="pretty pretty please" width=200/>
 </div>
 
-<script async="" type="text/javascript" src="game.js"></script>
-<script type="text/javascript" src="custom_code.js"></script>
+<script async defer type="text/javascript" src="custom_code.js"></script>
+<script async defer type="text/javascript" src="game.js"></script>
+<script async defer src="index.js"></script>
 
 
 </body>

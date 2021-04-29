@@ -553,3 +553,9 @@ input:checked + .toggle-button:before {
 .has-tooltip:hover .tooltiptext {
 	visibility: visible;
 }
+
+@keyframes blink {
+	50% {
+		color: #212121;
+	}
+}

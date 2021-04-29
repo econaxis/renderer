@@ -61,9 +61,9 @@ int main(int argc, char *argv[]) {
         if(r%100==0) {
             main_scene->display_time();
         }
-
-        //17.16
     }
+#else
+    send_main_initialized_signal();
 #endif
 
     std::cout<<"done\n";

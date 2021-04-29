@@ -11,9 +11,13 @@
 #ifndef HAS_SFML
 
 #include <emscripten/html5.h>
+#include <emscripten.h>
 #include <cstring>
 #include <iostream>
-#include <emscripten.h>
+
+inline void send_main_initialized_signal() {
+    emscripten_run_script("const event = new Event('main_initialized');window.dispatchEvent(event);");
+}
 
 namespace sf::Keyboard {
     enum Key {

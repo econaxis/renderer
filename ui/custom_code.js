@@ -57,9 +57,11 @@ function set_render_interval(interv = 75) {
     }, interv);
 }
 
-Module.onRuntimeInitialized = () => {
+window.addEventListener('main_initialized', () => {
+    console.log("Received main initialized signal.")
+    document.getElementById('loading-identifier').remove();
     set_render_interval(75)
-}
+});
 
 document.addEventListener('keydown', (e) => {
     if (e.key === "Q") {
